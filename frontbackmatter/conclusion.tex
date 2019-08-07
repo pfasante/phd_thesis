@@ -1,0 +1,36 @@
+\chapter{Conclusion}\label{ch:conclusion}
+\openepigraph{But at the laste, every thing hath ende}{Geoffrey Chaucer}
+Since the development of the \DES/ and \AES/, our understanding of secure designs for encryption schemes has greatly evolved.
+In particular in the area of symmetric cryptography, we are today, after more than 40 years of research, able to design very efficient ciphers, which we firmly believe to be secure -- with the \AES/ being the prime example withstanding 20 years of cryptanalysis.
+Our progress pushed efficiency bounds further and further, especially within the trend of lightweight cryptography.
+
+However the time may has come, where we should shift our focus to improving security arguments for new designs -- where the improvement since the development of bounds for differential and linear cryptanalysis seems marginal.
+We see this thesis, specificly the first part on security arguments, as a step in this direction.
+With our block cipher instances \bison/ and \wisent/ we are for the first time able to give precise bounds on the \emph{differential} instead of only on differential trails.
+This initial result may lead to further investigation of alternative constructions for block ciphers.
+An interesting question in this direction is, if a construction can be found which exhibits similar good properties with respect to linear cryptanalysis.
+A second worthwhile direction is the study of unbalanced Feistel networks which seem to be related to the \WSN/ construction.
+
+Apart from our results on differential cryptanalysis, our study of the \ACT/ revealed a connection between the differential-linear cryptanalysis and previously studied properties of Boolean functions.
+In our opinion the most interesting observation, from a cryptanalytic perspective, is that the decryption function might be weaker than the encryption against differential-linear attacks.
+This result implies future analysis has to be extended in this direction.
+From a more theoretical point of view, it is interesting that vectorial Boolean functions exhibit a lower bound for the absolute indicator, while for Boolean functions it seems to be a hard problem finding such a lower bonud.
+Overall, our results on this new connection contribute to a further understanding of the differential-linear cryptanalysis.
+
+In the second part of the thesis, we concentrate on automated tools for the design and analysis of block ciphers.
+Our main result here is the conceptual simple algorithm for propagating subspaces through an iterative round function.
+Despite the underlying simple idea, this algorithm turns out to be useful not only for one application.
+For its original purpose, we use \textsc{Compute Trail} to algorithmically bound the longest subspace trail through an \SPN/ cipher and thus construct an algorithmic security argument against this recent type of attack.
+
+However, besides the study of single attacks, a more principle task is to extend a distinguishing attack into a key recovery.
+Especially when such an extension is possible over some rounds, it might make the difference between a cipher with a thin security margin and a broken one.
+Thus, while being a very important part of cryptanalysis, finding key recovery strategies remains a highly manual, and thus error prone, task.
+As discussed in the last chapter, our subspace trail algorithm may be used in an automatisation approach for exactly this problem -- albeit working out the exact techniques for such an automated key recovery remains to be done.
+
+Apart from these possibilities for automated tools, a different application are cryptanalysis techniques based on \MILPp/, briefly mentioned for bounding the number of active S-boxes.
+\MILPp/, however, have by now a broad spectrum of use cases, \eg/ for finding differential or linear trails, for finding division properties or similar.
+All these applications have the same basic process that needs the cipher under scrutiny and the analysis technique to be modeled as an instance of the specific programming style, \ie/ as a \MILP/.
+The needed building blocks for these models are known for every typical part used in ciphers, still the cryptanalyst has to assemble the models manually.
+Again this is a tedious and error prone task which could easily be automated.
+The development of such a \MILP/ compiler (or similarly a SAT compiler for constrained programming models) quite likely requires techniques from programming languages and compiler theory.
+It seems to be an interesting problem to work on.

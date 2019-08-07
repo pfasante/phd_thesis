@@ -1,0 +1,806 @@
+\chapter{Towards Automated Key Recovery Attacks}\label{ch:key_rec}
+\openepigraph{Algorithms are the computational content of proofs}{Robert Harper}
+
+\newthought{Synopsis}\hspace{1.5em}
+We discuss an application of the \textsc{Compute Trail} algorithm.
+This is based on unpublished work together with Patrick Derbez, Phil Hebborn, Virginie Lallemand, and Gregor Leander; all authors contributed equally.
+
+The main goal is to automate the key recovery part of a cryptanalytic attack.
+That is, given a (differential) distinguisher over some rounds for a block cipher, the developed method should turn this into a key recovery attack.
+
+\section{Key Recovery Techniques}
+Let us first recall the general approach of turning a distinguisher into a key recovery and the common ways of doing so.
+In the following, we only discuss the appending of rounds to a distinguisher; note that prepending rounds works basically in the same way, see also our initial discussion in \cref{sec:dist-to-keyrec}, but we leave it out here for simplicity.
+
+\newthoughtpar{Counting Keys}
+\citeauthor{C:BihSha90} proposed the \emph{counting} technique for key recoveries in their seminal paper on differential cryptanalysis, see~\cite[End of Section~3]{C:BihSha90}.
+Given a differential distinguisher on $r$ rounds of our cipher under scrutiny, the counting technique appends $s$ rounds on the ciphertext side.
+Assuming the distinguisher requires the input difference $\alpha$, output difference $\beta$ and has advantage $p$, an attacker asks for $c \cdot p^{-1}$ encryptions of message pairs $m_i$ and $m_i^\prime = m_i + \alpha$.
+Denote these encryptions after $r+s$ rounds by $c_i$ and $c_i^\prime$.
+Running the below \cref{alg:counting_key_rec}, the adversary learns the most probable key $k = \textsc{Counting Key Recovery}(F, \propDiff{\alpha}{}{}{\beta}, K, S)$, \ie/ the candidate in $S$ which most probable was used by the encryption oracle.
+\begin{algorithm}
+    \caption{Basic Counting Key Recovery}\label{alg:counting_key_rec}
+\begin{algorithmic}[1]
+    \Require{
+        \Statex{}
+        \begin{itemize}
+            \item[] the round function $F : \F_2^n \to \F_2^n$,
+            \item[] a distinguisher $\propDiff{\alpha}{F^r_k}{}{\beta}$,
+            \item[] a set $K$ of involved key bits for the last $s$ rounds,
+            \item[] a set of plaintext/ciphertext pairs $S = \set{(m_i, m_i^\prime), (c_i, c_i^\prime)}$.
+        \end{itemize}
+            }
+    \Ensure{A key candidate $k \in K$}
+    \Statex{}
+    \Function{Counting Key Recovery}{$F$, $\propDiff{\alpha}{F^r_k}{}{\beta}$, $K$, $S$}
+        \Let{$\forall k^\prime \in K : \mathrm{cnt}_{k^\prime}$}{$0$}
+        \Comment{Set up a key counter for each candidate key.}
+        \ForAll{$k^\prime \in K$}
+            \ForAll{$(m_i, m_i^\prime), (c_i, c_i^\prime) \in S$}
+                \Let{$\beta^\prime$}{$F^{-s}(c_i,k^\prime) + F^{-s}(c_i^\prime, k^\prime)$}\label{line:cnt_key_rec:filter}
+                \If{$\beta = \beta^\prime$}
+                    \Let{$\mathrm{cnt}_{k^\prime}$}{$\mathrm{cnt}_{k^\prime}+1$}
+                    \Comment{Increase corresponding key counter.}
+                \EndIf{}
+            \EndFor{}
+        \EndFor{}
+    \State{}\Return{key candidate $k$ such that $\forall k_\prime \in K : \mathrm{cnt}_k \geqslant \mathrm{cnt}_{k^\prime}$}
+    \EndFunction{}
+\end{algorithmic}
+\end{algorithm}
+The fundamental idea for this approach is that for a correct key guess the number of right pairs, \ie/ the number of plaintext/ciphertext pairs following the distinguisher, is proportional to the probability $p$ of the distinguisher.
+Note however that wrong pairs also exists for correct key guesses, as we are exploiting non-deterministic distinguishers.
+
+Example key recovery attacks following this strategy are \citeonly{FSE:ALLW14,INDOCRYPT:LalRas17}.
+Several extensions can improve this basic counting approach.
+The main idea for these extensions is to filter out wrong plaintext/ciphertext pairs suggesting wrong key candidates.
+Before reviewing those, we first discuss an alternative approach, due to \citeauthor{FSE:AlbCid09}~\citeonly{FSE:AlbCid09}, applied in~\citeonly{INSCRYPT:ACDFP10,ACISP:WSMP11} and later generalised by \citeauthor{SAC:Dinur14}~\citeonly{SAC:Dinur14}.
+
+Note that the efficiency of the counting key recovery, \ie/ how many rounds~$s$ we can additionally cover, crucially relies on the fact that the applied filters are strong enough, \ie/ not suggest to many wrong keys.
+For counting based key recoveries, these filters are typically linear conditions on the plain- or ciphertext, as we see below.
+While such linear conditions have the advantage that we can handle these well in terms of precise mathematical models and understand their behaviour well, their main disadvantage is that the resulting key recovery may be weaker than with non-linear filters.
+On the other side, the main advantage of the enumeration technique is exactly that it handles non-linear filters.
+
+\newthoughtpar{Enumerating Keys}
+
+The basic idea in~\cite{FSE:AlbCid09} for the enumeration framework was to combine statistical attacks with algebraic based techniques, \ie/ solving non-linear systems of equations with tools like Gr\"{o}bner bases.
+\textcite{SAC:Dinur14} generalised this framework to allow for different techniques then algebraic ones.
+For this, the cipher is split into two parts: the one covered by the distinguisher and a second part, \enquote{sub-cipher}, covered by the key recovery.
+The attack then enumerates, hence the name, all possible keys for this sub-cipher, until an event occurs that determines the correctness of the current key candidate.
+The initial proposal by \citeauthor{FSE:AlbCid09} used the already mentioned algebraic techniques to solve this, \citeauthor{SAC:Dinur14} applies a guess-and-determine technique and the attack on \zorro/ by \textcite{EC:BDDLKT15} can also be viewed in this framework.
+
+However, \textcite[4]{SAC:Dinur14} states that the enumeration technique often becomes too expensive when covering too many rounds~$s$.
+Let us thus look at a natural improvement to the counting technique.
+
+\newthoughtpar{Early Abort}
+
+\textcite{RSA:LKKD08} proposed the \emph{early abort} technique which is based on the simple idea to find conditions which can be checked during partial en- or decryption of plaintext/ciphertext pairs, based on a subset of the guessed key-bits.
+These conditions are then used to discard pairs that cannot follow our distinguisher as early as possible, thus reducing the number of used wrong pairs.
+Typical conditions determine bit-values of intermediate differences or similar -- thus, such conditions are \emph{linear}.
+
+Besides the reduction of wrong pairs, using this early checks also comes with the advantage of splitting the key material into smaller chunks that need to be guessed.
+A natural assumption is that this splitting allows for a (possible great) reduction in runtime.
+
+In all what follows, we concentrate on key recovery attacks which are based on a differential cryptanalysis distinguisher and only use a basic counting technique with linear filtering.
+For other types of distinguishers and advanced key recovery strategies, other techniques may be needed.
+Eventually, our goal is to provide a solution for \crefName{prob:key_rec}.
+
+\section{Key Recovery by Example}
+
+As stated in the introduction, our goal is to produce an algorithm that, given a differential distinguisher and a fixed number of rounds, returns the corresponding best key recovery step and its complexities.
+
+This section introduces our aim and the necessary notations by illustrating them on a toy example.
+We consider a cipher with a four branch Feistel Network structure, see \cref{fig:key-rec:ex}, and look for a key recovery that covers the first two rounds that separate the plaintext from the start of a fixed differential.
+Thus, the state of the cipher consists of four words of $n$-bit each, round keys are $k_i = (k_{i,1}, k_{i,2})$ with $k_{i,j} \in \F_2^n$ and the round function uses the S-box $S : \F_2^n \to \F_2^n$ to compute
+\begin{equation*}
+    F_{k_{i,1}, k_{i,2}} : x_1, x_2, x_3, x_4 \mapsto x_4, x_1 + S(x_2 + k_{i,1}), x_2, x_3 + S(x_4 + k_{i,2})\;.
+\end{equation*}
+To be more specific about the round function, we instantiate it with the $4$-bit \present/ S-box, see~\cref{tab:present-sbox}
+\marginpar{%
+    \centering
+    \footnotesize
+    \captionof{table}{The $4$-bit S-box used in \present/.}\label{tab:present-sbox}
+    \begin{tabular}{cc}
+        \toprule
+                 $x$  &       $S(x)$ \\
+        \midrule
+         $\mathtt{0}$ & $\mathtt{c}$ \\
+         $\mathtt{1}$ & $\mathtt{5}$ \\
+         $\mathtt{2}$ & $\mathtt{6}$ \\
+         $\mathtt{3}$ & $\mathtt{b}$ \\
+         $\mathtt{4}$ & $\mathtt{9}$ \\
+         $\mathtt{5}$ & $\mathtt{0}$ \\
+         $\mathtt{6}$ & $\mathtt{a}$ \\
+         $\mathtt{7}$ & $\mathtt{d}$ \\
+         $\mathtt{8}$ & $\mathtt{3}$ \\
+         $\mathtt{9}$ & $\mathtt{e}$ \\
+         $\mathtt{a}$ & $\mathtt{f}$ \\
+         $\mathtt{b}$ & $\mathtt{8}$ \\
+         $\mathtt{c}$ & $\mathtt{4}$ \\
+         $\mathtt{d}$ & $\mathtt{7}$ \\
+         $\mathtt{e}$ & $\mathtt{1}$ \\
+         $\mathtt{f}$ & $\mathtt{2}$ \\
+        \bottomrule
+    \end{tabular}
+}
+In our example, we suppose that the differential only has one active word (second word from left, in red in \cref{fig:key-rec:ex}).
+In particular, our distinguisher ends in, and our starting subspace is thus,
+\begin{equation*}
+    U_0 = \set{0} \times \F_2^4 \times \set{0} \times \set{0}\;.
+\end{equation*}
+
+\begin{figure}[t]
+    \begin{sidecaption}[Example Key Recovery]{%
+            Example of a 2-round key recovery associated to differential distinguisher.
+            $U_0$ is the output difference of the distinguisher, the start of our key recovery.
+            The key recovery captures two further rounds of encryption.
+            The red state blocks mark active words in the distinguisher, the hatched blocks words on which we have conditions to check during the partial decryption.
+    }[fig:key-rec:ex]
+    \centering
+    \begin{tikzpicture}
+        \node (state00i) [draw,circle,thick,fill=white] {$c_0$};
+        \begin{scope}[on background layer]
+            \node (state00) [draw,rectangle,fit={(state00i)},thick,rounded corners,minimum width=1cm,minimum height=1cm,pattern=north west lines,pattern color=black] {};
+        \end{scope}
+        \node (state01) [right=5em of state00,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1cm,fill=alertred] {};
+        \node (state02) [right=5em of state01,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1cm] {};
+        \node (state03) [right=5em of state02,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1cm] {};
+
+        \node (input0) [above=1em of state00] {$x_1$};
+        \node (input1) [above=1em of state01] {$x_2$};
+        \node (input2) [above=1em of state02] {$x_3$};
+        \node (input3) [above=1em of state03] {$x_4$};
+
+        \node (state10i) [below=7em of state00,draw,circle,thick,fill=white] {$c_1$};
+        \begin{scope}[on background layer]
+            \node (state10) [draw,rectangle,fit={(state10i)},thick,rounded corners,minimum width=1cm,minimum height=1cm,pattern=north west lines,pattern color=black] {};
+        \end{scope}
+        \node (state11) [right=5em of state10,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1cm,fill=alertred] {};
+        \node (state12) [right=5em of state11,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1cm,fill=alertred] {};
+        \node (state13) [right=5em of state12,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1cm] {};
+
+        \draw[thick] (state00.south) -- +(0,-3em) -- ($(state11.north)+(0,1em)$) -- (state11.north);
+        \draw[thick] (state01.south) -- +(0,-3em) -- ($(state12.north)+(0,1em)$) -- (state12.north);
+        \draw[thick] (state02.south) -- +(0,-3em) -- ($(state13.north)+(0,1em)$) -- (state13.north);
+        \draw[thick] (state03.south) -- +(0,-3em) -- ($(state10.north)+(0,1em)$) -- (state10.north);
+
+        \node (XOR00) [below=1em of state00,XOR,scale=1.2] {};
+        \node (XOR02) [below=1em of state02,XOR,scale=1.2] {};
+
+        \node (S00) [right=1em of XOR00,draw,rectangle,thick,rounded corners,minimum width=0.75cm,minimum height=0.75cm] {$S$};
+        \node (S02) [right=1em of XOR02,draw,rectangle,thick,rounded corners,minimum width=0.75cm,minimum height=0.75cm] {$S$};
+
+        \node (XOR01) [right=1em of S00,XOR,scale=1.2] {};
+        \node (XOR03) [right=1em of S02,XOR,scale=1.2] {};
+
+        \node (k1) [above=1em of XOR01] {$k_{0,1}$};
+        \node (k0) [above=1em of XOR03] {$k_{0,2}$};
+
+        \draw[thick,-latex] (k1) edge (XOR01);
+        \draw[thick,-latex] (XOR01) edge (S00);
+        \draw[thick,-latex] (S00) edge (XOR00);
+        \draw[thick,-latex] (state01) |- (XOR01);
+
+        \draw[thick,-latex] (k0) edge (XOR03);
+        \draw[thick,-latex] (XOR03) edge (S02);
+        \draw[thick,-latex] (S02) edge (XOR02);
+        \draw[thick,-latex] (state03) |- (XOR03);
+
+
+        \node (state20i) [below=7em of state10,draw,circle,thick,fill=white] {$c_2$};
+        \begin{scope}[on background layer]
+            \node (state20) [draw,rectangle,fit={(state20i)},thick,rounded corners,minimum width=1cm,minimum height=1cm,pattern=north west lines,pattern color=black] {};
+        \end{scope}
+        \node (state21) [right=5em of state20,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1cm,fill=alertred] {};
+        \node (state22) [right=5em of state21,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1cm,fill=alertred] {};
+        \node (state23) [right=5em of state22,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1cm,fill=alertred] {};
+
+        \draw[thick] (state10.south) -- +(0,-3em) -- ($(state21.north)+(0,1em)$) -- (state21.north);
+        \draw[thick] (state11.south) -- +(0,-3em) -- ($(state22.north)+(0,1em)$) -- (state22.north);
+        \draw[thick] (state12.south) -- +(0,-3em) -- ($(state23.north)+(0,1em)$) -- (state23.north);
+        \draw[thick] (state13.south) -- +(0,-3em) -- ($(state20.north)+(0,1em)$) -- (state20.north);
+
+        \node (XOR10) [below=1em of state10,XOR,scale=1.2] {};
+        \node (XOR12) [below=1em of state12,XOR,scale=1.2] {};
+
+        \node (S10) [right=1em of XOR10,draw,rectangle,thick,rounded corners,minimum width=0.75cm,minimum height=0.75cm] {$S$};
+        \node (S12) [right=1em of XOR12,draw,rectangle,thick,rounded corners,minimum width=0.75cm,minimum height=0.75cm] {$S$};
+
+        \node (XOR11) [right=1em of S10,XOR,scale=1.2] {};
+        \node (XOR13) [right=1em of S12,XOR,scale=1.2] {};
+
+        \node (k3) [above=1em of XOR11] {$k_{1,1}$};
+        \node (k2) [above=1em of XOR13] {$k_{1,2}$};
+
+        \draw[thick,-latex] (k3) edge (XOR11);
+        \draw[thick,-latex] (XOR11) edge (S10);
+        \draw[thick,-latex] (S10) edge (XOR10);
+        \draw[thick,-latex] (state11) |- (XOR11);
+
+        \draw[thick,-latex] (k2) edge (XOR13);
+        \draw[thick,-latex] (XOR13) edge (S12);
+        \draw[thick,-latex] (S12) edge (XOR12);
+        \draw[thick,-latex] (state13) |- (XOR13);
+
+        \node (u0) [right=2em of state03] {$U_0$};
+        \node (u1) [right=2em of state13] {$U_1$};
+        \node (u2) [right=2em of state23] {$U_2$};
+    \end{tikzpicture}
+    \end{sidecaption}
+\end{figure}
+% nb: this 4 branch feistel structure looks like the one used in Clefia
+
+\newthoughtpar{Step 1: Forward Propagation}
+
+The first step an adversary can do, is to append rounds to the distinguisher.
+For this, we have to trace how the output differences of the distinguisher evolves through these additional rounds.
+In our example two cases occur: \begin{inparaenum}
+\item the active word is shifted to a new position, then this new position is active in the next round, or
+\item the active word is fed into an S-box.
+\end{inparaenum}
+We could either not consider any details of the S-box here, then we just assume an active S-box translates to an active output word, or compute the actual influence of the S-box.
+Using this two propagation criteria, we can propagate the initial active word through the two rounds to three active words in the actual output of the cipher.
+We denote these possible intermediate differences $U_0$, $U_1$ and $U_2$.
+
+For our example, the subspaces are
+\begin{align*}
+    U_0 &= \set{0} \times \F_2^4 \times \set{0} \times \set{0}\;\text{(as before)},\\
+    U_1 &= \set{0} \times \F_2^4 \times \;\F_2^4\; \times \set{0}\;\text{and}\\
+    U_2 &= \set{0} \times \F_2^4 \times \;\F_2^4\; \times \;\F_2^4\;.
+\end{align*}
+
+As we capture all possible difference-transitions with this propagation, we know for sure that a right ciphertext pair has to fulfill these differences.
+A first observation we can make, is that every right pair's difference has to be passive in the left most word.
+This gives us a first condition, $c_2$ in \cref{fig:key-rec:ex}, we can use for filtering wrong pairs.
+Next we look at how to get further such conditions.
+
+\newthoughtpar{Step 2: Backward Propagation and Determination of Conditions}
+
+As we now know with which ciphertext pairs we have to work, we can simply reverse the approach and propagate the possible differences backwards.
+
+Starting with a difference $\alpha$ in $U_2$ we are thus interested in all possible differences that $\alpha$ could originate from.
+Note that, in order to introduce some structure, we are actually working with subspaces spanned by the possible intermediate differences.
+While computing the span of the differences introduce impossible differences, \ie/ differences that can not occur for a right pair, we use the following conditions, to filter out such impossible differentials and corresponding wrong pairs.
+
+Reversing the approach gives us now subspaces $V_1$ and $V_0$, corresponding to $U_1$ and $U_0$, such that we have the following properties
+\begin{inparaenum}
+    \item propagating a difference in $U_i$ forwards, gives a difference in $U_{i+1}$,
+    \item propagating a difference in $U_i$ backwards, gives a difference in $V_{i-1}$, and
+    \item $U_i$ is contained in $V_i$.
+\end{inparaenum}
+The goal of this backward propagation is, to determine conditions with which we can partially check and discard wrong pairs early where possible.
+Thus, during the key recovery phase we will partially decrypt a ciphertext pair and check if the differences follow the possible intermediate ones, \ie/ lay in the $U_i$'s.
+If they do, we continue with partial decryption.
+If they do not lay in $U_i$, they will instead be in $V_i$.
+Hence, the conditions we have to check during partial decryption is, if we are in $V_i$ but not in $U_i$ and if so, discard the pair.
+From this information we then deduce the conditions $c_i$.
+
+In our case, we get
+\begin{align*}
+    V_0 &= \F_2^4 \times \F_2^4 \times \set{0} \times \set{0}\;\text{and}\\
+    V_1 &= \F_2^4 \times \F_2^4 \times \;\F_2^4\; \times \set{0}\;,
+\end{align*}
+the corresponding conditions are
+\begin{equation*}
+    c_0 = c_1 = c_2 = \F_2^4 \times \set{0} \times \set{0} \times \set{0}\;.
+\end{equation*}
+
+We now have a basic key recovery strategy, consisting of a distinguisher (predefined), possible right intermediate differences ($U_i$) and possible wrong intermediate differences ($c_i$ deduced from $U_i$ and $V_i$).
+The next step is to compute these information algorithmically.
+
+\section{Algorithms for Key Recovery}
+
+Following the above example, we discuss algorithmic ways to solve each of the needed tasks, \ie/ forward and backward propagation, condition determination, and building the key recovery strategy.
+
+\newthoughtpar{Forward and Backward Propagation}
+Propagating the difference subspaces can be done with the \textsc{Compute Trail} \cref{st:alg:compute_trail}.
+The forward propagation is based on computing the trail starting in $U_0$ over iterations of the round function $F$:
+\begin{align*}
+    \textsc{Compute Trail}(F, U_0) &= \propDiff{U_0}{F}{}{\propDiff{\cdots}{F}{}{U_s}}\;.
+    \intertext{For the backward propagation and the computation of the $V_i$ subspaces, we simply use the same approach with the inverse round function $F^{-1}$, but stop the propagation after one iteration:}
+    \textsc{Compute Trail}(F^{-1}, U_i) &= \propDiff{U_i}{F^{-1}}{}{V_{i-1}} \quad \forall 1 \leqslant i \leqslant s\;.
+\end{align*}
+We only compute one propagation here, because we check the intermediate differences in each round.
+
+\newthoughtpar{Switching to affine subspace}
+
+Similar to the case of subspace trails, we can actually get some more information on the involved subspace, when we turn from linear subspaces to affine subspaces.
+While the propagation of affine subspaces is not much helpful in the case of proving resistance against subspace trails,\footnote{%
+    Recall that the problem there is to find a suitable reduction in starting points.
+} there are no such problems for this application.
+A modified \textsc{Compute Trail} algorithm which handles affine subspaces is the following.
+\begin{algorithm}
+    \caption{Compute truncated differentials}\label{alg:affine_propagation}
+\begin{algorithmic}[1]
+    \Require{A nonlinear function $F : \F_2^n \to \F_2^n$, an affine subspace $\coset{U}{a}$.}
+    \Ensure{A truncated differential $\propDiff{\coset{U}{a}}{F}{}{\propDiff{\cdots}{F}{}{\coset{V}{b}}}$.}
+    \Statex{}
+    \Function{Compute Affine Trail}{$F$, $\coset{U}{a}$}
+    \If{$\dim(U) = n$}
+        \State{}\Return{$\coset{U}{a}$}
+    \EndIf{}
+    \Let{$V$}{$\emptyset$}
+    \Let{$b$}{$\derive{a}{F}(0)$}
+    \For{$u_i \in \Basis{U} \cup \set{0}$}\label{line:forall_affine_basis}
+        \For{enough $x \in_R \F_2^n$}
+            \Let{$V$}{$V \cup \derive{u_i + a}{F}(x)+b$}
+        \EndFor{}
+    \EndFor{}
+    \Let{$V$}{$\Span{V}$}
+    \State{}\Return{$\propDiff{\coset{U}{a}}{F}{}{\textsc{Compute Affine Trail}(F, \coset{V}{b})}$}
+    \EndFunction{}
+\end{algorithmic}
+\end{algorithm}
+
+Compared to \cref{st:alg:compute_trail}, we now have to also propagate the displacement vector $a$ through the round function and consider the zero vector in \cref{line:forall_affine_basis} of \cref{alg:affine_propagation}.
+Apart from this minor changes, the runtime analysis stays the same.
+
+\newthoughtpar{Determining Conditions}
+Next, we have to determine the conditions, the ciphertext pairs have to follow in order to be valid for the exploited distinguisher, based on the $U_i$'s and $V_i$'s computed in the previous step.
+
+The conditions are of the following kind.
+With probability one, the difference moves from $U_{i+1}$ to $V_i$, while we actually want the difference to be in $U_{i} \subseteq V_{i}$.
+%This deterministic propagation is due to the following lemma.
+%\begin{lemma}\label{lem:ui-subspace-of-vi}
+%    Given $U_i$, $U_{i+1}$ and $V_i$ with $\propDiff{U_i}{F}{}{U_{i+1}}$ and $\propDiff{U_{i+1}}{F^{-1}}{}{V_i}$.
+%    Then
+%    \begin{equation*}
+%        U_i \subseteq V_i.
+%    \end{equation*}
+%\end{lemma}
+%\begin{proof}
+%    $U_{i+1}$ is defined as:
+%    \begin{equation*}
+%        U_{i+1} = \Span{F(x) \given x \in U_{i}},
+%    \end{equation*}
+%    and $V_{i}$ as
+%    \begin{equation*}
+%        V_{i} = \Span{F^{-1}(y) \given y \in U_{i+1}}.
+%    \end{equation*}
+%    From the definition of a linear span, we have that $\set{F(x), x \in U_{i}} \subseteq U_{i+1}$ and consequently $\set{F^{-1}(z), z \in \set{F^{-1}(x), x \in U_{i+1}}} \subseteq V_{i+1}$.
+%
+%    It follows that $ U_{i+1} = \Span{x \in U_{i+1}} \subseteq V_{i+1}$ which proves the lemma.
+%\end{proof}
+
+We thus want to identify conditions $\alpha$ such that
+\begin{equation*}
+    x \in U_i \Leftrightarrow \iprod{\alpha}{x} = 0 \quad \forall \alpha \in {U_i}^\perp\;,
+\end{equation*}
+but, as from $U_i \subseteq V_i$ it follows that ${V_i}^\perp \subseteq {U_i}^\perp$, see \cref{st:lem:subset_complements}, and we already know that $x$ is going to be in $V_i$, parts of this condition are already fulfilled.
+More precisely, write
+\begin{equation*}
+    {U_i}^\perp = {V_i}^\perp \oplus W.
+\end{equation*}
+Then $\alpha \in {U_i}^\perp$ can be written as $\alpha = \beta + \gamma$ with $\beta \in {V_i}^\perp$ and $\gamma \in W$.
+Further
+\begin{equation*}
+    \alpha \in {U_i}^\perp
+    \quad \Leftrightarrow \quad
+    \iprod{\alpha}{x} = 0 \quad \forall x \in U
+    \quad \Leftrightarrow \quad
+    \iprod{\beta}{x} + \iprod{\gamma}{x} = 0,
+\end{equation*}
+with $\beta \in {V_i}^\perp$, and $\gamma \in W$.
+From $x \in V_i$ we can now deduce $\iprod{\beta}{x} = 0$ and thus the only condition that is left to check, is
+\begin{equation*}
+    \iprod{\gamma}{x} = 0.
+\end{equation*}
+
+Returning to our example, the resulting conditions $C_i$ are computed as this direct sum ${U_i}^\perp = {V_i}^\perp \oplus C_i$:
+\begin{equation*}
+    {U_1}^\perp = {V_1}^\perp \oplus C_1, \qquad {U_0}^\perp = {V_0}^\perp \oplus C_0.
+\end{equation*}
+
+\newthoughtpar{Switching to affine conditions}
+
+When working with affine subspaces $\coset{U_{i+1}}{a_{i+1}}$, the resulting backward propagated subspaces are $\coset{V_i}{b_i}$.
+In other words, for every input difference in $\coset{U_{i+1}}{a_{i+1}}$ we then know that it will be propagated through the round to an $x \in \coset{V_i}{b_i}$, where we want to check, if $x \in \coset{U_i}{a_i}$.
+Note that first, as $\coset{U_i}{a_i}$ is contained in $\coset{V_i}{b_i}$, we can change the translation vector $b_i$ to be $a_i$; and then second $x + a_i \in V$.
+The conditions $\alpha$ are then of the form
+\begin{equation*}
+    x \in \coset{U_i}{a_i} \Leftrightarrow \iprod{\alpha}{(x + a_i)} = 0 \quad \forall \alpha \in U_i^\perp
+\end{equation*}
+Following a similar argument as above, we have
+\begin{equation*}
+    \alpha \in {U_i}^\perp
+    \quad \Leftrightarrow \quad
+    \iprod{\alpha}{(x + a_i)} = 0 \quad \forall x \in U
+    \quad \Leftrightarrow \quad
+    \iprod{\beta}{(x + a_i)} + \iprod{\gamma}{(x + a_i)} = 0,
+\end{equation*}
+with $U_i^\perp = V_i^\perp + C_i$, $\beta \in V_i^\perp$, $\gamma \in C_i$ as above, and thus
+\begin{equation*}
+    \iprod{\gamma}{(x + a_i)} = 0
+\end{equation*}
+is the actual condition we need to check.
+
+\subsection{Influencing Conditions}
+So far, we have computed the intermediate differences and conditions we want to check when validating a ciphertext pair.
+However, until now, we have not covered the role of the round keys in this process.
+In order to partially decrypt a ciphertext, we of course have to guess (parts of) the involved round keys.
+The efficiency of a key recovery strategy is greatly influenced by this key guessing part.
+We thus now study the influence of the round keys.
+
+\begin{definition}[Key bits influencing a condition]
+    Given a round function $F : \F_2^n \to \F_2^n$, subspaces $U$, $C$, and $K$ (input differences, conditions, and keys).
+    We say \emph{the linear combination $\delta_k \in K$ of key bits influences the condition $\alpha \in C$}, if and only if for all $x$ and $k$
+    \begin{equation*}
+        \exists \delta_x \in U\ :\ \iprod{\alpha}{\derive{(\delta_x, 0)}{\derive{(0, \delta_k)}{F}}(x, k)}\; \text{is not constant.}
+    \end{equation*}
+    Conversely, the linear combination \emph{does not influence} the condition, if and only if
+    \begin{equation*}
+        \forall \delta_x \in U\ :\ \iprod{\alpha}{\derive{(\delta_x, 0)}{\derive{(0, \delta_k)}{F}}(x, k)}\; \text{is constant.}
+    \end{equation*}
+
+    We define the set of independences, \ie/ the set of all linear combinations that do not influence a given condition $\alpha$, as
+    \begin{equation*}
+        I(\alpha) \coloneqq \set{\delta_k \given \text{$\delta_k$ that do not influence the condition $\alpha$}}
+    \end{equation*}
+\end{definition}
+
+\begin{lemma}\label{lem:Ialpha-subspace}
+    $I(\alpha)$ is a subspace.
+\end{lemma}
+\begin{proof}
+    To show that $I(\alpha)$ is a subset of $\F_2^n$ we need to prove that it contains $0$ and that it is closed under summation.
+    The first point is easy to prove since for all $\delta_x$ and $\alpha \in \F_2^n$:
+    \begin{equation*}
+        \iprod{\alpha}{\derive{(\delta_x, 0)}{\derive{(0, 0)}{F}}(x, k)} = 0.
+    \end{equation*}
+    %, which proves that $0$ is present in every $I(\alpha)$.
+    % cf cancellation in $ F(x+\delta_x, k+\delta_k)+F(x+\delta_x, k)+F(x, k+\delta_k)+F(x, k)$ when fixing \delta_k to 0
+
+    Second, assume that $\delta_{k_1}$ and $\delta_{k_2}$ are in $I(\alpha)$.
+    From the definition, it implies that
+    \begin{equation*}
+        \forall \delta_x \in U\ :\ \iprod{\alpha}{(F(x+\delta_x, k+\delta_{k_1})+F(x+\delta_x, k)+F(x, k+\delta_{k_1})+F(x, k))}
+    \end{equation*}
+    is constant and
+    \begin{equation*}
+        \forall \delta_x \in U\ :\ \iprod{\alpha}{(F(x+\delta_x, k+\delta_{k_2})+F(x+\delta_x, k)+F(x, k+\delta_{k_2})+F(x, k))}
+    \end{equation*}
+    is constant.
+
+    Since $K$ is a subspace and contains both $\delta_{k_1}$ and $\delta_{k_2}$, we can introduce $k^\prime \in K$ defined by $k^\prime = k +\delta_{k_1}$.
+    By simple manipulations of the two previous relations we obtain that
+    \begin{equation*}
+        \forall \delta_x \in U\ :\ \iprod{\alpha}{(F(x+\delta_x, k^\prime+\delta_{k_1}+\delta_{k_2})+F(x+\delta_x, k^\prime)+F(x, k^\prime+\delta_{k_1}+\delta_{k_2})+F(x, k^\prime))}
+    \end{equation*}
+    is constant, which concludes the proof.
+\end{proof}
+
+Now, for every condition, we need to find the key bits which influence it.
+The na\"ive way to compute this dependencies is the following \cref{alg:dep-check}.
+\begin{algorithm}
+    \caption{Na\"ive Dependencies Check}\label{alg:dep-check}
+\begin{algorithmic}[1]
+    \Require{\Statex{}
+        \begin{itemize}
+            \item[] A round function $F : \F_2^n \to \F_2^n$,
+            \item[] a subspace $U$ of input differences,
+            \item[] a subspace $C$ of conditions, and
+            \item[] a set $K$ of key differences.
+        \end{itemize}
+    }
+    \Ensure{The set of independences $I(\alpha)$ for any $\alpha \in C$.}
+    \Statex{}
+    \Function{Check Dependencies}{$F$, $U$, $C$, $K$}
+    \ForAll{$\alpha \in C$}
+        \ForAll{$\delta_k \in K$}
+            \For{enough $x \in_R \F_2^n$, $k \in_R \F_2^n$, and $\delta_x \in_R U$}
+                \Let{$\beta$}{$F(x, k) + F(x + \delta_x, k) + F(x, k + \delta_k) + F(x + \delta_x, k + \delta_k)$}
+                \If{$\iprod{\alpha}{\beta}$ is not constant for all $x$ and $k$}
+                    \State{}$\delta_k$ influences the condition $\alpha$
+                \EndIf{}
+            \EndFor{}
+        \EndFor{}
+    \EndFor{}
+    \State{}\Return{all $\delta_k$ which do or do not influence any condition}
+    \EndFunction{}
+\end{algorithmic}
+\end{algorithm}
+
+Next, when we want to check if condition $\alpha$ holds, we have to guess only keys {\emph{up to elements in $I(\alpha)$}}.
+This is because if two keys $k$ and $k^\prime$ differ by some elements in $I(\alpha)$ they either are both good or both bad, because the condition is independent of the difference.
+So we have to make key guesses actually in
+\begin{equation*}
+    \F_2^n / I(\alpha)
+\end{equation*}
+that is the quotient space.
+In practice, we have to pick some representative for this space and we can do this simply by extending a basis for $I(\alpha)$ to a basis of $\F_2^n$ and our key guesses are then linear combinations of the extended part of the basis.
+In other words, we pick some (arbitrary) space ${I(\alpha)}^c$ such that
+\begin{equation*}
+    \F_2^n = I(\alpha) \oplus {I(\alpha)}^c
+\end{equation*}
+and do key guesses in ${I(\alpha)}^c$.
+Note that it might not be possible to take the dual of $I(\alpha)$ as ${I(\alpha)}^c$ but if possible this is probably the nicest choice.
+
+Let us conclude with an example comparing linear and affine subpsace propagations.
+\begin{example}[Linear vs.\ affine subspaces]
+    We again use the generalised Feistel structure depicted in \cref{fig:key-rec:ex}, but with a different distinguisher end point $U_0$.
+    In the following, we give the bases of the respective subspaces.
+    \begin{description}
+        \item[Step~1] Using linear subspaces, we end up with the following extension over three rounds.\footnote{%
+                Stopping the extension after three rounds is somewhat arbitrary to not lengthen the example too much.
+            }
+            \begin{center}
+            \begin{tabular}{ccccc}
+                $U_0$ & $\rightrightarrows$ & $U_1$ & $\rightrightarrows$ & $U_2$ \\
+                $\begin{Bsmallmatrix}
+                    0 & \mathtt{8} & 0 & 0
+                \end{Bsmallmatrix}$
+                & $\rightrightarrows$ &
+                $\begin{Bsmallmatrix}
+                    0 & \mathtt{8} & \mathtt{0} & 0\\
+                    0 & \mathtt{4} & \mathtt{0} & 0\\
+                    0 & \mathtt{2} & \mathtt{0} & 0\\
+                    0 & \mathtt{1} & \mathtt{8} & 0\\
+                \end{Bsmallmatrix}$
+                & $\rightrightarrows$ &
+                $\begin{Bsmallmatrix}
+                    0 & \mathtt{8} & \mathtt{0} & \mathtt{0}\\
+                    0 & \mathtt{4} & \mathtt{0} & \mathtt{0}\\
+                    0 & \mathtt{2} & \mathtt{0} & \mathtt{0}\\
+                    0 & \mathtt{1} & \mathtt{0} & \mathtt{0}\\
+                    0 & \mathtt{0} & \mathtt{8} & \mathtt{0}\\
+                    0 & \mathtt{0} & \mathtt{4} & \mathtt{0}\\
+                    0 & \mathtt{0} & \mathtt{2} & \mathtt{0}\\
+                    0 & \mathtt{0} & \mathtt{1} & \mathtt{8}\\
+                \end{Bsmallmatrix}$
+            \end{tabular}
+            \end{center}
+            Comparing to affine subspaces, we save one dimension in each round.
+            \begin{center}
+            \begin{tabular}{ccccc}
+                $\coset{U_0}{a_0}$ & $\rightrightarrows$ & $\coset{U_1}{a_1}$ & $\rightrightarrows$ & $\coset{U_2}{a_2}$ \\
+                $\coset{\begin{Bsmallmatrix}
+                    0 & \mathtt{0} & 0 & 0
+                \end{Bsmallmatrix}}{\begin{psmallmatrix} 0 & \mathtt{8} & 0 & 0 \end{psmallmatrix}}$
+                & $\rightrightarrows$ &
+                $\coset{\begin{Bsmallmatrix}
+                    0 & \mathtt{8} & \mathtt{0} & 0 \\
+                    0 & \mathtt{4} & \mathtt{0} & 0 \\
+                    0 & \mathtt{2} & \mathtt{0} & 0 \\
+                \end{Bsmallmatrix}}{\begin{psmallmatrix} 0 & \mathtt{1} & \mathtt{8} & 0 \end{psmallmatrix}}$
+                & $\rightrightarrows$ &
+                $\coset{\begin{Bsmallmatrix}
+                    0 & \mathtt{8} & \mathtt{0} & \mathtt{0} \\
+                    0 & \mathtt{4} & \mathtt{0} & \mathtt{0} \\
+                    0 & \mathtt{2} & \mathtt{0} & \mathtt{0} \\
+                    0 & \mathtt{1} & \mathtt{0} & \mathtt{0} \\
+                    0 & \mathtt{0} & \mathtt{8} & \mathtt{0} \\
+                    0 & \mathtt{0} & \mathtt{4} & \mathtt{0} \\
+                    0 & \mathtt{0} & \mathtt{2} & \mathtt{0} \\
+                \end{Bsmallmatrix}}{\begin{psmallmatrix} 0 & \mathtt{0} & \mathtt{1} & \mathtt{8} \end{psmallmatrix}}$
+            \end{tabular}
+            \end{center}
+        \item[Step~2] Next we compute the backward propagated $V_i$, \resp/ $\coset{V_i}{b_i}$.
+            \begin{center}
+            \begin{tabular}{ccccccc}
+                $V_0$ & $\leftleftarrows$ & $U_1$ & & $V_1$ & $\leftleftarrows$ & $U_2$ \\
+                $\begin{Bsmallmatrix}
+                    \mathtt{8} & 0 & 0 & 0 \\
+                    \mathtt{4} & 0 & 0 & 0 \\
+                    \mathtt{2} & 0 & 0 & 0 \\
+                    \mathtt{1} & 0 & 0 & 0 \\
+                    0 & \mathtt{8} & 0 & 0
+                \end{Bsmallmatrix}$
+                & $\leftleftarrows$ &
+                $\begin{Bsmallmatrix}
+                    0 & \mathtt{8} & \mathtt{0} & 0\\
+                    0 & \mathtt{4} & \mathtt{0} & 0\\
+                    0 & \mathtt{2} & \mathtt{0} & 0\\
+                    0 & \mathtt{1} & \mathtt{8} & 0\\
+                \end{Bsmallmatrix}$
+                & &
+                $\begin{Bsmallmatrix}
+                    \mathtt{8} & 0 & 0 & 0 \\
+                    \mathtt{4} & 0 & 0 & 0 \\
+                    \mathtt{2} & 0 & 0 & 0 \\
+                    \mathtt{1} & 0 & 0 & 0 \\
+                    0 & \mathtt{8} & 0 & 0 \\
+                    0 & \mathtt{4} & 0 & 0 \\
+                    0 & \mathtt{2} & 0 & 0 \\
+                    0 & \mathtt{1} & \mathtt{8} & 0
+                \end{Bsmallmatrix}$
+                & $\leftleftarrows$ &
+                $\begin{Bsmallmatrix}
+                    0 & \mathtt{8} & \mathtt{0} & \mathtt{0}\\
+                    0 & \mathtt{4} & \mathtt{0} & \mathtt{0}\\
+                    0 & \mathtt{2} & \mathtt{0} & \mathtt{0}\\
+                    0 & \mathtt{1} & \mathtt{0} & \mathtt{0}\\
+                    0 & \mathtt{0} & \mathtt{8} & \mathtt{0}\\
+                    0 & \mathtt{0} & \mathtt{4} & \mathtt{0}\\
+                    0 & \mathtt{0} & \mathtt{2} & \mathtt{0}\\
+                    0 & \mathtt{0} & \mathtt{1} & \mathtt{8}\\
+                \end{Bsmallmatrix}$
+            \end{tabular}
+            \end{center}
+            Again, we save one dimension in the affine case.
+            \begin{center}
+            \begin{tabular}{ccc}
+                $\coset{V_0}{b_0}$ & $\leftleftarrows$ & $\coset{U_1}{a_1}$ \\
+                $\coset{\begin{Bsmallmatrix}
+                    \mathtt{8} & \mathtt{0} & 0 & 0 \\
+                    \mathtt{4} & \mathtt{0} & 0 & 0 \\
+                    \mathtt{2} & \mathtt{0} & 0 & 0 \\
+                    \mathtt{1} & \mathtt{0} & 0 & 0 \\
+                \end{Bsmallmatrix}}{\begin{psmallmatrix}\mathtt{0} & \mathtt{8} & 0 &  0 \end{psmallmatrix}}$
+                & $\leftleftarrows$ &
+                $\coset{\begin{Bsmallmatrix}
+                    0 & \mathtt{8} & \mathtt{0} & 0 \\
+                    0 & \mathtt{4} & \mathtt{0} & 0 \\
+                    0 & \mathtt{2} & \mathtt{0} & 0 \\
+                \end{Bsmallmatrix}}{\begin{psmallmatrix} 0 & \mathtt{1} & \mathtt{8} & 0 \end{psmallmatrix}}$ \\[5mm]
+                $\coset{V_1}{b_1}$ & $\leftleftarrows$ & $\coset{U_2}{a_2}$ \\
+                $\coset{\begin{Bsmallmatrix}
+                    \mathtt{8} & 0 & 0 & 0 \\
+                    \mathtt{4} & 0 & 0 & 0 \\
+                    \mathtt{2} & 0 & 0 & 0 \\
+                    \mathtt{1} & 0 & 0 & 0 \\
+                    0 & \mathtt{8} & 0 & 0 \\
+                    0 & \mathtt{4} & 0 & 0 \\
+                    0 & \mathtt{2} & 0 & 0 \\
+                \end{Bsmallmatrix}}{\begin{psmallmatrix} 0 & \mathtt{1} & \mathtt{8} & \mathtt{0} \end{psmallmatrix}}$
+                & $\leftleftarrows$ &
+                $\coset{\begin{Bsmallmatrix}
+                    0 & \mathtt{8} & \mathtt{0} & \mathtt{0} \\
+                    0 & \mathtt{4} & \mathtt{0} & \mathtt{0} \\
+                    0 & \mathtt{2} & \mathtt{0} & \mathtt{0} \\
+                    0 & \mathtt{1} & \mathtt{0} & \mathtt{0} \\
+                    0 & \mathtt{0} & \mathtt{8} & \mathtt{0} \\
+                    0 & \mathtt{0} & \mathtt{4} & \mathtt{0} \\
+                    0 & \mathtt{0} & \mathtt{2} & \mathtt{0} \\
+                \end{Bsmallmatrix}}{\begin{psmallmatrix} 0 & \mathtt{0} & \mathtt{1} & \mathtt{8} \end{psmallmatrix}}$
+            \end{tabular}
+            \end{center}
+        \item[Step~3] Computing the conditions gives the same $C_i$'s for the linear subspace case as for the first example:
+            \begin{equation*}
+                C_0 = C_1 = \begin{Bsmallmatrix}
+                    \mathtt{8} & \mathtt{0} & 0 & 0 \\
+                    \mathtt{4} & \mathtt{0} & 0 & 0 \\
+                    \mathtt{2} & \mathtt{0} & 0 & 0 \\
+                    \mathtt{1} & \mathtt{0} & 0 & 0 \\
+                \end{Bsmallmatrix}\;.
+            \end{equation*}
+            Recall that for affine subspaces, the conditions are of the form $(C_i, a_i)$ as we have to check $\iprod{\gamma}{(x+a_i)} = 0$ for every $\gamma \in C_i$.
+            Here, $a_i$ is the translation vector of the corresponding affine subspace $\coset{U_i}{a_i}$.
+            The conditions are thus
+            \begin{equation*}
+                (C_0, a_0) = \parens{\begin{Bsmallmatrix}
+                    \mathtt{8} & \mathtt{0} & 0 & 0 \\
+                    \mathtt{4} & \mathtt{0} & 0 & 0 \\
+                    \mathtt{2} & \mathtt{0} & 0 & 0 \\
+                    \mathtt{1} & \mathtt{0} & 0 & 0 \\
+                \end{Bsmallmatrix},
+                \begin{psmallmatrix} 0 & \mathtt{8} & 0 & 0 \end{psmallmatrix}}
+                \quad \text{and} \quad
+                (C_1, a_1) = \parens{\begin{Bsmallmatrix}
+                    \mathtt{8} & \mathtt{0} & 0 & 0 \\
+                    \mathtt{4} & \mathtt{0} & 0 & 0 \\
+                    \mathtt{2} & \mathtt{0} & 0 & 0 \\
+                    \mathtt{1} & \mathtt{0} & 0 & 0 \\
+                \end{Bsmallmatrix},
+                \begin{psmallmatrix} 0 & \mathtt{1} & \mathtt{8} & 0 \end{psmallmatrix}}\;.
+            \end{equation*}
+        \item[Step~4] For the sake of brevity, we only compute the independences for the first round here, \ie/ we concentrate on $F_{k_{0,1},k_{0,2}}$ and thus independences of $k_0 = (k_{0,1}, k_{0,2}) \in \F_2^{4+4}$.
+            For each of the 15 elements $\alpha_i = \mathtt{i} \in C_0$ (we ignore the trivial condition $\alpha_0 = 0$), we compute $I(\alpha_i)$ as given in \cref{tab:ex-ialpha}.
+            Two obvious observations are \begin{inparaenum}
+            \item every condition $\alpha_i$ is independent of all bits in $k_{0,2}$, which is directly clear from \cref{fig:key-rec:ex}, as the second round key $k_{0,2}$ only influences the right most nibble $x_4$, and
+            \item the conditions for the affine subspace case are the same, as $\iprod{\alpha_i}{\begin{psmallmatrix} 0 & \mathtt{8} & 0 & 0 \end{psmallmatrix}} = 0$ for all $\alpha_i$ and thus the affine part does not influence the conditions in this case.
+            \end{inparaenum}
+
+            A more interesting observation is that all conditions are independent of the leftmost bit of $k_{0,1}$, \ie/ independent of $\iprod{\mathtt{8}}{k_{0,1}}$.
+            During our key recovery attack, we thus do not have to guess this key bit.
+    \end{description}
+\end{example}
+\marginpar{%
+    \centering
+    \vspace*{-15\baselineskip}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.4}
+    \captionof{table}{Exemplary $I(\alpha)$}\label{tab:ex-ialpha}
+    \begin{tabular}{cc}
+        \toprule
+        $\alpha_i$ & $I(\alpha_i)$ \\
+        \midrule
+        $\alpha_{\mathtt{1000}}$ & $\Span{\begin{smallmatrix}\mathtt{8} \\ \mathtt{2}\end{smallmatrix}} \times \F_2^4$ \\
+        $\alpha_{\mathtt{2000}}$ & $\Span{\begin{smallmatrix}\mathtt{8}\end{smallmatrix}} \times \F_2^4$ \\
+        $\alpha_{\mathtt{3000}}$ & $\Span{\begin{smallmatrix}\mathtt{8} \\ \mathtt{4}\end{smallmatrix}} \times \F_2^4$ \\
+        $\alpha_{\mathtt{4000}}$ & $\Span{\begin{smallmatrix}\mathtt{8} \\ \mathtt{6}\end{smallmatrix}} \times \F_2^4$ \\
+        $\alpha_{\mathtt{5000}}$ & $\Span{\begin{smallmatrix}\mathtt{8}\end{smallmatrix}} \times \F_2^4$ \\
+        $\alpha_{\mathtt{6000}}$ & $\Span{\begin{smallmatrix}\mathtt{8} \\ \mathtt{5} \\ \mathtt{2}\end{smallmatrix}} \times \F_2^4$ \\
+        $\alpha_{\mathtt{7000}}$ & $\Span{\begin{smallmatrix}\mathtt{8} \\ \mathtt{2}\end{smallmatrix}} \times \F_2^4$ \\
+        $\alpha_{\mathtt{8000}}$ & $\Span{\begin{smallmatrix}\mathtt{8} \\ \mathtt{4} \\ \mathtt{1}\end{smallmatrix}} \times \F_2^4$ \\
+        $\alpha_{\mathtt{9000}}$ & $\Span{\begin{smallmatrix}\mathtt{8}\end{smallmatrix}} \times \F_2^4$ \\
+        $\alpha_{\mathtt{a000}}$ & $\Span{\begin{smallmatrix}\mathtt{8} \\ \mathtt{6}\end{smallmatrix}} \times \F_2^4$ \\
+        $\alpha_{\mathtt{b000}}$ & $\Span{\begin{smallmatrix}\mathtt{8} \\ \mathtt{4}\end{smallmatrix}} \times \F_2^4$ \\
+        $\alpha_{\mathtt{c000}}$ & $\Span{\begin{smallmatrix}\mathtt{8}\end{smallmatrix}} \times \F_2^4$ \\
+        $\alpha_{\mathtt{d000}}$ & $\Span{\begin{smallmatrix}\mathtt{8}\end{smallmatrix}} \times \F_2^4$ \\
+        $\alpha_{\mathtt{e000}}$ & $\Span{\begin{smallmatrix}\mathtt{8} \\ \mathtt{5} \\ \mathtt{3}\end{smallmatrix}} \times \F_2^4$ \\
+        $\alpha_{\mathtt{f000}}$ & $\Span{\begin{smallmatrix}\mathtt{8}\end{smallmatrix}} \times \F_2^4$ \\
+        \bottomrule
+    \end{tabular}
+}
+
+\section{Future Work}
+
+While the sketched approach looks promising to yield an usable algorithmic way to detect key recovery strategies, there are still many open problems to solve.
+The most import one is, how the up to here found information can be turned into the most effective key recovery.
+It might well be the case that some $I(\alpha)$ intersect (\eg/ for $\alpha_{\mathtt{6000}}$ and $\alpha_{\mathtt{e000}}$ in \cref{tab:ex-ialpha}); such synergies should be exploited.
+Further, some conditions might be independent of many more key bits, than others.
+This implies that for such conditions only very few key bits have to be guessed, thus these conditions should be checked early.
+Hence, developing a search strategy for this condition ordering is an important next problem.
+
+Apart from this very basic unsolved problem, others will arise from applying the above algorithms to practical block ciphers.
+The big block sizes of such instances render exhaustive checks, \eg/ over all possible round keys, impossible.
+For these applications we most probable have to revert to heuristics.
+For the dependency check of key combinations one such heuristic could be, to check only single key bit differences.
+
+Finally, any automated key recovery should be tested against known key recovery attacks on ciphers.
+Only this practical verification will in the end approve this whole approach.
+
+%\subsection{Turning the output of our algorithm into a key recovery attack}
+%
+%Assume we have a differential distinguisher $\alpha \to \beta$ for $r$ rounds of some cipher.
+%We use our algorithm to get a key recovery strategy that extends this distinguisher on the ciphertext side by $s$ rounds.
+%Let us discuss, how an $r+s$ key recovery attack on this cipher is mounted.
+%This is depicted in \cref{fig:key-rec:ext_ciphertext_side}.
+%
+%\begin{figure}[t]
+%    \centering
+%    \missingfigure{ciphertext side extension}
+%    \caption{%
+%        $s$ round extension of an $r$ round distinguisher on the ciphertext side.
+%    }\label{fig:key-rec:ext_ciphertext_side}
+%\end{figure}
+%
+%The attacks aim is, to recover all key bits that influence the distinguisher.
+%In particular these are all bits that the output difference $\beta$ depends on.
+%Thus, as usual, we start with requesting the $r+s$ round encryption of plaintext pairs $X_i = (x_i, x_i^\prime = x_i + \alpha)$.
+%Denote these encryptions $Y_i = (y_i, y_i^\prime)$.
+%
+%During the key guessing step, we (partially) decrypt these $Y_i$ pairs to eventually check, if they fulfill the distinguisher's output difference $\beta$.
+%In order to reduce the data complexity/making the distinguishing procedure more effective, we apply the early abort technique.
+%We basically want to know, for each ciphertext pair $Y_i$ and every possible key candidate $k^\prime$, if this $Y_i$ is filtered or not.
+%Using the information from our obtained attack strategy, this works as follows.
+%
+%\begin{enumerate}
+%    \item Filter out all pairs $Y_i$ whose difference is not in $U_s$.
+%    \item Follow the strategy found by the algorithm, that is an order of conditions to check, linked with key bits to guess, $(c_i, [k_{i,j}]_{j=1}^m)_{i=1}^\ell$.
+%    \item For every pair $Y_i$:
+%    \begin{enumerate}
+%        \item For every condition $c_i$:
+%        \begin{enumerate}
+%            \item Guess the corresponding key bits $[k_{i,j}]$.
+%            \item Partially decrypt $(y_i, y_i^\prime)$ up to the point where the condition has to be checked.
+%            \item Compute the corresponding difference $\delta_i$ and check if $\iprod{\delta_i}{c_i} = 0$ (that is, if the condition is fulfilled).
+%        \end{enumerate}
+%        \item For every key candidate, where the condition is \emph{not} fulfilled, the current pair $Y_i$ is filtered and ignored for verifying the distinguisher.
+%    \end{enumerate}
+%\end{enumerate}
+%
+%Eventually we should end up with something like \cref{tab:key_rec_result}.
+%In this case, for key candidate $k_2$ one pair $Y_i$, and for key candidate $k_{n-1}$ two pairs survive the filtering and fulfill the distinguisher $\alpha \to \beta$.
+%We thus assume that most probable $k_{n-1}$ or maybe $k_2$ is the correct key guess.
+%
+%\begin{table}
+%    \centering
+%    \caption{%
+%        Result of running the key recovery attack.
+%        Assume we have $n$ key candidates.
+%    }\label{tab:key_rec_result}
+%    \begin{tabular}{cc}
+%        \toprule
+%        Key Candidate & Number of pairs that fulfill the distinguisher \\
+%        \midrule
+%        $k_0$         & 0 \\
+%        $k_1$         & 0 \\
+%        $k_2$         & 1 \\
+%        $k_3$         & 0 \\
+%        \vdots        & \vdots \\
+%        $k_{n-2}$     & 0 \\
+%        $k_{n-1}$     & 2 \\
+%        \bottomrule
+%    \end{tabular}
+%\end{table}

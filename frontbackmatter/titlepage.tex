@@ -1,0 +1,121 @@
+%% recto: halftitlepage
+%\thispagestyle{empty}
+%
+%\calccentering{\unitlength}
+%\begin{adjustwidth*}{\unitlength}{-\unitlength}
+%\centering
+%\Huge
+%
+%\hphantom{.}
+%\vfill
+%Security Arguments and\\
+%Tool-based Design of\\
+%Block Ciphers\\[\baselineskip]
+%{\huge Friedrich Wiemer}
+%\vfill
+%\vfill
+%\hphantom{.}
+%
+%\end{adjustwidth*}
+
+% recto: titlepage
+\thispagestyle{empty}
+{
+    \calccentering{\unitlength}
+    \begin{adjustwidth*}{\unitlength}{-\unitlength}
+        \raggedleft{}
+        {\Huge\color{Burgundy}%
+        Security Arguments and\\
+        Tool-based Design of Block Ciphers}\\[\baselineskip]
+        {\LARGE%
+        Dissertation Thesis}\\[0.2\textheight]
+        {\huge%
+        Friedrich Wiemer}\par
+        \vfill
+        {\includegraphics{wortmarke}}
+        \vspace*{\baselineskip}
+    \end{adjustwidth*}
+}
+
+\clearpage{}
+
+% verso: blank
+\cleardoublepage{}
+
+% recto: titlepage
+\thispagestyle{empty}
+{
+    \calccentering{\unitlength}
+    \begin{adjustwidth*}{\unitlength}{-\unitlength}
+        \raggedleft{}
+        {\Huge\color{Burgundy}%
+        Security Arguments and\\
+        Tool-based Design of Block Ciphers}\\[\baselineskip]
+        {\LARGE%
+        Dissertation Thesis}\\[0.2\textheight]
+        {\huge%
+        Friedrich Wiemer}\\[\baselineskip]
+        {\LARGE%
+        \today}
+        \vfill
+        \vfill
+        {\large%
+        Submitted in partial fulfillment of the requirements\\
+        for the degree of Doktor der Naturwissenschaften\\[\baselineskip]% (Dr.\ rer.\ nat.)\\[\baselineskip]
+
+        to the\\[\baselineskip]
+
+        Faculty of Mathematics\\
+        at Ruhr-Universität Bochum\\[2\baselineskip]
+        %Vorgelegt zur Erlangung des\\
+        %Doktorgrades der Naturwissenschaften\\
+        %an der Fakultät der Mathematik\\
+        %der Ruhr-Universität Bochum\\[2\baselineskip]
+
+        %\begin{tabular}{ll}
+        %    1. Gutachter & Prof.\ Dr.\ Gregor Leander\\
+        %    2. Gutachter & Prof.\ Dr.\ Alexander May%
+        %\end{tabular}
+        %}\hspace*{-8pt}
+
+        %\vspace{2\baselineskip}
+        %Datum der Disputation: 13.\ Dezember 2019
+        \vfill
+        }
+        {\includegraphics{wortmarke}}
+        \vspace*{\baselineskip}
+    \end{adjustwidth*}
+}
+
+\clearpage{}
+
+% verso: copyright notes
+\thispagestyle{empty}
+\hphantom{.}
+\vfill
+\section*{colophon}
+
+This document was typeset using \LaTeX{} and the \texttt{memoir} documentclass, based on Aaron Turon's thesis \emph{Understanding and expressing scalable concurrency},\sidenote{\url{https://people.mpi-sws.org/~turon/turon-thesis.pdf}} which itself is a mixture of \texttt{classicthesis}\sidenote{\url{https://bitbucket.org/amiede/classicthesis/}} developed by Andr\'e Miede and \texttt{tufte-latex},\sidenote{\url{https://github.com/Tufte-LaTeX/tufte-latex}} which is based on Edward Tufte's \emph{Beautiful Evidence}.
+The bibliography was processed by Biblatex.\sidenote{\url{http://www.ctan.org/pkg/biblatex}}
+
+Matthew Carter's \textrm{Charter} acts as both the text and display typeface.
+Monospaced text uses Jim Lyles's \texttt{Bitstream Vera Mono} (\enquote{Bera Mono}).\\[2em]
+\textit{Security Arguments and Tool-based Design of Block Ciphers}\\
+\textcopyright{} \thedate{}, \theauthor{}
+\clearpage{}
+
+% recto: dedication or epigraph
+\thispagestyle{empty}
+\vphantom{.}
+\vfill
+{%
+    \flushright{}
+    \emph{If we knew what it was we were doing,\\
+          it would not be called research, would it?}\\
+    \hfill---Albert Einstein
+}
+\vfill
+\vfill
+
+% verso: blank
+\clearpage{}

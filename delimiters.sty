@@ -1,0 +1,59 @@
+% https://tex.stackexchange.com/questions/1742/automatic-left-and-right-commands/1744#1744
+\RequirePackage{amsmath}
+\RequirePackage{mathtools}
+
+% delim sizing options
+\let\delim@autol\left  \let\delim@autor\right \let\delim@autom\middle
+\let\delim@basel\relax \let\delim@baser\relax \let\delim@basem\relax
+\let\delim@bigl\bigl   \let\delim@bigr\bigr   \let\delim@bigm\big
+\let\delim@Bigl\Bigl   \let\delim@Bigr\Bigr   \let\delim@Bigm\Big
+\let\delim@biggl\biggl \let\delim@biggr\biggr \let\delim@biggm\bigg
+\let\delim@Biggl\Biggl \let\delim@Biggr\Biggr \let\delim@Biggm\Bigg
+
+% default definitions
+\newcommand\ldelim{\relax}
+\newcommand\rdelim{\relax}
+\newcommand\mdelim{\relax}
+
+% the actual command
+\newcommand\delim@command[4]{{%   #1 size #2 ldelim #3 rdelim #4 content
+    \def\ldelim{\csname delim@#1l\endcsname}%
+    \def\rdelim{\csname delim@#1r\endcsname}%
+    \def\mdelim{\csname delim@#1m\endcsname}%
+\ldelim#2#4\rdelim#3}}
+
+% a factory to define new delimiter commands
+\newcommand{\newdelimcommand}[3]{% #1 name #2 ldelim #3 rdelim
+    \expandafter\newcommand\csname delim@#1@st\endcsname[1]{% ##1 content
+    \delim@command{base}{#2}{#3}{##1}}%
+    \expandafter\newcommand\csname delim@#1@ns\endcsname[2][auto]{%
+    % ##1 size ##2 content
+    \delim@command{##1}{#2}{#3}{##2}}%
+    \expandafter\DeclareRobustCommand\csname#1\endcsname{%
+        \@ifstar{\csname delim@#1@st\endcsname}{\csname delim@#1@ns\endcsname}%
+    }%
+}
+
+% syntactically named delimiters
+\newdelimcommand{ceil}{\lceil}{\rceil}
+\newdelimcommand{floor}{\lfloor}{\rfloor}
+\newdelimcommand{angles}{\langle}{\rangle}
+\newdelimcommand{parens}{\lparen}{\rparen}
+\newdelimcommand{bracket}{[}{]}
+\newdelimcommand{braces}{\lbrace}{\rbrace}
+\newdelimcommand{verts}{\lvert}{\rvert}
+\newdelimcommand{Verts}{\lVert}{\rVert}
+
+% semantically named delimiters
+\newcommand{\set}{\braces}
+\newcommand{\abs}{\verts}
+\newcommand{\size}{\verts}
+\newcommand{\norm}{\Verts}
+\newcommand{\tuple}{\angles}
+\newcommand{\iprod}{\angles}
+
+% Automagic `such that' for set comprehension. Inside an automagic
+% delimiter command, the vertical bar will resize appropriately
+% Example:
+%   \set{ x \in W \given x > 0 }
+\newcommand{\given}{\;\mdelim\vert\;}

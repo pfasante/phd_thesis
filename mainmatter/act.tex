@@ -1,0 +1,753 @@
+\chapter{On Autocorrelation Tables and Differential-Linear Cryptanalysis}\label{ch:act}
+\openepigraph{Attacks only get better, never get worse.}{Unknown}
+
+\newthought{Synopsis}\hspace{1.5em}
+We observe that the \DLCT/ coincides with the \ACT/ and provide a detailed analysis of it.
+This chapter is based on the preprint
+\begin{quote}
+    \fullfullcite{EPRINT:CanKolWie19}.
+\end{quote}
+
+After discussing the equivalence of \DLCT/ and \ACT/, we analyse a link between the \ACT/, \DDT/ and \LAT/, which corresponds to the well known relation between differential and linear cryptanalysis already exhibited by \textcite{EC:ChaVau94,EC:BloNyb13}.
+We then show that the (extended) \ACT/ spectrum is invariant under (extended) affine equivalence, but not under CCZ equivalence.
+The last observation is based on the fact that the \ACT/ of a function and that of its inverse can behave quite differently.
+This is of particular interest, as it might lead to the case where a differential-linear attack work better for the decryption than the encryption of a block cipher.
+It is also in stark contrast to standard differential or linear cryptanalysis, which both behave the same in both directions.
+
+We extend our analysis of the \ACT/ by exhibiting a lower bound on the absolute indicator for generic vectorial Boolean functions.
+Eventually we prove some more specific properties for some specific types of vectorial functions.
+
+\section{On the DLCT and ACT}%
+\label{sec:act:dlct}
+
+Let us define the \DLCT/ as follows.
+\begin{definition}[\DLCTl/]
+    Given a permutation $F : \F_2^n \to \F_2^n$, the corresponding \emph{\DLCTf/} consists of the following elements:
+    \begin{equation}
+        \DLCT/_F[\alpha, \beta] \coloneqq
+        \sum_{x \in \F_2^n} \parens{-1}^{\iprod{\beta}{(F(x) + F(x + \alpha))}}
+    \end{equation}
+    We leave out the subscript, if it is clear from the context.
+\end{definition}
+While \textcite{EPRINT:dlct19} defined the entry at position $(\alpha, \beta)$ as
+\begin{equation*}
+    \DLCT/_F[\alpha, \beta] = \abs{\set{x \given \iprod{\beta}{(F(x) + F(x + \alpha))} = 0}} - 2^{n-1},
+\end{equation*}
+it is easy to see that both definitions only differ in a factor of $2$ for each entry:
+\begin{align*}
+    &\ 2 \cdot \parens{\abs{\set{x \in \F_2^n \given \iprod{\beta}{(F(x) + F(x + \alpha))} = 0}} - 2^{n-1}}
+     = \abs{M_0} + \abs{M_0} - 2^n \\
+    &= \abs{M_0} + \parens{2^n - \abs{M_1}} - 2^n = \abs{M_0} - \abs{M_1}
+     = \sum_{x \in \F_2^n} \parens{-1}^{\iprod{\beta}{(F(x) + F(x + \alpha))}},
+\end{align*}
+where we define $M_i = \set{x \in \F_2^n \given \iprod{\beta}{(F(x) + F(x+\alpha))} = i}$ for the sake of readability.
+
+Our first observation on the \DLCT/ is that it basically contains the autocorrelation spectra of the component functions of~\(F\).
+Recall that the \emph{autocorrelation of $f$} is defined as, see \eg/~\textcite[277]{BMM:Carlet10a},
+\begin{equation*}
+    \AC{f}(\alpha) \coloneqq \FC{\derive{\alpha}{f}}(0).
+\end{equation*}
+Similar to Walsh coefficients, this notion can naturally be generalised to vectorial Boolean functions as
+\begin{equation*}
+    \AC{F}(\alpha, \beta) \coloneqq \AC{F_\beta}(\alpha) = \FC{\derive{\alpha}{F_\beta}}(0),
+\end{equation*}
+and we name the $\AC{F}(\alpha, \beta)$ the \emph{autocorrelation coefficients} of $F$.
+In other words, the autocorrelation coefficients of a vectorial Boolean function consist of the autocorrelation of its component functions.
+To easily see the correspondence, we only have to conclude that
+\begin{equation*}
+    \FC{\derive{\alpha}{F_\beta}}(0) = \sum_{x}\parens{-1}^{\iprod{\beta}{(F(x) + F(x+\alpha))}}.
+\end{equation*}
+\textcite[Section~3]{DCC:ZhaZheIma00} introduced the term \ACTf/ for a vectorial Boolean function which, analogously to the Walsh coefficient and \LAT/ again, contains the autocorrelation spectra of $F$'s component functions.
+This implies for the \DLCT/ that
+\begin{equation*}
+    \DLCT/_F[\alpha, \beta] = \AC{F}(\alpha, \beta) = \ACTs/_F[\alpha, \beta].
+\end{equation*}
+For the remainder of this paper we thus stick to the established notion of the autocorrelation.
+
+\textcite{JUCS:ZhaZhe96} termed the \emph{absolute indicator} $\absoluteindicator{f}$ as the maximum absolute value of the autocorrelation (of a Boolean function $f$).
+Analogously for a vectorial Boolean function, we define
+\begin{definition}[Absolute indicator]
+    Given a function $F : \F_2^n \to \F_2^n$.
+    The \emph{absolute indicator} of $F$ is
+    \begin{equation*}
+        \absoluteindicator{F} \coloneqq \max_{\beta \in \F_2^n \setminus \set{0}} \absoluteindicator{F_\beta} = \max_{\alpha, \beta \in \F_2^n \setminus \set{0}} \abs{\AC{F}(\alpha, \beta)}\;,
+    \end{equation*}
+    that is the maximum absolute indicator of $F$'s non-trivial component functions.
+\end{definition}
+
+We call the multiset $\set{\AC{F}(\alpha, \beta) \given \alpha, \beta \in \F_2^n}$ the \emph{autocorrelation} or \ACT/ \emph{spectrum} of $F$.
+
+\textcite[Section~3]{DCC:ZhaZheIma00} further showed that
+\begin{equation*}
+    \ACTs/ = \DDTs/ \cdot H
+\end{equation*}
+where $H$ is the Walsh matrix of order $n$.
+In other words, the \ACT/ is the Walsh transformed \DDT/ of $F$:
+\begin{align*}
+    (\DDT/_F \cdot H)[\alpha, \beta]
+    &= \sum_{\gamma \in \F_2^n} \abs{\set{x \in \F_2^n \given F(x) + F(x+\alpha) = \gamma}} \cdot H[\gamma, \beta] \\
+    &= \sum_{\gamma \in \F_2^n} \abs{\set{x \in \F_2^n \given F(x) + F(x+\alpha) = \gamma}} \cdot \parens{-1}^{\iprod{\gamma}{\beta}} \\
+    &= \sum_{x \in \F_2^n} \parens{-1}^{\iprod{\beta}{(F(x) + F(x+\alpha))}} \\
+    &= \AC{F}(\alpha, \beta)\;.
+\end{align*}
+Because of the correspondence between the \ACT/ and the \DLCT/, this corresponds to~\cite[Proposition~1]{EC:BDKW19}.
+
+Let us now recall some properties of and links between the above discussed notations.
+
+\subsection{Links between the ACT, DDT, and Walsh transformation}
+
+\newthoughtpar{Sum of the ACT entries, within a row or a column}
+It is well-known that the entries $\AC{F}(\alpha,\beta)$, $\beta \neq 0$ in each nonzero row in the \ACT/ of~$F$ sum to zero if and only if $F$ is a permutation (see \eg/~\cite[Proposition~2]{TIT:BCCL06}).
+The same property holds when the entries $\AC{F}(\alpha,\beta)$, $\alpha \neq 0$ in each nonzero column in the \ACT/ are considered (see \eg/~\cite[Eq.~(9)]{TIT:BCCL06}).
+
+\newthoughtpar{Link between differential and linear cryptanalysis}
+The following proposition shows that the restriction of the autocorrelation function $\alpha \mapsto \AC{F}(\alpha,\beta)$ can be seen as the discrete Fourier transform of the squared Walsh transform of $F_\beta$: $\gamma \mapsto \FC{F}^2(\gamma,\beta)$.
+As previously mentioned, $\beta \mapsto \AC{F}(\alpha,\beta)$ similarly corresponds to the Fourier transform of the row of index~$\alpha$ in the \DDT/: $\theta \mapsto \DC{F}(\alpha,\theta)$.
+It is worth noticing that this correspondence points out the well-known relationship between the Walsh transform of~$F$ and its \DDT/ exhibited by~\textcite{EC:ChaVau94,EC:BloNyb13}.
+
+\begin{proposition}
+  Let $F$ be a function from $\F_2^n$ to $\F_2^n$.
+  Then, for all $\alpha,\beta \in \F_2^n$, we have
+  \begin{align}
+      \AC{F}(\alpha,\beta) &= 2^{-n} \sum_{\gamma \in \F_2^n} (-1)^{\iprod{\alpha}{\gamma}} \FC{F}^2(\gamma,\beta) \label{eq1}\\
+               &= \sum_{\theta \in \F_2^n} (-1)^{\iprod{\beta}{\gamma}} \DC{F}(\alpha,\theta) \label{eq2}\;.
+  \end{align}
+  Conversely, the inverse Fourier transform leads to
+  \begin{align}
+       \FC{F}^2(\alpha,\beta) &= \sum_{\gamma \in \F_2^n} (-1)^{\iprod{\alpha}{\gamma}} \AC{F}(\gamma,\beta) \label{eq3}\\
+       \DC{F}(\alpha,\beta) &= 2^{-n} \sum_{\theta \in \F_2^n} (-1)^{\iprod{\beta}{\theta}} \AC{F}(\alpha,\theta) \label{eq4}\;,
+  \end{align}
+  for all $\alpha,\beta \in \F_2^n$.
+\end{proposition}
+\begin{proof}
+    We first prove Relation~\eqref{eq1} which involves the squared Walsh transform.
+    For all $\alpha,\beta \in \F_2^n$, we have
+    \begin{align*}
+        \sum_{\gamma \in \F_2^n} (-1)^{\iprod{\alpha}{\gamma}} \FC{F}^2(\gamma,\beta)
+        &= \sum_{\gamma \in \F_2^n} (-1)^{\iprod{\alpha}{\gamma}}  \sum_{x \in \F_2^n} (-1)^{F_\beta(x) + \iprod{\gamma}{x}} \sum_{y \in \F_2^n} (-1)^{F_\beta(y) + \iprod{\gamma}{y}} \\
+        &= \sum_{x,y \in \F_2^n} (-1)^{F_\beta(x)+F_\beta(y)} \parens{\sum_{\gamma \in \F_2^n} (-1)^{\iprod{\gamma}{(\alpha+x+y)}}}\\
+        &= 2^n \sum_{x \in \F_2^n} (-1)^{F_\beta(x)+F_\beta(x+\alpha)} = 2^n \AC{F}(\alpha,\beta)
+    \end{align*}
+    where the last equality comes from the fact that
+    \begin{equation*}
+        \sum_{\gamma \in \F_2^n} (-1)^{\iprod{\gamma}{(\alpha+x+y)}} = \begin{cases*}
+            2^n & for $\alpha+x+y = 0$\\
+            0   & otherwise.
+        \end{cases*}
+    \end{equation*}
+    Obviously, \cref{eq3} can be directly derived from \cref{eq1} by applying the inverse Fourier transform.
+    We now prove the relation involving the \DDT/, namely \cref{eq4}.
+    For all $\alpha,\beta \in \F_2^n$, we have
+    \begin{align*}
+        \sum_{\theta \in \F_2^n} (-1)^{\iprod{\beta}{\theta}} \AC{F}(\alpha,\theta)
+        &= \sum_{\theta \in \F_2^n} (-1)^{\iprod{\beta}{\theta}} \sum_{x \in \F_2^n} (-1)^{\iprod{\theta}{\derive{\alpha}{F}(x)}}\\
+        &= \sum_{x \in \F_2^n} \sum_{\theta \in \F_2^n} (-1)^{\iprod{\theta}{(\beta + \derive{\alpha}{F}(x)))}}\\
+        &= \sum_{x \in \derive{\alpha}{F}^{-1}(\beta)} 2^n = 2^n \DC{F}(\alpha,\beta)\;.
+    \end{align*}
+    \cref{eq2} then follows directly by applying the inverse Fourier transform.
+\end{proof}
+
+As a corollary, Parseval's equality leads to an expression of the sum of all squared entries in each row, and in each column of the autocorrelation table.
+
+\begin{corollary}\label{cor:Parseval}
+    Let $F$ be a function from $\F_2^n$ to $\F_2^n$.
+    Then, for all $\alpha,\beta \in \F_2^n$, we have
+    \begin{equation*}
+        \sum_{\alpha \in \F_2^n} \AC{F}^2(\alpha,\beta) = 2^{-n} \sum_{\gamma \in \F_2^n} \FC{F}^4(\gamma,\beta) \quad \text{and} \quad \sum_{\beta \in \F_2^n} \AC{F}^2(\alpha,\beta) = 2^n \sum_{\theta \in \F_2^n} \DC{F}^2(\alpha,\theta)\;.
+    \end{equation*}
+\end{corollary}
+
+In the following, we show that the \ACT/ spectrum is affine invariant, the extended \ACT/ spectrum is extended affine invariant and the \ACT/ spectrum is not invariant under CCZ equivalence.
+
+\subsection{Invariance under Equivalence Relations}%
+\label{act:sec:invariance}
+
+Having an equivalence relation on the set of all $n$-bit functions, allows us to partition these functions into equivalence classes.
+Properties which are invariant under this equivalence notion can then be tested on only one representative of each class -- resulting in a massive decrease of complexity, if we want to characterise the whole set of functions under this property.
+Three well-known equivalences are the following:
+\begin{definition}[Equivalence relations for vectorial Boolean functions]
+    Given two functions $F$ and $G : \F_2^n \to \F_2^n$.
+    We say these functions are
+    \begin{enumerate}
+        \item \emph{affine equivalent} ($F \aequiv G$) if there exist two affine permutations $A$ and $B$ such that $G = B \circ F \circ A$,
+        \item \emph{extended affine equivalent} ($F \eaequiv G$) if there exist two affine permutations $A$ and $B$, and an affine function $C$ such that $G = B \circ F \circ A + C$,
+        \item \emph{CCZ equivalent} ($F \cczequiv G$) if their graphs are affine equivalent.
+    \end{enumerate}
+    Here, the graph of a function is defined as $\set{(x, F(x)) \given x \in \F_2^n}$.
+\end{definition}
+
+A nice property of the \ACT/ is that its spectrum is invariant under affine equivalence, and further its extended \ACT/ spectrum, that is the multiset $\set*{\abs*{\AC{F}(\alpha, \beta)} \given \alpha, \beta \in \F_2^n}$, is invariant under extended affine equivalence.
+
+\begin{proposition}[Affine and Extended Affine Invariance]\label{act:prop:affine}
+    Given two permutations $F$, and $G$ on $\F_2^n$.
+    Let further $A = L_a + a$, $B = L_b + b$ be two affine permutations and $C = L_c + c$ be an affine function.
+    Then
+    \begin{align*}
+        G = B \circ F \circ A     \quad &\Rightarrow \quad      \AC{G}(\alpha, \beta)  =      \AC{F}(L_a(\alpha), L_b^\top(\beta))
+        \intertext{and}
+        G = B \circ F \circ A + C \quad &\Rightarrow \quad \abs{\AC{G}(\alpha, \beta)} = \abs{\AC{F}(L_a(\alpha), L_b^\top(\beta))}\;,
+    \end{align*}
+    where $L^\top$ denotes the adjoint of the linear mapping~$L$.
+\end{proposition}
+\begin{proof}
+    From the affine equivalence of $F$ and $G$, we have $G(x) = L_b(F(L_a(x) + a)) + b$.
+    Each entry $\ACT/_F[\alpha, \beta]$ corresponds to the number of solutions $x$ for the equation
+    \begin{equation*}
+        \iprod{\beta}{(F(x) + F(x + \alpha))} = 0.
+    \end{equation*}
+    Thus for each entry of $G$'s \ACT/ at position $(\alpha, \beta)$, we count the number of solutions for
+    \begin{align*}
+        \iprod{\beta}{\bracket{L_b(F(L_a(x) + a)) + b + L_b(F(L_a(x + \alpha) + a)) + b}} &= 0.
+        \intertext{Substituting $x^\prime = L_a(x) + a$, this simplifies to}
+        \iprod{\beta}{L_b(F(x^\prime) + F(x^\prime + L_a(\alpha)))} &= 0 \\
+        \Leftrightarrow \quad \iprod{L_b^\top(\beta)}{(F(x^\prime) + F(x^\prime + L_a(\alpha)))} &= 0
+    \end{align*}
+    thus the number of solutions for this equation is nothing else as the \ACT/ entry of $F$ at position $(L_a(\alpha), L_b^\top(\beta))$.
+
+    For the second point, we now only have to show how $G = F + C$ behaves.
+    By definition of the autocorrelation we have
+    \begin{align*}
+        \AC{G}(\alpha, \beta)
+        &= \sum_{x \in \F_2^n} \parens{-1}^{\iprod{\beta}{(G(x) + G(x+\alpha))}} \\
+        &= \sum_{x \in \F_2^n} \parens{-1}^{\iprod{\beta}{(F(x) + L_c(x) + c + F(x+\alpha) + L_c(x+\alpha) + c)}} \\
+        \intertext{where $C(x) = L_c(x) + c$}
+        &= \sum_{x \in \F_2^n} \parens{-1}^{\iprod{\beta}{(F(x) + F(x+\alpha) + L_c(\alpha))}} \\
+        &= \parens{-1}^{\iprod{\beta}{(L_c(\alpha))}} \AC{F}(\alpha, \beta),
+    \end{align*}
+    and thus the affine map $C$ only influences the sign of the autocorrelation value.
+\end{proof}
+
+The (extended) affine invariance of the (extended) \ACT/ spectra follows directly from this proposition.
+\begin{corollary}
+    Given two permutations $F$, and $G$ on $\F_2^n$.
+    \begin{itemize}
+        \item If $F \aequiv G$, the \ACT/ spectrum of $F$ equals that of $G$.
+        \item If $F \eaequiv G$, the extended \ACT/ spectrum of $F$ equals that of $G$.
+    \end{itemize}
+\end{corollary}
+
+To examine the behaviour under CCZ equivalence, let us first recall that the \ACT/ is related to linear structures in the following way, see also~\cite{DCC:ZhaZheIma00,LIGHTSEC:MakTez14}.
+\begin{lemma}[Linear Structures]\label{act:lem:ls}
+    Given $F : \F_2^n \to \F_2^n$, then
+    \begin{equation*}
+        \AC{F}(\alpha, \beta) = \pm 2^{n}
+    \end{equation*}
+    if and only if $(\alpha, \beta)$ forms a linear structure for $F$.
+\end{lemma}
+\begin{proof}
+    This follows from the fact that, for a linear structure, by definition,
+    \begin{equation*}
+        \iprod{\beta}{(F(x) + F(x+\alpha))}
+    \end{equation*}
+    is constant zero or one.
+    The sign of the entry thus determines, if the linear structure is constant one (negative) or zero (positive).
+\end{proof}
+
+One consequence of this is the next corollary.
+\begin{corollary}[Inversion]\label{cor:act:inversion}
+    Given a permutation $F : \F_2^n \to \F_2^n$, then the \ACT/ spectrum of $F$ is in general not equal to the \ACT/ spectrum of $F^{-1}$.
+\end{corollary}
+\begin{proof}
+    Counterexamples are the S-boxes from \safer/~\cite{FSE:Massey93}, \sc2000/~\cite{FSE:SYYTIYTT01}, and \fides/~\cite{CHES:BBKMW13}, where the S-box has linear structures in one direction but non in the other direction, and the Gold permutations as analysed in \cref{sec:APN}.
+\end{proof}
+An interesting implication of this is that it might be advantageous when doing a differential-linear cryptanalysis, to look at both directions, encryption and decryption, of a cipher.
+
+Another direct consequence of \cref{cor:act:inversion} is the following result.
+\begin{corollary}
+    Given two CCZ-equivalent permutations $F \cczequiv G$ on $\F_2^n$.
+    Their \ACT/ spectrum is in general not invariant.
+\end{corollary}
+\begin{proof}
+    A function and its inverse are always CCZ equivalent.
+    Thus \cref{cor:act:inversion} gives a counterexample.
+\end{proof}
+
+\citeauthor{DCC:ZhaZheIma00} further showed how the \ACT/ of $F$ and its inverse $F^{-1}$ are related, see~\cite[Corollary~1]{DCC:ZhaZheIma00}.
+In particular they showed that
+\begin{equation*}
+    \ACT/_{F^{-1}} = H^{-1} \cdot \ACT/_{F}^\top \cdot H, % \label{act:eq:act_matr_inverse}
+\end{equation*}
+which in our notation is
+\begin{equation*}
+    \AC{F^{-1}}(\alpha, \beta) = \frac{1}{2^n} \sum_{\gamma, \theta \in \F_2^n} \parens{-1}^{\iprod{\alpha}{\gamma} + \iprod{\beta}{\theta}} \AC{F}(\gamma, \theta).
+\end{equation*}
+
+\section{Lower bound on the absolute indicator}%
+\label{sec:act:absolute_indicator}
+
+Finding the smallest possible absolute indicator for a \emph{Boolean function} is an open question investigated by many authors.
+Zhang and Zheng conjectured~\cite[Conjecture 1]{JUCS:ZhaZhe96} that the absolute indicator of a balanced Boolean function of $n$~variables was at least $2^{\frac{n+1}{2}}$.
+But this was later disproved first for odd values of~$n \geqslant 9$ by modifying the Patterson-Wiedemann construction, namely for $n \in \set{9, 11}$ in~\citeonly{TIT:KavMaiYuc07}, for $n=15$ in~\citeonly{TIT:MaiSar02,DAM:Kavut16} and for $n=21$ in~\citeonly{DM:GanKesMai06}.
+For the case $n$ even, \citeauthor{TIT:TanMai18}~\citeonly{TIT:TanMai18} gave a construction for balanced Boolean functions with absolute indicator strictly less than $2^{n/2}$ when $n \equiv 2 \bmod{4}$.
+Very recently, similar examples for $n \equiv 0 \bmod{4}$ were exhibited by~\citeauthor{DCC:KavMaiTan19}~\citeonly{DCC:KavMaiTan19}.
+However, we now show that such small values for the absolute indicator cannot be achieved for \emph{vectorial Boolean functions}.
+
+\subsection{General Case}
+
+Parseval's equality leads to the following lower bound on the sum of all \emph{squared} autocorrelation coefficients in each row.
+This result can be found in~\cite{FSE:Nyberg94} (see also \cite[Theorem~2]{TIT:BCCL06}), but we recall the proof for the sake of completeness.
+\begin{proposition}\label{prop:boundAPN}
+    Let $F$ be a function from $\F_2^n$ into $\F_2^n$.
+    Then, for all $\alpha \in \F_2^n$, we have
+    \begin{equation*}
+        \sum_{\beta \in \F_2^n \setminus \set{0}} \AC{F}^2(\alpha, \beta) \geqslant 2^{2n}\;.
+    \end{equation*}
+    Moreover, equality holds for all nonzero~$\alpha \in \F_2^n$ if and only if $F$ is \APN/.
+\end{proposition}
+\begin{proof}
+    From~\cref{cor:Parseval}, we have that, for all $\alpha \in \F_2^n$,
+    \begin{equation*}
+        \sum_{\beta \in \F_2^n} \AC{F}^2(\alpha, \beta) = 2^n \sum_{\theta \in \F_2^n} \DC{F}^2(\alpha, \theta)
+    \end{equation*}
+    Cauchy-Schwarz inequality implies that
+    \begin{equation*}
+        \parens{\sum_{\theta \in \F_2^n} \DC{F}(\alpha, \theta)}^2 \leqslant \parens{\sum_{\theta \in \F_2^n} \DC{F}^2(\alpha, \theta)} \cdot \abs{\set{\theta \in \F_2^n \given \DC{F}(\alpha, \theta) \neq 0}}\;,
+    \end{equation*}
+    with equality if and only if all nonzero elements in $\set{\DC{F}(\alpha, \theta) \given \theta \in \F_2^n}$ are equal.
+    Using that
+    \begin{equation*}
+        \abs{\set{\theta \in \F_2^n \given \DC{F}(\alpha, \theta) \neq 0}} \leqslant 2^{n-1}
+    \end{equation*}
+    with equality for all nonzero $\alpha$ if and only if $F$ is \APN/, we deduce that
+    \begin{equation*}
+        \sum_{\theta \in \F_2^n} \DC{F}^2(\alpha, \theta) \geqslant 2^{2n} \times 2^{-(n-1)} = 2^{n+1}
+    \end{equation*}
+    again with equality for all nonzero $\alpha$ if and only if $F$ is \APN/.
+    Equivalently, we deduce that
+    \begin{equation*}
+        \sum_{\beta \in \F_2^n} \AC{F}^2(\alpha, \beta) \geqslant 2^{2n+1}
+    \end{equation*}
+    with equality for all nonzero $a$ if and only if $F$ is \APN/.
+    Then the result follows from the fact that
+    \begin{equation*}
+        \sum_{\beta \in \F_2^n} \AC{F}^2(\alpha, \beta) = 2^{2n} + \sum_{\beta \in \F_2^n \setminus \set{0}} \AC{F}^2(\alpha, \beta)\;.
+    \end{equation*}
+\end{proof}
+
+From the lower bound on the sum of all squared coefficients within a row of the \ACT/, we deduce the following lower bound on the absolute indicator.
+\begin{proposition}[Lowest possible absolute indicator] \label{prop:lowerbound}
+    Let $F$ be a function from $\F_2^n$ into $\F_2^n$.
+    Then,
+    \begin{equation*}
+        \absoluteindicator{F} \geqslant \frac{2^n}{\sqrt{2^n-1}} > 2^{n/2}\;.
+    \end{equation*}
+\end{proposition}
+\begin{proof}
+    From the facts that
+    \begin{equation*}
+        \sum_{\beta \in \F_2^n \setminus \set{0}} \AC{F}^2(\alpha, \beta) \geqslant 2^{2n}
+    \end{equation*}
+    and
+    \begin{equation*}
+        \sum_{\beta \in \F_2^n \setminus \set{0}} \AC{F}^2(\alpha, \beta) \leqslant \absoluteindicator{F}^2 (2^n-1)
+    \end{equation*}
+    the result directly follows.
+\end{proof}
+
+We can get a more precise lower bound on the absolute indicator by using the fact that all autocorrelation coefficients are divisible by~$8$.
+We even have a stronger property for functions having a lower algebraic degree as shown in the following proposition.
+\begin{proposition}[Divisibility]\label{prop:act:divisible-by-eight}
+    Let $n > 2$ and $F : \F_2^n \to \F_2^n$ be a permutation with algebraic degree at most~$d$.
+    Then, for any $\alpha, \beta \in \F_2^n$,
+    $\AC{F}(\alpha, \beta)$ is divisible by $2^{\ceil{\frac{n}{d-1}}+1}$.
+
+    Most notably, the autocorrelation coefficients of a permutation are divisible by~$8$.
+\end{proposition}
+\begin{proof}
+    From the definition of the autocorrelation, we know that
+    \begin{equation*}
+        \AC{F}(\alpha, \beta) = \FC{\derive{\alpha}{F_\beta}}(0).
+    \end{equation*}
+    For the sake of readability, we define $h_{\alpha, \beta} = \derive{\alpha}{F_\beta}$.
+    We can derive two properties of this Boolean function $h_{\alpha, \beta}$.
+    First, as $F$ has degree at most~$d$, $\deg(h_{\alpha, \beta}) \leqslant d-1$.
+    Second, $h_{\alpha, \beta}(x) = h_{\alpha, \beta}(x+\alpha)$.
+
+    We now focus on the divisibility of $\FC{h_{\alpha, \beta}}(0)$.
+    First, assume for simplicity that $\alpha = e_n$, we discuss the general case afterwards.
+    Then we can write $h_{e_n, \beta}$ as $h_{e_n, \beta}(x) = g(x_1, \ldots, x_{n-1})$ with $g : \F_2^{n-1} \to \F_2$, because $h_{e_n, \beta}(x+e_n) = h_{e_n, \beta}(x)$.
+    The Walsh coefficient of $h_{e_n, \beta}$ at point~$0$ can then be computed as
+    \begin{equation*}
+        %\label{act:eq:f-fc}
+        \FC{h_{e_n, \beta}}(0)
+        = \sum_{x \in \F_2^{n-1}, x_n \in \F_2} \parens{-1}^{f(x, x_n)}
+        = 2 \cdot \sum_{x \in \F_2^{n-1}} \parens{-1}^{g(x)}
+        = 2 \cdot \FC{g}(0)
+    \end{equation*}
+    Now $\deg(g) \leqslant d-1$.
+    It is well-known that the Walsh coefficients of a Boolean function~$f$ are divisible by $2^{\ceil{\frac{n}{\deg(f)}}}$ (see~\cite{DM:McE72} or \cite[Section~3.1]{BMM:Carlet10a}).
+    We then deduce that $\FC{g}(0)$ is divisible by $2^{\ceil{\frac{n-1}{d-1}}}$, implying that $\FC{h_{e_n, \beta}}(0)$ is divisible by $2^{\ceil{\frac{n-1}{d-1}}+1}$.
+    Most notably, if $F$ is bijective, $d \leqslant n-1$.
+    We then have that
+    \begin{equation*}
+        \ceil{\frac{n-1}{d-1}} + 1 \geqslant 3,
+    \end{equation*}
+    implying that $\FC{h_{e_n, \beta}}(0)$ is divisible by~$8$.
+
+    In the case that $\alpha \neq e_n$, we can find a linear transformation $L$, such that $L(e_n) = \alpha$, with which we have the affine equivalent function $G = F \circ L \aequiv F$.
+    Now for $G$ the same argument as above holds and thus $\AC{G}(\alpha, \beta)$ is divisible by $2^{\ceil{\frac{n}{d-1}}+1}$.
+    Due to the affine invariance of $G$'s and $F$'s \ACT/ spectra the same holds for $\AC{F}(\alpha, \beta)$ in this case.
+\end{proof}
+The absolute indicator is known for very few permutations only, except in the case of permutations of degree less than or equal to~$2$, where the result is trivial.
+To our best knowledge, one of the only functions whose absolute indicator is known is the inverse mapping $F(x)=x^{2^n-2}$ over $\F_{2^n}$~\cite{FF:ChaHelZin07}: $\absoluteindicator{F} = 2^{\frac{n}{2}+1}$ when $n$ is even.
+When $n$ is odd, $\absoluteindicator{F}=\mathcal{L}(F)$ when $\mathcal{L}(F) \equiv 0 \bmod{8}$, and $\absoluteindicator{F}=\mathcal{L}(F) \pm 4$ otherwise (see \cref{sec:APN functions} for an alternative proof).
+
+We now study the absolute indicator of some types of vectorial Boolean functions.
+
+\subsection{Case of power permutations}
+For power permutations on $\F_{2^n}$ we can show that the autocorrelation spectrum is invariant for all component functions, analogously to the same well known fact for the Walsh spectrum.
+In this case, the trace function is used as the inner product, \ie/ $\iprod{\alpha}{\beta} = \tr_n(\alpha \beta)$ with
+\begin{align*}
+    \tr_n : \F_{2^n} &\to \F_2 \\
+    \tr_n(x) &\coloneqq \sum_{i=0}^{n-1} x^{2^i}
+\end{align*}
+where we leave out the subscript, if it is clear from the context.
+Thus we have the following corollary.
+
+\begin{corollary}
+    Let $F$ be a power permutation on $\F_{2^n}$, \ie/ $F = x^k$ where for $k$ it holds that $\gcd(k, 2^n-1)=1$.
+    Then, for all non-zero $\alpha$ and $\beta$ in $\F_{2^n}$,
+    \begin{equation*}
+        \AC{F}(\alpha, \beta) = \AC{F}(1, \alpha^k \beta) = \AC{F}(\alpha \beta^{\frac{1}{k}}, 1)\;.
+    \end{equation*}
+    Most notably, all non-zero component functions $F_\beta$ of $F$ have the same (Boolean) absolute indicator: $\absoluteindicator{F} = \absoluteindicator{F_\beta}$ for all $\beta \in \F_{2^n} \setminus \set{0}$ and $\absoluteindicator{F_\beta} > 2^{n/2}$.
+\end{corollary}
+\begin{proof}
+    The fact that $\AC{F}(\alpha, \beta) = \AC{F}(1, \alpha^k \beta)$ has been proved for instance in~\cite[Proposition~4]{TIT:BCCL06}.
+    The second equality comes from the fact that
+    \begin{equation*}
+        \alpha \cdot \parens{x^k + \parens{x+\alpha}^k} = 1 \cdot \parens{\parens{\beta^{\frac{1}{k}}x}^k + \parens{\beta^{\frac{1}{k}}x + \alpha \beta^{\frac{1}{k}}}^d},
+    \end{equation*}
+    where $\beta^{\frac{1}{k}}$ only exists if $\gcd(k, 2^n-1) = 1$.
+    It follows that it is enough to compute only one column of the \ACT/, as the remaining ones are just permutations of each other.
+    In other words, all Boolean functions $F_\beta$, $\beta \neq 0$, have the same absolute indicator.
+\end{proof}
+
+\subsection{Case of APN functions}\label{sec:APN functions}
+In the specific case of \APN/ functions, we can also exhibit a stronger condition than \cref{prop:lowerbound} on the lowest possible absolute indicator.
+\begin{proposition}[Lowest possible indicator for APN functions]\label{prop:APN}
+    Let $n$ be a positive integer.
+    If there exists an \APN/ function from $\F_2^n$ to $\F_2^n$ with absolute indicator~$M$, then there exists a balanced Boolean function of $n$~variables with linearity~$M$.
+\end{proposition}
+\begin{proof}
+    If $F$ is \APN/, then $\DC{F}(\alpha, \beta) \in \set{0,2}$ for all $\alpha, \beta$, $\alpha \neq 0$.
+    It follows that, for each nonzero~$\alpha$, we can define a Boolean function $g_\alpha$ of $n$~variables such that
+    \begin{equation*}
+        g_\alpha(\beta) = \begin{cases*}
+            0 & if $\DC{F}(\alpha, \beta)=0$ \\
+            1 & if $\DC{F}(\alpha, \beta)=2$\;.
+        \end{cases*}
+    \end{equation*}
+    Equivalently,
+    \begin{equation*}
+        \DC{F}(\alpha, \beta) = 1 - (-1)^{g_\alpha(\beta)}\;.
+    \end{equation*}
+    Obviously, all $g_\alpha$ are balanced.
+    Moreover, we deduce from \cref{eq2} that, for all nonzero $\alpha, \beta$,
+    \begin{align*}
+        \AC{F}(\alpha, \beta)
+        &= \sum_{\theta \in \F_2^n} (-1)^{\iprod{\beta}{\theta}} \DC{F}(\alpha,\theta) \\
+        &= \sum_{\theta \in \F_2^n} (-1)^{\iprod{\beta}{\theta}} \parens{1 - (-1)^{g_\alpha(\theta)}}\\
+        &= -\sum_{\theta \in \F_2^n} (-1)^{\iprod{\beta}{\theta} + g_\alpha(\theta)} = -\FC{g_\alpha}(\beta)
+    \end{align*}
+    where $\FC{g_\alpha}(\beta)$ denotes the value of the Walsh transform of $g_\alpha$ at point~$\beta$.
+    This implies that
+    \begin{equation*}
+        \max_{\beta \neq 0} \abs{\AC{F}(\alpha, \beta)} = \linearity{g_\alpha}\;.
+    \end{equation*}
+    The result then directly follows.
+\end{proof}
+To our best knowledge, the smallest known linearity for a balanced Boolean function is obtained by Dobbertin's recursive construction~\cite{FSE:Dobbertin94}.
+For instance, for $n=9$, the smallest possible linearity for a balanced Boolean function is known to belong to the set $\set{24, 28, 32}$, which implies that exhibiting an \APN/ function over $\F_2^9$ with absolute indicator~$24$ would determine the smallest linearity for such a function.
+
+It is worth noticing that the proof of the previous proposition shows that the knowledge of $g$ directly determines the \ACT/.
+This explains why the absolute indicator of the inverse mapping over $\F_{2^n}$, $n$ odd, is derived from its linearity as proved in~\cite[Theorem~1]{FF:ChaHelZin07} and detailed in the following example.
+\begin{example}[ACT of the inverse mapping, $n$ odd]
+    For any $\alpha \in \F_{2^n} \setminus \set{0}$, the Boolean function $g_\alpha$ which characterises the support of Row~$\alpha$ in the \DDT/ of the inverse mapping $F:x \mapsto x^{-1}$ coincides with $(1+F_{\alpha^{-1}})$ except on two points:
+    \begin{equation*}
+        g_\alpha(\beta) = \begin{cases*}
+            1+\tr(\alpha^{-1}\beta^{-1}) & if $\beta \not \in \set{0, \alpha^{-1}}$\\
+            0                            & if $\beta = 0$\\
+            1                            & if $\beta = \alpha^{-1}$
+        \end{cases*}\;.
+    \end{equation*}
+    This comes from the fact that the equation
+    \begin{equation*}
+        (x+\alpha)^{-1} + x^{-1} = \beta
+    \end{equation*}
+    for $\beta \neq \alpha^{-1}$ can be rewritten as
+    \begin{equation*}
+        x + (x+\alpha) = \beta (x+\alpha)x
+    \end{equation*}
+    or equivalently when $\beta \neq 0$, by setting $y=\alpha^{-1}x$,
+    \begin{equation*}
+        y^2+y = \alpha^{-1}\beta^{-1}\;.
+    \end{equation*}
+    It follows that this equation has two solutions if and only if $\tr(\alpha^{-1}\beta^{-1}) = 0$.
+    From the proof of the previous proposition, we deduce
+    \begin{align*}
+        \AC{F}(\alpha, \beta)
+        &= -\FC{g_\alpha}(\beta)  \\
+        &= \FC{F_{\alpha^{-1}}}(\beta) + 2\parens{1 - (-1)^{\tr(\alpha^{-1}\beta)}}\;,
+    \end{align*}
+    where the additional term corresponds to the value of the sum defining the Walsh transform $\FC{F_{\alpha^{-1}}}(\beta)$ at points~$0$ and $\alpha^{-1}$.
+\end{example}
+
+It can be observed that \cref{prop:boundAPN,prop:APN} are actually more general and apply as soon as the \DDT/ of $F$ contains one row composed of $0$s and $2$s only.
+\begin{proposition}
+    Let $F$ be a function from $\F_2^n$ into $\F_2^n$.
+    Then, for any fixed $\alpha \in \F_2^n \setminus \set{0}$, the following properties are equivalent:
+    \begin{enumerate}
+        \item[(i)] $\displaystyle \sum_{\beta \in \F_2^n \setminus \set{0}} \AC{F}^2(\alpha, \beta) = 2^{2n}$
+        \item[(ii)] For all $\beta \in \F_2^n$, $\DC{F}(\alpha, \beta) \in \set{0,2}$.
+    \end{enumerate}
+    Moreover, if these properties hold, then there exists a balanced Boolean function $g: \F_2^n \rightarrow \F_2$ such that
+    \begin{equation*}
+        \linearity{g} = \max_{\beta \in \F_2^n \setminus \set{0}} \abs{\AC{F}(\alpha, \beta)}\;.
+    \end{equation*}
+\end{proposition}
+
+Let us now take a closer look at the absolute indicator of some specific \APN/ permutations.
+
+\subsection{Case of APN permutations}\label{sec:APN}
+
+As previously observed, the \ACT/ and the absolute indicator are not invariant under inversion.
+Then, while the absolute indicator of a quadratic permutation is trivially equal to $2^{n}$, computing the absolute indicator of the inverse of a quadratic permutation is not obvious at all.
+Indeed, the absolute indicator depends on the considered function, as we will see next.
+
+\newthoughtpar{Inverses of quadratic \APN/ permutations, $n$ odd}
+For instance, for $n=9$, the inverses of the two \APN/ Gold permutations $x^3$ and $x^5$, namely $x^{341}$ and $x^{409}$, do not have the same absolute indicator: the absolute indicator of $x^{341}$ is~$56$ while the absolute indicator of $x^{409}$ is~$72$.
+
+Nevertheless, the specificity of quadratic \APN/ permutations for $n$ odd is that they are \emph{crooked}~\cite{EJC:BenFon98}, which means that the image sets of their derivatives $\derive{\alpha}{F}$, $\alpha \neq 0$, is the complement of a hyperplane $\Span{\pi(\alpha)}^\perp$.
+Moreover, it is known (see \eg/~\cite[Proof of Lemma~5]{TIT:CanCha03}) that all these hyperplanes are distinct, which implies that $\pi$ is a permutation of $\F_2^n$ when we add to the definition that $\pi(0)=0$.
+Then, the following proposition shows that, for any quadratic \APN/ permutation~$F$, the \ACT/ of $F^{-1}$ corresponds to the Walsh transform of $\pi$.
+
+\begin{proposition}\label{prop:inverse quadratic}
+    Let $n$ be an odd integer and $F$ be a quadratic \APN/ permutation over $\F_2^n$.
+    Let further $\pi$ be the permutation of $\F_2^n$ defined by
+    \begin{equation*}
+        \Im{\derive{\alpha}{F}} = \F_2^n \setminus \Span{\pi(\alpha)}^\perp, \text{when } \alpha \neq 0\;,
+    \end{equation*}
+    and $\pi(0)=0$.
+    Then, for any nonzero $\alpha$ and $\beta$ in $\F_2^n$, we have
+    \begin{equation*}
+        \AC{F^{-1}}(\alpha, \beta) = - \FC{\pi}(\beta,\alpha)\;.
+    \end{equation*}
+    It follows that
+    \begin{equation*}
+        \absoluteindicator{F^{-1}} \geqslant 2^{\frac{n+1}{2}}
+    \end{equation*}
+    with equality if and only if $\pi$ is an \AB/ permutation.
+\end{proposition}
+\begin{proof}
+    Let $\alpha$ and $\beta$ be two nonzero elements in $\F_2^n$.
+    Then, from Relation~\eqref{eq2}, we deduce
+    \begin{align*}
+        \AC{F^{-1}}(\alpha, \beta)
+        &= \sum_{\gamma \in \F_2^n} (-1)^{\iprod{\beta}{\gamma}} \DC{F^{-1}}(\alpha,\gamma)\\
+        &= \sum_{\gamma \in \F_2^n} (-1)^{\iprod{\beta}{\gamma}} \DC{F}(\gamma,\alpha)\;.
+    \end{align*}
+    By definition of $\pi$, we have that, for any nonzero $\gamma$,
+    \begin{equation*}
+        \DC{F}(\gamma,\theta) = \begin{cases*}
+            2 & if $\iprod{\theta}{\pi(\gamma)} = 1$\\
+            0 & if $\iprod{\theta}{\pi(\gamma)} = 0$
+        \end{cases*}\;.
+    \end{equation*}
+    It then follows that
+    \begin{equation*}
+        \DC{F}(\gamma,\theta) = 1 - (-1)^{\iprod{\pi(\gamma)}{\theta}}
+    \end{equation*}
+    where this equality holds for all $(\gamma, \theta) \neq (0,0)$ by using that $\pi(0)=0$.
+    Therefore, we have, for any nonzero $\alpha$ and $\beta$,
+    \begin{equation*}
+        \AC{F^{-1}}(\alpha, \beta) = \sum_{\gamma \in \F_2^n} (-1)^{\iprod{\beta}{\gamma}} \parens{1 - (-1)^{\iprod{\pi(\gamma)}{\alpha}}} = -\FC{\pi}(\beta, \alpha)\;.
+    \end{equation*}
+    As a consequence, $\absoluteindicator{F^{-1}}$ is equal to the linearity of $\pi$, which is at least $2^{\frac{n+1}{2}}$ with equality for \AB/ functions.
+\end{proof}
+
+It is worth noticing that the previous proposition is valid, not only for quadratic \APN/ permutations, but for all \emph{crooked} permutations, which are a particular case of \AB/ functions.
+However, the existence of crooked permutations of degree strictly higher than~$2$ is an open question.
+
+As a corollary of the previous proposition, we get some more precise information on the autocorrelation spectrum of the quadratic power permutations corresponding to Gold exponents, \ie/ $F(x)=x^{2^i+1}$.
+Recall that $x^{2^i+1}$ and $x^{2^{n-i}+1}$ are affine equivalent since the two exponents belong to the same cyclotomic coset modulo~$(2^n-1)$.
+This implies that their inverses share the same autocorrelation spectrum.
+
+\begin{corollary}
+    Let $n > 5$ be an odd integer and $0 < i < n$ with $\gcd(i,n)=1$.
+    Let $F$ be  the \APN/ power permutation over $\F_{2^n}$ defined by $F(x)=x^{2^i+1}$.
+    Then, for any nonzero $\alpha$ and $\beta$ in $\F_2^n$, we have
+    \begin{equation*}
+        \AC{F^{-1}}(\alpha, \beta) = -\FC{\pi}(\beta, \alpha) \quad \text{where} \quad \pi(x) = x^{2^n-2^i-2}\;.
+    \end{equation*}
+    Most notably, the absolute indicator of $F^{-1}$ is strictly higher than $2^{\frac{n+1}{2}}$.
+\end{corollary}
+\begin{proof}
+    The result comes from the form of the function $\pi$ which defines the \DDT/ of $x^{2^i+1}$.
+    Indeed, for any nonzero $\alpha \in \F_{2^n}$, the number $\DC{F}(\alpha, \beta)$ of solutions of
+    \begin{equation*}
+        (x + \alpha)^{2^i+1} + x^{2^i+1} = \beta
+    \end{equation*}
+    is equal to the number of solutions of
+    \begin{equation*}
+        x^{2^i} + x = 1 + \beta \alpha^{-(2^i+1)}
+    \end{equation*}
+    which is nonzero if and only if $\tr(\beta\alpha^{-(2^i+1)})=1$.
+    It follows that
+    \begin{equation*}
+        \pi(x) = x^{2^n-2^i-2}\;.
+    \end{equation*}
+    The autocorrelation spectrum of $F^{-1}$ then follows from \cref{prop:inverse quadratic}.
+    Moreover, this function $\pi$ cannot be \AB/ since \AB/ functions have algebraic degree at most~$\frac{n+1}{2}$~\cite[Theorem~1]{DCC:CarChaZin98}, while $\pi$ has degree~$(n-2)$.
+    It follows that $\pi$ cannot be \AB/ when $n > 5$.
+    Therefore, the absolute indicator of the inverse of $F^{-1}$, \ie/ the linearity of $\pi$, is strictly higher than $2^{\frac{n+1}{2}}$.
+\end{proof}
+In the specific case $n=5$, it can easily be checked that the inverses of all Gold APN permutations $F(x)=x^{2^i+1}$ have absolute indicator~$8$.
+
+\newthoughtpar{Cubic APN permutations}
+In the case of APN permutations of degree~$3$, we have a more precise result.
+
+\begin{proposition}[Cubic APN permutations] \label{prop:cubic}
+Let $F: \F_2^n \rightarrow \F_2^n$ be \APN/ with degree~$3$.
+Then we have that for non-zero $\alpha$ and $\lambda$
+\begin{equation*}
+    \abs{\AC{F}(\alpha,\lambda)} \in \set{0, 2^{\frac{n+d(\alpha,\lambda)}{2}}}\;,
+\end{equation*}
+where $d(\alpha,\lambda) = \dim \LS(\derive{\alpha}{F_\lambda}) = \dim \set{\beta \given \derive{\alpha,\beta}{F_\lambda} = c}$ and $c \in \F_2$ is constant.
+Moreover, $\AC{F}(\alpha,\lambda) = 0$ if and only if $\derive{\alpha}{F_\lambda}$ is balanced, which equivalently means that it has an all-one derivative.
+\end{proposition}
+
+From this proposition, if $n$ is odd, we obviously have that $\absoluteindicator{F} \geqslant 2^{\frac{n+1}{2}}$ with equality if and only if, for any nonzero $\alpha,\lambda \in \F_2^n$, either $\LS(\derive{\alpha}{F_\lambda})=\set{0,\alpha}$ or there exists $\beta$ such that $\derive{\beta}{\derive{\alpha}{F_\lambda}} = 1$.
+Moreover, if $F$ is \APN/ and $\absoluteindicator{F} = 2^{\frac{n+1}{2}}$, it follows from \cref{prop:boundAPN} that the number of nonzero $\lambda$ such that $\LS(\derive{\alpha}{F_\lambda}) = \set{0,\alpha}$ is exactly $2^{n-1}$.
+
+Additionally, an upper bound on the absolute indicator can be established for two cubic APN permutations, namely the first Kasami power function and the Welch function.
+We denote the Kasami power functions $K_i$ and the Welch power function $W$ by
+\begin{equation*}
+    \begin{aligned}
+        K_i : \F_{2^n} &\to \F_{2^n} \\
+        K_i : x &\mapsto x^{(2^{3i}+1)/(2^i+1)} \\ &= x^{4^i-2^i+1}
+    \end{aligned}
+    \qquad \text{and} \qquad
+    \begin{aligned}
+        W : \F_{2^n} &\to \F_{2^n} \\
+        W : x &\mapsto x^{2^{(n-1)/2}+3}\;.
+    \end{aligned}
+\end{equation*}
+
+\begin{proposition}[\citeonly{TIT:Carlet08}, Lemma 1]
+    The absolute indicator for $W$ on $\F_{2^n}$ is bounded from above by
+    \begin{equation*}
+        \absoluteindicator{W} \leqslant 2^{\frac{n+5}{2}}
+    \end{equation*}
+\end{proposition}
+
+As long as the (regular) degree of the derivatives is small compared to the field size, the Weil bound gives a nontrivial upper bound for the absolute indicator of a vectorial Boolean function.
+This is particularly interesting for the Kasami functions as the Kasami exponents do not depend on the field size (contrary to for example the Welch exponent).
+\begin{proposition}
+    The absolute indicator of $K_i$ on $\F_{2^n}$ is bounded from above by
+    \begin{equation*}
+        \absoluteindicator{K_i} \leqslant (4^i-2^{i+1}) \cdot 2^{\frac{n}{2}}.
+    \end{equation*}
+    In particular,
+    \begin{equation*}
+        \absoluteindicator{K_2} \leqslant 2^{\frac{n+5}{2}}.
+    \end{equation*}
+\end{proposition}
+\begin{proof}
+    Note that the two exponents with the highest degree of any derivative of $K_i$ are $4^i-2^i$ and $4^i-2^{i+1}+1$.
+    The first exponent is even, so it can be reduced using the relation $\tr(y^2)=\tr(y)$.
+    The result then follows from the Weil bound.
+    Combining the bound with \cref{prop:cubic} yields the bound on $K_2$.
+\end{proof}
+In the two cases of $W$ and $K_2$, we deduce that the absolute indicator belongs to $\set{2^{\frac{n+1}{2}}, 2^{\frac{n+3}{2}}, 2^{\frac{n+5}{2}}}$.
+We actually conjecture the following.
+\begin{conjecture}\label{con:kasami_welch}
+    Let $n \geqslant 9$ be odd.
+    Then $\displaystyle\absoluteindicator{K_2} \geqslant 2^{\frac{n+3}{2}}$ and $\displaystyle\absoluteindicator{W} \geqslant 2^{\frac{n+3}{2}}$.
+\end{conjecture}
+
+\begin{conjecture}\label{con:kasami}
+    If $n$ odd and $n \not \equiv 0 \bmod{3}$, then $\absoluteindicator{K_i} = 2^{\frac{n+1}{2}}$.
+\end{conjecture}
+
+Some other results on the autocorrelations of the Boolean functions $\tr(x^k)$ are known in the literature, which can be trivially extended to the vectorial power functions $x^k$ if $\gcd(k,n)=1$, see~\cite[Theorem 5]{SAC:GonKho03}, \cite{TIT:Carlet08} and \cite[Lemmata 2 and 3]{IS:SunWu09}.
+In the case $n = 6r$ and $k=2^{2r}+2^r+1$, the power monomial $x^k$ is not a permutation, but results for all component functions of $x^k$ were derived by \textcite{FFA:CanChaKyu08}.
+We summarise the results in the following proposition.
+
+\begin{proposition}
+    Let $F(x)=x^k$ be a function on $\F_{2^n}$.
+    \begin{enumerate}
+        \item If $n$ is odd and $k=2^r+3$ with $r=\frac{n+1}{2}$ then $\absoluteindicator{F}\in \{2^\frac{n+1}{2},2^\frac{n+3}{2}\}$.
+        \item If $n$ is odd and $k$ is the $i$-th Kasami exponent, where $3i \equiv \pm 1 \pmod n$, then $\absoluteindicator{F}=2^\frac{n+1}{2}$.
+        \item If $n=2m$ and $k=2^{m+1}+3$ then $\absoluteindicator{F}\leqslant 2^{\frac{3m}{2}+1}$.
+        \item If $n=2m$, $m$ odd and $k=2^{m}+2^{\frac{m+1}{2}}+1$ then $\absoluteindicator{F}\leqslant 2^{\frac{3m}{2}+1}$.
+        %\item If $n=4r$ and $k=2^{2r}+2^{r}+1$ then $\absoluteindicator{F}\leqslant 2^{3r+1}$. % correct, but needs explanation
+        \item If $n=6r$ and $k=2^{2r}+2^r+1$ then $\absoluteindicator{F}=2^{4r}$.
+    \end{enumerate}
+\end{proposition}
+
+We now provide a different proof of the second case in the previous proposition that additionally relates the autocorrelation table of $K_i$ with the Walsh spectrum of a Gold function.
+
+\begin{proposition}[\citeonly{DCC:Dillon99}]\label{thm:support}
+    Let $n$ be odd, not divisible by $3$ and $3i \equiv \pm 1 \pmod n$.
+    Set $f=\tr(x^k)$ where $k=4^i-2^i+1$ is the $i$-th Kasami exponent.
+    Then
+    \begin{equation*}
+        \supp{\FC{f}} = \set{\alpha \given \tr(\alpha^{2^k+1})=1}\;.
+    \end{equation*}
+\end{proposition}
+
+\begin{proposition}\label{prop:kasami}
+    Let $n$ be odd, not divisible by $3$ and $3i \equiv \pm 1 \pmod n$.
+    Then
+    \begin{equation*}
+        \AC{K_i}(\alpha, \beta) = -\sum_{\gamma \in \F_{2^n}} (-1)^{\tr(\alpha \beta^{1/k} \gamma + \gamma^{2^k+1})},
+    \end{equation*}
+    where $k = 4^i-2^i+1$ is the $i$-th Kasami exponent and $1/k$ denotes the inverse of $k$ in $\Z_{2^n-1}$.
+    In particular, $\absoluteindicator{K_i}=2^\frac{n+1}{2}$.
+\end{proposition}
+\begin{proof}
+    It is well-known that, if $F$ is a power permutation over a finite field, its Walsh spectrum is uniquely defined by the entries $\FC{F}(1,\beta)$.
+    Indeed, for $\beta \neq 0$,
+    \begin{align*}
+        \FC{K_i}(\gamma,\beta)&=\sum_{x \in \F_{2^n}} (-1)^{\tr (\beta x^k + \gamma x)} \\
+        &= \sum_{x \in \F_{2^n}} (-1)^{\tr (x^k + \gamma \beta^{-1/k} x)} = \FC{K_i}(1,\gamma \beta^{-1/k}) \in \set{0, \pm 2^\frac{n+1}{2}}\;,
+    \end{align*}
+    where the last fact follows because the Kasami function is \AB/.
+    Then, by  \cref{eq1} and \cref{thm:support}, for any nonzero $\alpha$ and $\beta$,
+    \begin{align}
+           \AC{K_i}(\alpha, \beta)
+        &= 2^{-n} \sum_{\gamma \in \F_{2^n}} (-1)^{\tr(\alpha \gamma)}\FC{K_i}^2(\gamma, \beta)
+         = 2^{-n} \sum_{\gamma \in \F_{2^n}} (-1)^{\tr(\alpha \gamma)}{\FC{K_i}(1, \gamma \beta^{-1/k})}^2 \nonumber \\
+        &= 2^{-n} \sum_{\gamma \beta^{-1/k} \in \supp{\FC{\tr(x^k)}}} (-1)^{\tr(\alpha \gamma)} 2^{n+1}
+         = 2 \sum_{\gamma \in B} (-1)^{\tr(\alpha \gamma)}\;,\label{eq:kasami}
+        \intertext{where $B = \set{\gamma \in \F_{2^n} \given \tr((\gamma \beta^{-1/k})^{2^k+1}) = 1}$.
+                   We have
+                   \begin{align*}
+                       0 &= \sum_{\gamma \notin B} (-1)^{\tr(\alpha \gamma)} + \sum_{\gamma \in B} (-1)^{\tr(\alpha \gamma)} \\
+                         &= \sum_{\gamma \notin B} (-1)^{\tr(\alpha \gamma + (\gamma \beta^{-1/k})^{2^k+1})} - \sum_{\gamma \in B} (-1)^{\tr(\alpha \gamma + (\gamma \beta^{-1/k})^{2^k+1})}\;,
+                   \end{align*}
+                   so
+                   \begin{align*}
+                          \sum_{\gamma \in \F_{2^n}} (-1)^{\tr(\alpha \gamma+(\gamma \beta^{-1/k})^{2^k+1})}
+                       &= 2\sum_{\gamma \in B} (-1)^{\tr(\alpha \gamma+(\gamma \beta^{-1/k})^{2^k+1})}
+                        = -2\sum_{\gamma \in B} (-1)^{\tr(\alpha \gamma)}\;.
+                   \end{align*}
+                   Plugging this into \cref{eq:kasami}, we obtain
+                  }
+           \AC{K_i}(\alpha, \beta)
+        &= -\sum_{\gamma \in \F_{2^n}} (-1)^{\tr(\alpha \gamma + (\gamma \beta^{-1/k})^{2^k+1})}
+         = -\sum_{\gamma \in \F_{2^n}} (-1)^{\tr(\alpha \beta^{1/k} \gamma + \gamma^{2^k+1})}\;. \nonumber
+    \end{align}
+    It can be easily checked that the equation also holds for $\beta=0$.
+    Observe that $\gcd(k,n)=1$, so the Gold function is \AB/ and
+    \begin{equation*}
+        \absoluteindicator{K_i} = 2^{\frac{n+1}{2}}\;.
+    \end{equation*}
+\end{proof}
+Note that the cases $3i \equiv 1 \pmod n$ and $3i \equiv -1 \pmod n$ are essentially only one case because the $i$-th and $(n-i)$-th Kasami exponents belong to the same cyclotomic coset.
+Indeed, $(4^{(n-i)}-2^{n-i}+1)2^{2i} \equiv 4^{i}-2^i+1 \pmod {2^n-1}.$
+
+\newthought{Note}\hspace{1.5em}
+\textcite{ARXIV:LLLQ19} independently observed similar results.
+In~\citeonly{CKLLLQW19} we merged both drafts; the paper is currently under submission.

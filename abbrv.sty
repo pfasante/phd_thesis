@@ -1,0 +1,354 @@
+% correct abbreviations http://stackoverflow.com/a/3285603
+\RequirePackage{expl3}
+
+\ExplSyntaxOn{}
+\newcommand\latinabbrev[1]{
+  \peek_meaning:NTF . {% Same as \@ifnextchar
+    #1\@}%
+  { \peek_catcode:NTF a {% Check whether next char has same catcode as \'a, i.e., is a letter
+      #1.\@ }%
+    {#1.\@}}}
+\ExplSyntaxOff{}
+
+\def\aka/{\latinabbrev{a.\,k.\,a}}
+\def\cf/{\latinabbrev{cf}}
+\def\Cf/{\latinabbrev{Cf}}
+\def\st/{\latinabbrev{s.\,t}}
+\def\St/{\latinabbrev{S.\,t}}
+\def\eg/{\latinabbrev{e.\,g}}
+\def\Eg/{\latinabbrev{E.\,g}}
+\def\etal/{\latinabbrev{\textit{et\,al}}}
+\def\etc/{\latinabbrev{etc}}
+\def\Etc/{\latinabbrev{Etc}}
+\def\ie/{\latinabbrev{i.\,e}}
+\def\Ie/{\latinabbrev{I.\,e}}
+\def\resp/{\latinabbrev{resp}}
+\def\Resp/{\latinabbrev{Resp}}
+
+\RequirePackage[nolist,nohyperlinks]{acronym}
+%\newcommand{\abbrv}[1]{%
+%    \csdef{#1}{\ac{##1}}%
+%    \csdef{#1l}{\acl{##1}}%
+%}
+\begin{acronym}
+\acro{AB}{Almost Bent}
+\acro{ACT}{Autocorrelation Table}
+\acro{AES}{Advanced Encryption Standart}
+\acro{ANF}{Algebraic Normal Form}
+\acro{APN}{Almost Perfect Nonlinear}
+\acro{ASIC}{Application Specific Integrated Circuit}
+\acro{BCT}{Boomerang Connectivity Table}
+\acro{BCT}{Boomerang Connectivity Table}
+\acro{CBC}{Cipher Block Chaining}
+\acro{CCA}{Chosen Ciphertext Attack}
+\acro{CFB}{Cipher Feedback}
+\acro{CPA}{Chosen Plaintext Attack}
+\acro{CTR}{Counter}
+\acro{DDT}{Difference Distribution Table}
+\acro{DES}{Data Encryption Standart}
+\acro{DLCT}{Differential-Linear Connectivity Table}
+\acro{DP}{Differential Probability}
+\acro{ECB}{Electronic Codebook}
+\acro{EDP}{Expected Differential Probability}
+\acro{ELP}{Expected Linear Potential}
+\acro{FPGA}{Field Programmable Gate Array}
+\acro{IoT}{Internet-of-Things}
+\acro{KPA}{Known Plaintext Attack}
+\acro{LAT}{Linear Approximation Table}
+\acro{LFSR}{Linear Feedback Shift Register}
+\acro{LP}{Linear Potential}
+\acro{LUT}{Look Up Table}
+\acro{LWC}{Lightweight Crypto}
+\acro{MDS}{Maximum Distance Separable}
+\acro{MEDP}{Maximum Expected Differential Probability}
+\acro{MELP}{Maximum Expected Linear Potential}
+\acro{MILP}{Mixed Integer Linear Program}
+\acro{OFB}{Output Feedback}
+\acro{OTP}{One Time Pad}
+\acro{PRP}{Pseudo\-random Permutation}
+\acro{SLP}{Straight-Line Program}
+\acro{SPN}{Substitution Permutation Network}
+\acro{WSN}{Whitened Swap-Or-Not}
+\end{acronym}
+
+\def\AB/{\ac{AB}}
+\def\ABf/{\acf{AB}}
+\def\ABl/{\acl{AB}}
+\def\ABp/{\acp{AB}}
+\def\ABs/{\acs{AB}}
+
+\def\ACT/{\ac{ACT}}
+\def\ACTf/{\acf{ACT}}
+\def\ACTl/{\acl{ACT}}
+\def\ACTp/{\acp{ACT}}
+\def\ACTs/{\acs{ACT}}
+
+\def\AES/{\ac{AES}}
+\def\AESf/{\acf{AES}}
+\def\AESl/{\acl{AES}}
+\def\AESp/{\acp{AES}}
+\def\AESs/{\acs{AES}}
+
+\def\ANF/{\ac{ANF}}
+\def\ANFf/{\acf{ANF}}
+\def\ANFl/{\acl{ANF}}
+\def\ANFp/{\acp{ANF}}
+\def\ANFs/{\acs{ANF}}
+
+\def\APN/{\ac{APN}}
+\def\APNf/{\acf{APN}}
+\def\APNl/{\acl{APN}}
+\def\APNp/{\acp{APN}}
+\def\APNs/{\acs{APN}}
+
+\def\ASIC/{\ac{ASIC}}
+\def\ASICf/{\acf{ASIC}}
+\def\ASICl/{\acl{ASIC}}
+\def\ASICp/{\acp{ASIC}}
+\def\ASICs/{\acs{ASIC}}
+
+\def\BCT/{\ac{BCT}}
+\def\BCTf/{\acf{BCT}}
+\def\BCTl/{\acl{BCT}}
+\def\BCTp/{\acp{BCT}}
+\def\BCTs/{\acs{BCT}}
+
+\def\CBC/{\ac{CBC}}
+\def\CBCf/{\acf{CBC}}
+\def\CBCl/{\acl{CBC}}
+\def\CBCp/{\acp{CBC}}
+\def\CBCs/{\acs{CBC}}
+
+\def\CCA/{\ac{CCA}}
+\def\CCAf/{\acf{CCA}}
+\def\CCAl/{\acl{CCA}}
+\def\CCAp/{\acp{CCA}}
+\def\CCAs/{\acs{CCA}}
+
+\def\CFB/{\ac{CFB}}
+\def\CFBf/{\acf{CFB}}
+\def\CFBl/{\acl{CFB}}
+\def\CFBp/{\acp{CFB}}
+\def\CFBs/{\acs{CFB}}
+
+\def\CPA/{\ac{CPA}}
+\def\CPAf/{\acf{CPA}}
+\def\CPAl/{\acl{CPA}}
+\def\CPAp/{\acp{CPA}}
+\def\CPAs/{\acs{CPA}}
+
+\def\CTR/{\ac{CTR}}
+\def\CTRf/{\acf{CTR}}
+\def\CTRl/{\acl{CTR}}
+\def\CTRp/{\acp{CTR}}
+\def\CTRs/{\acs{CTR}}
+
+\def\DDT/{\ac{DDT}}
+\def\DDTf/{\acf{DDT}}
+\def\DDTl/{\acl{DDT}}
+\def\DDTp/{\acp{DDT}}
+\def\DDTs/{\acs{DDT}}
+
+\def\DES/{\ac{DES}}
+\def\DESf/{\acf{DES}}
+\def\DESl/{\acl{DES}}
+\def\DESp/{\acp{DES}}
+\def\DESs/{\acs{DES}}
+
+\def\DLCT/{\ac{DLCT}}
+\def\DLCTf/{\acf{DLCT}}
+\def\DLCTl/{\acl{DLCT}}
+\def\DLCTp/{\acp{DLCT}}
+\def\DLCTs/{\acs{DLCT}}
+
+\def\DP/{\ac{DP}}
+\def\DPf/{\acf{DP}}
+\def\DPl/{\acl{DP}}
+\def\DPp/{\acp{DP}}
+\def\DPs/{\acs{DP}}
+
+\def\ECB/{\ac{ECB}}
+\def\ECBf/{\acf{ECB}}
+\def\ECBl/{\acl{ECB}}
+\def\ECBp/{\acp{ECB}}
+\def\ECBs/{\acs{ECB}}
+
+\def\EDP/{\ac{EDP}}
+\def\EDPf/{\acf{EDP}}
+\def\EDPl/{\acl{EDP}}
+\def\EDPp/{\acp{EDP}}
+\def\EDPs/{\acs{EDP}}
+
+\def\ELP/{\ac{ELP}}
+\def\ELPf/{\acf{ELP}}
+\def\ELPl/{\acl{ELP}}
+\def\ELPp/{\acp{ELP}}
+\def\ELPs/{\acs{ELP}}
+
+\def\FPGA/{\ac{FPGA}}
+\def\FPGAf/{\acf{FPGA}}
+\def\FPGAl/{\acl{FPGA}}
+\def\FPGAp/{\acp{FPGA}}
+\def\FPGAs/{\acs{FPGA}}
+
+\def\iot/{\ac{IoT}}
+\def\iotf/{\acf{IoT}}
+\def\iotl/{\acl{IoT}}
+\def\iotp/{\acp{IoT}}
+\def\iots/{\acs{IoT}}
+
+\def\KPA/{\ac{KPA}}
+\def\KPAf/{\acf{KPA}}
+\def\KPAl/{\acl{KPA}}
+\def\KPAp/{\acp{KPA}}
+\def\KPAs/{\acs{KPA}}
+
+\def\LAT/{\ac{LAT}}
+\def\LATf/{\acf{LAT}}
+\def\LATl/{\acl{LAT}}
+\def\LATp/{\acp{LAT}}
+\def\LATs/{\acs{LAT}}
+
+\def\LFSR/{\ac{LFSR}}
+\def\LFSRf/{\acf{LFSR}}
+\def\LFSRl/{\acl{LFSR}}
+\def\LFSRp/{\acp{LFSR}}
+\def\LFSRs/{\acs{LFSR}}
+
+\def\LP/{\ac{LP}}
+\def\LPf/{\acf{LP}}
+\def\LPl/{\acl{LP}}
+\def\LPp/{\acp{LP}}
+\def\LPs/{\acs{LP}}
+
+\def\LUT/{\ac{LUT}}
+\def\LUTf/{\acf{LUT}}
+\def\LUTl/{\acl{LUT}}
+\def\LUTp/{\acp{LUT}}
+\def\LUTs/{\acs{LUT}}
+
+\def\LWC/{\ac{LWC}}
+\def\LWCf/{\acf{LWC}}
+\def\LWCl/{\acl{LWC}}
+\def\LWCp/{\acp{LWC}}
+\def\LWCs/{\acs{LWC}}
+
+\def\MDS/{\ac{MDS}}
+\def\MDSf/{\acf{MDS}}
+\def\MDSl/{\acl{MDS}}
+\def\MDSp/{\acp{MDS}}
+\def\MDSs/{\acs{MDS}}
+
+\def\MEDP/{\ac{MEDP}}
+\def\MEDPf/{\acf{MEDP}}
+\def\MEDPl/{\acl{MEDP}}
+\def\MEDPp/{\acp{MEDP}}
+\def\MEDPs/{\acs{MEDP}}
+
+\def\MELP/{\ac{MELP}}
+\def\MELPf/{\acf{MELP}}
+\def\MELPl/{\acl{MELP}}
+\def\MELPp/{\acp{MELP}}
+\def\MELPs/{\acs{MELP}}
+
+\def\MILP/{\ac{MILP}}
+\def\MILPf/{\acf{MILP}}
+\def\MILPl/{\acl{MILP}}
+\def\MILPp/{\acp{MILP}}
+\def\MILPs/{\acs{MILP}}
+
+\def\OFB/{\ac{OFB}}
+\def\OFBf/{\acf{OFB}}
+\def\OFBl/{\acl{OFB}}
+\def\OFBp/{\acp{OFB}}
+\def\OFBs/{\acs{OFB}}
+
+\def\OTP/{\ac{OTP}}
+\def\OTPf/{\acf{OTP}}
+\def\OTPl/{\acl{OTP}}
+\def\OTPp/{\acp{OTP}}
+\def\OTPs/{\acs{OTP}}
+
+\def\PRP/{\ac{PRP}}
+\def\PRPf/{\acf{PRP}}
+\def\PRPl/{\acl{PRP}}
+\def\PRPp/{\acp{PRP}}
+\def\PRPs/{\acs{PRP}}
+
+\def\SLP/{\ac{SLP}}
+\def\SLPf/{\acf{SLP}}
+\def\SLPl/{\acl{SLP}}
+\def\SLPp/{\acp{SLP}}
+\def\SLPs/{\acs{SLP}}
+
+\def\SPN/{\ac{SPN}}
+\def\SPNf/{\acf{SPN}}
+\def\SPNl/{\acl{SPN}}
+\def\SPNp/{\acp{SPN}}
+\def\SPNs/{\acs{SPN}}
+
+\def\WSN/{\ac{WSN}}
+\def\WSNf/{\acf{WSN}}
+\def\WSNl/{\acl{WSN}}
+\def\WSNp/{\acp{WSN}}
+\def\WSNs/{\acs{WSN}}
+
+\def\sage/{\textsc{SageMath}}
+
+%\def\aes/{AES}
+%\def\des/{DES}
+\def\anubis/{\textsc{Anubis}}
+\def\aria/{\textsc{Aria}}
+\def\ascon/{\textsc{Ascon}}
+\def\blowfish/{\textsc{Blowfish}}
+\def\bison/{\textsc{Bison}}
+\def\camellia/{\textsc{Camellia}}
+\def\cast/{\textsc{Cast}}
+\def\clefia/{\textsc{Clefia}}
+\def\clyde/{\textsc{Clyde}}
+\def\fides/{\textsc{Fides}}
+\def\fox/{\textsc{Fox}}
+\def\gift/{\textsc{Gift}}
+\def\grain/{\textsc{Grain}}
+\def\grostl/{\textsc{Gr\o{}stl}}
+\def\haval/{\textsc{Haval}}
+\def\idea/{\textsc{IDEA}}
+\def\joltik/{\textsc{Joltik}}
+\def\keccak/{\textsc{Keccak}}
+\def\khazad/{\textsc{Khazad}}
+\def\klein/{\textsc{Klein}}
+\def\kuznyechik/{\textsc{Kuznyechik}}
+\def\lblock/{\textsc{Lblock}}
+\def\led/{\textsc{LED}}
+\def\lowmc/{\textsc{LowMC}}
+\def\maelstrom/{\textsc{Maelstrom}}
+\def\mantis/{\textsc{Mantis}}
+\def\midori/{\textsc{Midori}}
+\def\mugi/{\textsc{Mugi}}
+\def\photon/{\textsc{Photon}}
+\def\piccolo/{\textsc{Piccolo}}
+\def\present/{\textsc{Present}}
+\def\pride/{\textsc{Pride}}
+\def\primates/{\textsc{Primates}}
+\def\prince/{\textsc{Prince}}
+\def\printcipher/{\textsc{PRINTcipher}}
+\def\qarma/{\textsc{Qarma}}
+\def\rasta/{\textsc{Rasta}}
+\def\safer/{\textsc{Safer}}
+\def\saturnin/{\textsc{Saturnin}}
+\def\sc2000/{\textsc{SC2000}}
+\def\serpent/{\textsc{Serpent}}
+\def\shadow/{\textsc{Shadow}}
+\def\simon/{\textsc{Simon}}
+\def\skinny/{\textsc{Skinny}}
+\def\skipjack/{\textsc{Skipjack}}
+\def\sm4/{\textsc{sm4}}
+\def\smallscaleaes/{\textsc{SmallScale AES}}
+\def\spook/{\textsc{Spook}}
+\def\square/{\textsc{Square}}
+\def\twofish/{\textsc{Twofish}}
+\def\whirlpool/{\textsc{Whirlpool}}
+\def\whirlwind/{\textsc{Whirlwind}}
+\def\widea/{\textsc{Widea}}
+\def\wisent/{\textsc{Wisent}}
+\def\zorro/{\textsc{Zorro}}

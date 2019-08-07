@@ -1,0 +1,317 @@
+\chapter{Introduction}
+\openepigraph{Nanos gigantum humeris insidentes.}{Bernard of Chartres}
+\openepigraph{If I have seen further, it is by standing on the shoulders of giants.}{Isaac Newton}
+
+Cryptography is by now used for more than 30 centuries.
+While in ancient times encrypting messages seemed more like an art, our understanding of the security needs and techniques greatly evolved during the last decades.
+Likewise, the field of cryptology has greatly grown and research specialised in many different aspects, mainly dividable in the underlying techniques of symmetric and asymmetric cryptography.
+The prime difference between these two is that for symmetric ciphers both, encryption and decryption, needs the same secret key, while in asymmetric ciphers the so-called public key is used for encryption (and does not have to be kept secret) and only the secret key allows decryption.
+
+Especially such fascinating recent developments of techniques like secure multiparty computation or fully homomorphic encryption have the chance to significantly impact our privacy needs of today's digital world.
+While these techniques mainly rely on asymmetric cryptography, symmetric cryptography is still the technique of choice, when it comes to plain old encryption of messages.
+
+\newthought{Block ciphers}\hspace{1.5em} are today's workhorse of symmetric encryption
+\marginpar{%
+    \footnotesize
+    For a more precise and technical introduction to block ciphers and their analysis see the following \cref{ch:prelim}, in particular \cref{sec:prelim:bc,sec:prelim:cryptanalysis}.
+}
+-- and thus responsible for the majority of all encrypted data.
+Opposed to public key primitives, which security properties can often be reduced to cryptographic or complexity theoretic hardness assumptions and thus often come with a provable security notion, our trust in symmetric primitives is mainly built from extensive cryptanalysis.
+Informally, a secure block cipher is thus one that withstood cryptanalysis long enough and resists all known attacks; from a more theoretical point of view we require a secure block cipher to be interchangeably usable for a random permutation, \ie/ the block cipher should not be distinguishable from a random permutation.
+
+To ease this analysis, simplifying the concrete design of a primitive is a fruitful ansatz.
+A very common approach is, to design the cipher as an iteration of a simple, in itself insecure, round function.
+The overall security of the block cipher is then built piecewise over several rounds of encryption.
+To further ease the analysis of the round function, it is often built independently of the encryption (round) keys.
+The key-material is instead introduced in between the rounds, often by xor-ing it into the cipher's state.
+Such constructions are known as key-alternating ciphers, whereof the best known instance is the \AES/.\footnote{%
+    The so called \enquote{king of bock ciphers}.
+}
+Compared to \enquote{older} block cipher designs, such as that of the \DES/ or \blowfish/,\footnote{%
+    \DES/' Feistel structure is arguable more complex than that of comparable modern Feistel ciphers as \eg/ \sm4/, the Chinese symmetric encryption standard.
+    \blowfish/ uses key-dependent S-boxes, which make it considerable harder to reason about its precise resistance against known attacks.
+} this kind of, very simple and elegant, design allows us to throughly understand its properties and build confidence in its security.
+After 20 years of cryptanalysis, we can justifiably say that the \AES/ is today's best understood design and (even more important) remains a \emph{secure} block cipher.
+
+Albeit one might think the existence of standards like the \AES/ renders the design of new block ciphers needless, plenty of new designs where proposed since the publication of the \AES/.
+
+\newthoughtpar{Incentives for new Cipher Designs}
+It is a legitimate concern to ask why we still keep designing new ciphers all the time.
+\emph{Lightweight cryptography} is the latest most important trend in symmetric cryptography, at least since the publication of the block cipher \present/,\footnote{%
+    Since its publication in 2007 and at the time of writing, the most cited cryptographic paper, according to \href{https://www.sec.cs.tu-bs.de/~konrieck/topnotch/crypto_top100.html}{Konrad~Rieck} (visited 09--06--2019).
+} with its current peak in NIST's (the National Institute of Standards and Technology) \LWC/ competition.
+The main reason for lightweight cryptographic designs is the assumption that existing standards, \eg/ the \AES/, are too costly for heavily constraint devices such as medical implants, RFID tags, or sensors for the \iot/.
+Another interesting direction is the design of special purpose ciphers,\footnote{%
+    Two examples are \lowmc/, see Albrecht et~al., \enquote{Ciphers for MPC and FHE}, and \rasta/, see Dobraunig et~al., \enquote{\rasta/: A cipher with low ANDdepth and few ANDs per bit}.
+} \ie/ ciphers which are built for the use in one specific application and are thus specifically tailored to the corresponding requirements.
+
+An obvious advantage is the gain in efficiency for such specialised designs.\footnote{%
+    However it might often be that the \enquote{\AES/ is lightweight enough}, see \href{https://blog.teserakt.io/2019/06/03/cryptography-in-industrial-embedded-systems-our-experience-of-the-needs-and-constraints/}{Aumasson et~al.} (visited 09--06--2019).
+}
+The main advantage is actually a different one.
+Vigorously optimising block cipher designs to be as efficient as possible leads to designs with sometimes very narrow security margins -- or them even being broken.
+Such designs at the border of security sometimes enable weaknesses to occur, for which \enquote{normal} designs are just \enquote{too secure}.
+A prime example is the \printcipher/ which was later broken by structural attacks with the discovery of invariant subspace attacks.
+However, these designs provide us with the valuable insight of what is important for the security of a block cipher.
+
+Designing new block ciphers thus enables us to broaden our understanding of which structures provide what kind of security.
+Eventually this process of designing and analysing new block ciphers will lead to very few standardised encryption algorithms that are then recommended to use in real world applications.
+
+\section{Open Problems in Block Cipher Design}
+
+Efficiency of symmetric ciphers have been significantly improved further and further over the past years, in particular within the trend of lightweight cryptography.
+However, when it comes to arguing about the security of ciphers, the progress is rather limited and the arguments basically did not get easier nor stronger since the development of the \AES/.
+It might thus be worth shifting the focus to improve security arguments for new designs rather than (incrementally) improving efficiency.
+
+Maybe the top goal of cryptanalysis should be to fully understand and thoroughly exploit every cryptanalytic attack that we can mount on block ciphers.
+
+\newthoughtpar{Full Understanding of Cryptanalytic Attacks}
+Being a noble goal, the often computational infeasible kind of cryptanalytical attacks on cryptographic designs renders it seemingly impossible to achieve.
+
+%Despite good progress in the last decades, especially within the \AES/ competition and more recently within the area of lightweight cryptography, some fundamental questions of the design and analysis of block ciphers (or hash-functions or cryptographic permutations) still remain open.
+%Several of those fundamental questions can be found in the area of differential cryptanalysis and its variants.
+%In differential cryptanalysis we are interested in studying the behaviour of the output differences of (parts of) the cipher for a given fixed input difference.
+%In order to analyze the distribution of those differences, we \begin{inparaenum}[(i)]
+%\item are required to make simplifying assumptions (like assuming independent round keys),
+%\item argue about average behaviour only, and
+%\item study differential characteristics instead of differentials.
+%\end{inparaenum}
+%While the general experience is that for most practical applications, the simplified analysis is a sufficiently good heuristic, the situation is clearly unsatisfactory from a scientific perspective.
+%Any progress here would significantly improve our understanding of block ciphers.
+
+In particular even with so well-studied attacks as differential and linear cryptanalysis, effects (differentials and linear hulls) occur which we do not fully understand, even for ciphers like the \AES/.
+Giving tight security bounds in such a case is inherently difficult.
+Thus, two problems, exemplary for differential and linear cryptanalysis, are
+\marginpar{%
+    \footnotesize
+    \vspace{\baselineskip}
+    \vspace*{-7\baselineskip}
+    See \cref{sec:prelim:dc} for a detailed explanation of differential cryptanalysis and the problems that appear when trying to bound the differential probability.
+
+    \Cref{sec:prelim:lc} discusses linear cryptanalysis and the respective problems with the linear hull.
+}
+\begin{problem}[Differentials]\label{prob:differentials}
+    Given a cipher $E$, compute a (tight) bound on the probability that a differential through $E$ holds.
+\end{problem}
+and
+\begin{problem}[Linear Hulls]\label{prob:linear_hulls}
+    Given a cipher $E$, compute a (tight) bound on the probability that a linear hull approximates $E$.
+\end{problem}
+
+\newthoughtpar{Security Arguments for Block Ciphers}
+Two very distinct flavours of security arguments for cipher designs are provable security arguments (asymptotic and concrete security) on the one hand, and resistance to practical attacks on the other hand.
+For example, the generic (or idealised) security of key-alternating ciphers was studied in recent years and one can prove that for breaking such an $r$-round construction one has to make roughly $2^{\frac{r}{r+1}n}$ oracle queries.
+
+While this bound can be proven to be tight for key-alternating ciphers, it is unsatisfactory for two reasons.
+First, one might hope to get better security bounds with different constructions and second one might hope to lower the requirements used in the security proof.
+A similar goal to the above is thus, to find new generic constructions that allow very strong security proofs.
+
+\begin{problem}[Block Cipher Constructions]\label{prob:cipher_constructions}
+    Find new secure constructions for block ciphers.
+\end{problem}
+\marginpar{%
+    \footnotesize
+    \vspace*{-3\baselineskip}
+    We recall the most common constructions for block ciphers in \cref{sec:prelim:bcc} and discuss results on their security in \cref{sec:prelim:concrete-sec}.
+}
+
+For the more practical part of cryptanalysis, and apart from the first two problems, it might also well be the case that new attacks are discovered.
+In such a case, all previously published ciphers that remained secure, have to be evaluated against this new attack.
+To ease this process, easy to verify arguments for the resistance against a new technique are very helpful.
+
+\begin{problem}[Provable Resistance]\label{prob:prove_res_attack}
+    Given an attack for block ciphers, find provable properties to show the resistance against this attack.
+\end{problem}
+\marginpar{%
+    \footnotesize
+    \vspace*{-3\baselineskip}
+    The common heuristic argument for resistance against differential and linear cryptanalysis is discussed in \cref{sec:prelim:dc,sec:prelim:lc,sec:prelim:practical-sec}.
+}
+
+\newthoughtpar{Automatisation of Design and Cryptanalysis}
+Having easy to check theorems for the resistance of a cipher against some type of attack is already a good basis.
+It might still be connected with a huge amount of (tedious) work, to check the security of many block ciphers.
+For example, in the first round of the \LWC/ competition, 56 candidate designs were submitted.
+In case we found a new attack for block ciphers, we would have to check each of these candidates, if and how well this attack is applicable.
+
+It is thus very helpful, if tedious and repetitive analysis tasks can be automated.
+This does not only save time we can spend on more productive research, but also reduces the probability of making errors during the analysis.
+So, similar to \cref{prob:prove_res_attack}:
+\begin{problem}[Algorithmic Resistance]\label{prob:alg_res_attack}
+    Given an attack for block ciphers, find an algorithmic way to show the resistance against this attack.
+\end{problem}
+
+Attacks on symmetric ciphers are often based on two parts, see \cref{sec:prelim:cryptanalysis} for more details.
+First, the cryptanalyst finds some non random behaviour that can be turned into a distinguisher for some rounds of the cipher.
+For a lot of attacks there are methods that find such distinguishers automatically.
+Second, this distinguisher is extended by a key guessing part to turn the distinguishing attack into a key recovery attack, where the key guesses are verified by the distinguisher.
+This second part involves a lot of manual bit-fiddling and precise details of the cipher under scrutiny -- and is thus prone to errors.
+\begin{problem}[Automate Key Recovery]\label{prob:key_rec}
+    Given a distinguisher $D$ for $r$ rounds of a cipher $E$, algorithmically turn this distinguisher into a key recovery attack over a maximal number of $r+s$ rounds for $E$.
+\end{problem}
+
+But not only during the analysis of cryptographic primitives, also when initially designing them, automated methods can be of great help.
+For example when specific parameters have to be optimised, a computer aided process is virtually indispensable for the exploration of the design space.
+\begin{problem}[Optimise Building Block]\label{prob:optimise_bb}
+    Given a set of constraints for a building block and some cost metric, find an optimal instance for this building block regarding that metric.
+\end{problem}
+
+In the next section, we first briefly sketch the outline of the thesis and then summarise the contributions in the context of the above problems.
+
+\section{Outline and Contributions}
+
+The remainder of the thesis is structured as follows.
+In the following \cref{ch:prelim} we discuss preliminary notions, constructions, and analysis techniques for block ciphers.
+The technical parts of the thesis are then split in two.
+
+In \textsc{Security Arguments for Block Ciphers}, we discuss an analysis tool\footnote{%
+    The \DLCTl/ by \citeauthor{EC:BDKW19}.
+} published at EuroCrypt'19 and its connection to established notions for (vectorial) Boolean functions, see \cref{ch:act} and~\cite{EPRINT:CanKolWie19}.
+The following \cref{ch:bison} describes our instances \bison/ and \wisent/ of the \WSNs/ construction; it is based on~\cite{EC:CLLNW19}.
+
+The next part, \textsc{Automated Methods in Design and Analysis}, is split in three \cref{ch:slp,ch:st,ch:key_rec}.
+We first discuss heuristic methods for optimising implementations of matrix multiplications in hardware, see also~\cite{ToSC:KLSW17}.
+Then we turn our attention to cryptanalysis and study an algorithmic way to propagate truncated differentials and subspace trails through \SPN/ constructions.
+For the discussed algorithm, we propose two applications: bounding the length of any subspace trails, based on~\cite{ToSC:LeaTezWie18}, and discuss an approach towards the automatisation of key recovery attacks.
+
+Finally, \cref{ch:conclusion} concludes the thesis.
+
+In particular, the respective contributions are the following.
+
+\subsection{Security Arguments for Block Ciphers and Understanding of Attacks}
+
+\newthoughtpar{Autocorrelation Tables and Differential-Linear Cryptanalysis}
+\textcite{EC:BDKW19} proposed a new analysis tool for differential-linear cryptanalysis which allows them to give a more precise estimation of several differential-linear distinguishers published so far.
+Following the same pattern as similar tools for differential, linear and boomerang attacks, they coin it \DLCT/.
+However, the authors did not analyse the \DLCT/ from a theoretical point in detail.
+
+We continue the analysis at this point and provide further insights on the \DLCT/.
+In particular, we show that this table coincides with the already known \ACT/ -- highlighting an interesting new connection between resistance to differential-linear attacks and the autocorrelation of vectorial Boolean functions.
+Additionally, we discuss further properties of the autocorrelation in the case of vectorial Boolean functions.
+Our analysis contributes to the understanding of resisting differential-linear attacks, see \crefName{prob:prove_res_attack}.
+
+\newthoughtpar{\bison/ -- Instantiating the WSN construction}
+The \WSN/ construction by \textcite{AC:Tessaro15} is an alternative construction for block ciphers.
+By proving the security of his construction, \citeauthor{AC:Tessaro15} provides a solution to \crefName{prob:cipher_constructions}.
+In this regard, his work just comes with one drawback: there is no instance of this construction yet.
+But when building such an instance, one fundamentally has to instantiate the building blocks modeled as ideal functionalities.
+Furthermore, such a practical instance has to be scrutinised from a symmetric cryptanalysis perspective and has to provide security against known attacks.
+Thus, without an instance and further analysis, the underlying constructing remains of no avail.
+
+In~\cite{EC:CLLNW19}, we close this gap and suggest an instance of the \WSN/ construction, completing \citeauthor{AC:Tessaro15}'s solution to \cref{prob:cipher_constructions}.
+For this instance, we first derive some (rather trivial but nevertheless important) design rationales.
+Based on these properties every secure instance has to fulfill, we conduct further cryptanalysis.
+As a result of this analysis, we give a tight bound for any non-trivial differential through such an instance, thus solving \crefName{prob:differentials} for this case.
+Note that, to the best of our knowledge, no other secure cipher exists, for which we are able to solve this problem.
+
+In the remainder of the chapter, we then define our instance more precisely -- that is, we give a concrete specification for an instance fulfilling our generic restrictions.
+We call this instance \bison/, as it is based on bent Boolean functions.\footnote{%
+    \bison/ is thus a Bent whItened Swap-Or-Not cipher.
+}
+Afterwards, we extend the cryptanalysis of \bison/ to other attacks and discuss performance figures.
+The main drawback from an implementers perspective of \bison/ (apart from being impractically slow) is that we can only instantiate odd block length versions of it.
+For an actual use in hard- or software, we would however strongly prefer even block lengths.
+
+We thus extend the work from~\cite{EC:CLLNW19} and give a second instance, for even block lengths, of the \WSN/ construction, which follows our initial analysis.
+Due to its close connection to \bison/, we name this instance \wisent/.
+Here, too, we extend the analysis to other common attacks and give performance figures.
+
+\subsection{Automated Methods in Design and Analysis}
+
+\newthoughtpar{Heuristics for XOR counts}
+Recently, finding optimal linear layers in block ciphers, an instance of \crefName{prob:optimise_bb}, attracted a lot of interest.
+Here, the building block we are looking for is a matrix $M$, where the multiplication by $M$ corresponds to the application of the linear layer.
+Typically, this matrix should exhibit some special properties, \eg/ being \MDS/, due to security reasons.
+The metric under which we want to find an optimal matrix is then the number of gates (hardware) or instructions (software) needed in an implementation.
+
+As the design space usually is too large for exhaustive search, we have to apply other methods.
+For example, proofs for the minimal costs of multiplications by single elements were given by some authors, \eg/ \textcite{C:BeiKraLea16,EC:Kolsch19}; a typical optimisation strategy for a complete matrix would then be to choose the matrix elements from the cheapest elements possible.
+This can be seen as a local optimisation strategy.
+
+In~\cite{ToSC:KLSW17}, we observe that optimising the matrix implementation globally, that is reusing intermediate results from one element multiplication for another, can save a lot of resources.
+Further we observe that this problem, of finding an optimal implementation, is known as finding the shortest linear straight line program for this implementation.
+Moreover, a whole branch of research exists on solving this problem.
+As finding short linear straight line programs is NP-hard, several heuristic approaches where proposed in the literature.
+In the remainder of this chapter, we discuss and evaluate the effectiveness of these heuristics.
+Eventually we are able to improve all known current best implementations with little effort.
+
+While this contributes towards solving \cref{prob:optimise_bb} for this case, it seems rather impossible to ultimately solve this problem, as we discuss at the end of this chapter.
+
+\newthoughtpar{Propagating Truncated Differentials}
+While standard differential cryptanalysis is quite well understood, this is not the same case for its variants.
+For example when it comes to truncated differentials, no generic security argument for the resistance against this attack is known.
+Additionally, the new notion of subspace trails, see~\cite{ToSC:GraRecRon16}, which is related to truncated differentials, allowed to discover new properties of the \AES/, \eg/~\citeonly{EC:GraRecRon17,C:BDKRS18} (after 20 years of cryptanalysis).
+It is thus important to improve our understanding of these attacks.
+
+In~\cite{ToSC:LeaTezWie18} we contribute towards this goal.
+We first show the exact relation between subspace trails and truncated differentials for their probability-one versions.
+Afterwards, we develop an algorithm to propagate a given subspace trail through an \SPN/ round function.
+We further give properties and algorithmic ways to show an (\SPN/) cipher's resistance, thus partly solving \cref{prob:prove_res_attack,prob:alg_res_attack} for this attack.
+Finally we apply our algorithms to a list of \SPN/ ciphers and give precise bounds on the longest subspace trails for each of them.
+
+\newthoughtpar{Key Recovery}
+As a second application of our propagation algorithm for truncated differentials, we turn our focus to \crefName{prob:key_rec}.
+We observe that extending a differential distinguisher is closely related to subspace trails and truncated differentials of probability one.
+Based on this finding, we discuss ideas how to exploit this relation in order to automate the construction of key recovery attacks.
+
+\section{Publications}
+
+During the course of my doctoral studies, I worked on several projects which are not all covered in the remainder of this thesis.
+In particular, these are the following.
+
+\newthoughtpar{Conference Publications}
+\begin{itemize}
+    \item[] \fullfullcite{EC:CLLNW19}, see \cref{ch:bison}.
+            %Because \bison/ can only be instantiated with odd block length, we here also give a second instance of the underlying construction: \wisent/.
+            %This instance is for the even block length case and basically inherits almost the same security bounds as \bison/.
+\end{itemize}
+
+\newthoughtpar{Journal Publications}
+\begin{itemize}
+    \item[] \fullfullcite{ToSC:KraLeaWie17}.
+    \item[] \fullfullcite{ToSC:KLSW17}, see \cref{ch:slp}.
+    \item[] \fullfullcite{ToSC:LeaTezWie18}, see \cref{ch:st}.
+\end{itemize}
+
+\newthoughtpar{Other Publications, Preprints and Submitted Work}
+\begin{itemize}
+    \item[] \fullfullcite{EPRINT:CanKolWie19}, see \cref{ch:act}.
+\end{itemize}
+To these five papers, all authors contributed equally.
+We merged the last paper with the results from~\citeonly{ARXIV:LLLQ19}:
+\begin{itemize}
+    \item[] \fullfullcite{CKLLLQW19}.
+\end{itemize}
+I am also involved in the design of the NIST \LWC/ submission \spook/:
+\begin{itemize}
+    \item[] \fullfullcite{LWC:Spook}.
+\end{itemize}
+I contributed to the cryptanalysis of the underlying primitives \clyde/ and \shadow/, in particular to the choice of round constants, the analysis of subspace trails, and division properties.
+
+Further, I contributed to the development of \sage/ by authoring the following tickets.
+Additionlly I also reviewed tickets not listed here.
+\begin{itemize}
+    \setlength\itemsep{0em}
+    \item[] \fullfullcite{SAGE:14549}
+    \item[] \fullfullcite{SAGE:21252}
+    \item[] \fullfullcite{SAGE:22453}
+    \item[] \fullfullcite{SAGE:22986}
+    \item[] \fullfullcite{SAGE:22988}
+    \item[] \fullfullcite{SAGE:23830}
+    \item[] \fullfullcite{SAGE:24566}
+    \item[] \fullfullcite{SAGE:24819}
+    \item[] \fullfullcite{SAGE:24872}
+    \item[] \fullfullcite{SAGE:25516}
+    \item[] \fullfullcite{SAGE:25633}
+    \item[] \fullfullcite{SAGE:25708}
+    \item[] \fullfullcite{SAGE:25733}
+    \item[] \fullfullcite{SAGE:25735}
+    \item[] \fullfullcite{SAGE:25739}
+    \item[] \fullfullcite{SAGE:25744}
+    \item[] \fullfullcite{SAGE:25765}
+    \item[] \fullfullcite{SAGE:25766}
+    \item[] \fullfullcite{SAGE:26009}
+    \item[] \fullfullcite{SAGE:28001}
+\end{itemize}
+
+Before we proceed to the technical parts, we now recall basic techniques for the design and analysis of block ciphers.
