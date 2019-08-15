@@ -69,6 +69,30 @@
     \restoregeometry
 }
 
+% implements a new environment for figures, tables, etc
+% that are able to spread the full width of the page,
+% while keeping the caption on the side margin
+\newlength{\fullwidthlen}
+\setlength{\fullwidthlen}{\marginparwidth}
+\addtolength{\fullwidthlen}{\marginparsep}
+\newenvironment{fullwidthfig}{%
+  \begin{adjustwidth*}{}{-\fullwidthlen}%
+}{%
+  \end{adjustwidth*}%
+}
+
+% Example on how to use the fullwidthfig env
+% \begin{figure}[t]
+%   \begin{fullwidth}
+%     \includegraphics[width=\linewidth+\marginparsep]{demo}
+%   \end{fullwidth}
+%   \vspace{-\baselineskip}\vspace{-\baselineskip}
+%   \sideparmargin{outer}
+%   \sidepar{\vspace{\baselineskip}
+%     \caption{Caption for a full-width figure appearing in the margin
+%       below it.}}
+% \end{figure}
+
 \pagestyle{diss}
 
 %%% Part Style %%%
