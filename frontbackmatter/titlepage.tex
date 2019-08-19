@@ -1,50 +1,27 @@
-%% recto: halftitlepage
-%\thispagestyle{empty}
-%
-%\calccentering{\unitlength}
-%\begin{adjustwidth*}{\unitlength}{-\unitlength}
-%\centering
-%\Huge
-%
-%\hphantom{.}
-%\vfill
-%Security Arguments and\\
-%Tool-based Design of\\
-%Block Ciphers\\[\baselineskip]
-%{\huge Friedrich Wiemer}
-%\vfill
-%\vfill
-%\hphantom{.}
-%
-%\end{adjustwidth*}
-
-% recto: titlepage
+% front matter / titelei
+% recto: halftitlepage / schmutztitelseite, vortitel
 \thispagestyle{empty}
 {
-    \calccentering{\unitlength}
-    \begin{adjustwidth*}{\unitlength}{-\unitlength}
-        \raggedleft{}
-        {\Huge\color{Burgundy}%
-        Security Arguments and\\
-        Tool-based Design of Block Ciphers}\\[\baselineskip]
-        {\LARGE%
-        Dissertation Thesis}\\[0.2\textheight]
-        {\huge%
-        Friedrich Wiemer}\par
+    \begin{fullwidth}
+        \centering
+        \hphantom{.}
         \vfill
-        {%\includegraphics{wortmarke}} % not available as it is part of the corporate design of the RUB
-        \LARGE%
-        RUHR-UNIVERSITÄT BOCHUM}
-        \vspace*{\baselineskip}
-    \end{adjustwidth*}
+        {\Huge
+            Security Arguments and\\
+            Tool-based Design of Block Ciphers
+        }
+        \vfill
+        \vfill
+    \end{fullwidth}
 }
 
 \clearpage{}
 
-% verso: blank
+% verso: frontispiece / frontiszipzseite, vakatseite
+% dedication
 \cleardoublepage{}
 
-% recto: titlepage
+% recto: titlepage / titelblatt, innentitel
 \thispagestyle{empty}
 {
     \calccentering{\unitlength}
@@ -58,7 +35,7 @@
         {\huge%
         Friedrich Wiemer}\\[\baselineskip]
         {\LARGE%
-        \today}
+        16th~August 2019}
         \vfill
         \vfill
         {\large%
@@ -74,38 +51,51 @@
         %an der Fakultät der Mathematik\\
         %der Ruhr-Universität Bochum\\[2\baselineskip]
 
-        %\begin{tabular}{ll}
-        %    1. Gutachter & Prof.\ Dr.\ Gregor Leander\\
-        %    2. Gutachter & Prof.\ Dr.\ Alexander May%
-        %\end{tabular}
+        \begin{minipage}{0.5\textwidth}
+        \begin{tabular}{lr}
+            1st\hspace{4pt} Reviewer & Prof.\ Dr. Gregor Leander\\
+            2nd Reviewer & Prof.\ Dr.\; Alexander May
+        \end{tabular}
+        \end{minipage}
+        \hspace*{36pt}
         %}\hspace*{-8pt}
 
         %\vspace{2\baselineskip}
         %Datum der Disputation: 13.\ Dezember 2019
         \vfill
         }
-        {%\includegraphics{wortmarke}} % not available as it is part of the corporate design of the RUB
-        \LARGE%
-        RUHR-UNIVERSITÄT BOCHUM}
+        {\includegraphics{wortmarke}}
         \vspace*{\baselineskip}
     \end{adjustwidth*}
 }
 
 \clearpage{}
 
-% verso: copyright notes
+% verso: colophon / impressum
 \thispagestyle{empty}
 \hphantom{.}
 \vfill
-\section*{colophon}
 
-This document was typeset using \LaTeX{} and the \texttt{memoir} documentclass, based on Aaron Turon's thesis \emph{Understanding and expressing scalable concurrency},\sidenote{\url{https://people.mpi-sws.org/~turon/turon-thesis.pdf}} which itself is a mixture of \texttt{classicthesis}\sidenote{\url{https://bitbucket.org/amiede/classicthesis/}} developed by Andr\'e Miede and \texttt{tufte-latex},\sidenote{\url{https://github.com/Tufte-LaTeX/tufte-latex}} which is based on Edward Tufte's \emph{Beautiful Evidence}.
-The bibliography was processed by Biblatex.\sidenote{\url{http://www.ctan.org/pkg/biblatex}}
+\section*{Imprint}
 
-Matthew Carter's \textrm{Charter} acts as both the text and display typeface.
-Monospaced text uses Jim Lyles's \texttt{Bitstream Vera Mono} (\enquote{Bera Mono}).\\[2em]
 \textit{Security Arguments and Tool-based Design of Block Ciphers}\\
-\textcopyright{} \thedate{}, \theauthor{}
+Copyright \textcopyright{} 2019 by \theauthor{}.\\
+All rights reserved. Printed in Germany.\\
+Published by the Ruhr-Universität Bochum, Bochum, Germany.
+
+\section*{Colophon}
+
+This thesis was typeset using \LaTeX{} and the \texttt{memoir} documentclass.
+It is based on Aaron Turon's thesis \emph{Understanding and expressing scalable concurrency}\footnote{\url{https://people.mpi-sws.org/~turon/turon-thesis.pdf}}, itself a mixture of \texttt{classicthesis}\footnote{\url{https://bitbucket.org/amiede/classicthesis/}} by Andr\'e Miede and \texttt{tufte-latex}\footnote{\url{https://github.com/Tufte-LaTeX/tufte-latex}}, based on Edward Tufte's \emph{Beautiful Evidence}.\\[0.5\baselineskip]
+%
+The bibliography was processed by Biblatex.
+All graphics and plots are made with PGF/Ti\emph{k}Z.\\[0.5\baselineskip]
+%
+The body text is set 10/14pt (long primer) on a 26pc measure.
+The margin text is set 8/9pt (brevier) on a 12pc measure.
+Matthew Carter's \textrm{Charter} acts as both the text and display typeface.
+Monospaced text uses Jim Lyles's \texttt{Bitstream Vera Mono} (\enquote{Bera Mono}).
+
 \clearpage{}
 
 % recto: dedication or epigraph

@@ -1,11 +1,14 @@
 \chapter{Heuristics for XOR counts}\label{ch:slp}
-\openepigraph{Premature optimization is\\the root of all evil}{Donald Knuth}
+\openepigraph{\mbox{Premature optimization is the root of all evil}}{Donald Knuth}
+
+\vspace*{-\baselineskip}
 \newthought{Synopsis}\hspace{1.5em}
 This chapter discusses heuristics for XOR count optimisations and the application of these to previously published results.
 It is based on the article
 \begin{quote}
     \fullfullcite{ToSC:KLSW17}.
 \end{quote}
+All authors contributed equally.
 
 We start by recalling the notion of an \MDSs/ matrix and several special types of matrix constructions.
 Then we examine the different XOR count metrics discussed in the literature and discuss heuristic approaches published in another line of research.
@@ -100,10 +103,10 @@ We typically deal with $n \times n$ \MDS/ matrices over $\F_2^k$ respectively bi
 In either case, when we call a matrix \MDS/, the size of $k$ will always be clear from the context when not explicitly mentioned.
 
 It is easy to see that, if $M \in \F_{2^k}^{n \times n}$ is \MDS/, then also $\binarymatrix{M}$ is \MDS/ for $k$-bit words.
-On the other hand, there might also exist binary \MDS/ matrices for $k$-bit words that do not have an according representation over $\F_2^k$.
+On the other hand, there might also exist binary \MDS/ matrices for $k$-bit words that do not have an according representation over~$\F_2^k$.
 
 Other, non-\MDS/, matrices are also common in cipher designs.
-To name only a few examples: \present/'s permutation matrix~\citeonly{CHES:BKLPPR07}, lightweight implementable matrices from \prince/~\citeonly{AC:BCGKKK12}, or \pride/~\citeonly{C:ADKLPY14}, or the recently used almost-\MDS/ matrices, \eg/ in \midori/~\citeonly{AC:BBISHA15}, or \qarma/~\citeonly{ToSC:Avanzi17}.
+To name only a few examples: \present/'s permutation matrix~\citeonly{CHES:BKLPPR07}, lightweight implementable matrices from \prince/~\citeonly{AC:BCGKKK12}, or \pride/~\citeonly{C:ADKLPY14}, or recently, \eg/ in \midori/~\citeonly{AC:BBISHA15}, or \qarma/~\citeonly{ToSC:Avanzi17}, almost-\MDS/ matrices.
 
 \subsection{\MDS/ Constructions}
 Cauchy and Vandermonde matrices are two famous constructions for building \MDS/ matrices.
@@ -118,14 +121,6 @@ For example, we do not know how to construct \MDS/ matrices over $\F_{2^2}$ of d
     \begin{equation*}
         m_{i,j} \coloneqq \frac{1}{a_i - b_j}, \qquad \text{with}\ 1 \leq i,j \leq n
     \end{equation*}
-    %\begin{equation*}
-    %    M = \cauchy(a_1, \ldots, a_n, b_1, \ldots, b_n) \coloneqq \begin{pmatrix}
-    %        \frac{1}{a_1 - b_1} & \frac{1}{a_1 - b_2} & \cdots & \frac{1}{a_1 - b_n} \\
-    %        \frac{1}{a_2 - b_1} & \frac{1}{a_2 - b_2} & \cdots & \frac{1}{a_2 - b_n} \\
-    %        \vdots              &                     & \ddots & \vdots              \\
-    %        \frac{1}{a_n - b_1} & \frac{1}{a_n - b_2} & \cdots & \frac{1}{a_n - b_n} \\
-    %    \end{pmatrix}
-    %\end{equation*}
     and is called a \emph{Cauchy} matrix.
 \end{definition}
 
@@ -137,14 +132,6 @@ Every Cauchy matrix is \MDS/, \eg/ see~\cite[Lemma 1]{AFRICACRYPT:GupRay13}.
     \begin{equation*}
         m_{i,j} \coloneqq a_i^{j-1}, \qquad \text{with}\ 1 \leq i,j \leq n
     \end{equation*}
-    %\begin{equation*}
-    %    M = \vandermonde(a_1, \ldots, a_n) \coloneqq \begin{pmatrix}
-    %        a_1^0  & a_1^1 & \cdots & a_1^{n-1} \\
-    %        a_2^0  & a_2^1 & \cdots & a_2^{n-1} \\
-    %        \vdots &       & \ddots & \vdots    \\
-    %        a_n^0  & a_n^1 & \cdots & a_n^{n-1} \\
-    %    \end{pmatrix}
-    %\end{equation*}
     and is called \emph{Vandermonde} matrix.
 \end{definition}
 
@@ -180,7 +167,6 @@ Because of many repeated submatrices, the probability to find an \MDS/ matrix is
     \end{equation*}
 \end{definition}
 
-
 While in the literature circulant matrices are almost always right circulant, left circulant matrices are equally fine for cryptographic applications.
 The often noted advantage of right circulant matrices, the ability to implement the multiplication serialised and with shifts in order to save XORs, of course also applies to left circulant matrices.
 Additionally, it is easy to see that the branch number of left and right circulant matrices are equal, $\mathrm{bn}(\circmatr{r}(a_1, \ldots, a_n)) = \mathrm{bn}(\circmatr_{\ell}(a_1, \ldots, a_n))$, since the matrices only differ in a permutation of the rows. Thus, for cryptographic purposes, it does not matter if a matrix is right circulant or left circulant and we will therefore simply talk about circulant matrices in general.
@@ -192,7 +178,7 @@ But \textcite{FSE:LiWan16} showed that this can be avoided by taking the matrix 
     \begin{equation*}
         M = \begin{pmatrix} M_1 & M_2 \\ M_2 & M_1 \end{pmatrix},
     \end{equation*}
-    where $M_1$ and $M_2$ are either Hadamard matrices themselves or one-dimensional.
+    where $M_1$ and $M_2$ are either Hadamard matrices themselves or one-dim\-en\-sio\-nal.
 \end{definition}
 
 The biggest advantage of Hadamard matrices is the possibility to construct involutory matrices.
@@ -298,7 +284,8 @@ As each of the $n$ output components of a matrix-vector multiplication is comput
 Namely the single multiplications on the one hand and addition of the products on the other hand.
 As $\F_{2^k} \cong \F_2^k$, an addition of two elements from $\mathbb{F}_2^k$ requires $k$ XORs and thus adding up the products for all rows requires $n(n-1)k$ XORs in the case of an \MDS/ matrix where every element is nonzero.
 If one implements the matrix like this, these $n(n-1)k$ XORs are a fixed part that cannot be changed.
-Accordingly, many papers~\citeonly{C:BeiKraLea16,FSE:LiuSim16,FSE:LiWan16,EPRINT:ZhoWanSun17,ToSC:JPST17} just state the number of XORs for the single field multiplications when presenting results. The other costs are regarded as inevitable.
+Accordingly, many papers~\citeonly{C:BeiKraLea16,FSE:LiuSim16,FSE:LiWan16,EPRINT:ZhoWanSun17,ToSC:JPST17} just state the number of XORs for the single field multiplications when presenting results.
+The other costs are regarded as inevitable.
 The goal then boils down to constructing matrices with elements for which multiplication can be implemented with few XORs.
 Thus, the original goal of finding a global implementation for the matrix is approached by locally looking at the single matrix elements.
 
@@ -339,7 +326,7 @@ Fuhs and Schneider-Kamp~\cite{IWIL:FuhSch10,SAT:FuhSch10} suggested to reduce th
 They presented a general encoding scheme for deciding if a matrix can be implemented with a certain number of XORs.
 Now, for finding the optimal implementation, they repeatedly use SAT solvers for a decreasing number of XORs.
 Then, when they know that a matrix can be implemented with $\ell$ XORs, but cannot be implemented with $\ell - 1$ XORs, they are able to present $\ell$ as the optimal XOR count.
-They used this technique to search for the minimum number of XORs necessary to compute a binary matrix of size $21 \times 8$, which is the first linear part of the AES S-box, when it is decomposed into two linear parts and a minimal non-linear core.
+They used this technique to search for the minimum number of XORs necessary to compute a binary matrix of size $21 \times 8$, which is the first linear part of the \AES/ S-box, when it is decomposed into two linear parts and a minimal non-linear core.
 While it worked to find a solution with 23 XORs and to show that no solution with 20 XORs exists, it turned out to be infeasible to prove that a solution with 22 XORs does not exist and that 23 is therefore the minimum.
 In general, this approach quickly becomes infeasible for larger matrices.
 \textcite{FSE:Stoffelen16} applied it successfully to a small $7 \times 7$ matrix, but did not manage to find a provably minimal solution with a specific matrix of size $19 \times 5$.
@@ -384,12 +371,12 @@ The algorithm is now no longer deterministic and can be run multiple times.
 The lowest result can then be used.
 This performed slightly better, but of course processing again takes longer.
 
-The results of~\cite{MFCS:BoyMatPer08,SEA:BoyPer10} were later improved and published in~\cite{JC:BoyMatPer13}.
+The results of~\cite{MFCS:BoyMatPer08,SEA:BoyPer10} were later improved and published in the journal of cryptology~\cite{JC:BoyMatPer13}.
 
 In early 2017, \textcite{EPRINT:VisSchPer17} explored the special case where the binary matrix is dense.
 They improved the heuristic on average for dense matrices by first computing a \emph{common path}, an intermediate value that contains most variables.
 The original algorithm then starts from this common path.
-At BFA 2017, \textcite{BFA:BoyFinPer17} presented an improvement that simultaneously reduces the number of XORs and the depth of the resulting circuit.
+At BFA 2017, \citeauthor{BFA:BoyFinPer17} presented an improvement that simultaneously reduces the number of XORs and the depth of the resulting circuit, see~\cite{BFA:BoyFinPer17}.
 
 We refer to this family of heuristics~\cite{MFCS:BoyMatPer08,SEA:BoyPer10,JC:BoyMatPer13,BFA:BoyFinPer17,EPRINT:VisSchPer17} as the \textsc{BP} heuristics.
 
@@ -404,7 +391,7 @@ Finally we summarise the to date best known matrices.
 
 Using the heuristic methods that are described in the previous section, we can easily and significantly reduce the XOR counts for many matrices that have been used in the literature.
 The running times for the optimisations are in the range of seconds to minutes.
-\Cref{slps:tab:mds_comparison} lists results for matrices that have been suggested in previous works where it was an explicit goal to find a lightweight \MDS/ matrix.
+\Cref{slps:tab:mds_comparison} at the end of this chapter lists results for matrices that have been suggested in previous works where it was an explicit goal to find a lightweight \MDS/ matrix.
 While the constructions themselves will be compared in \cref{slps:sec:comparison}, this table deals with the suggested instances.
 
 A number of issues arise from this that are worth highlighting.
@@ -412,7 +399,7 @@ First of all, it should be noted that without any exception, the XOR count for e
 Second, it turns out that there are many cases where the $n(n-1)k$ XORs for summing the products for all rows is not even a correct lower bound.
 In fact, all the $4 \times 4$ matrices over $\GL{4}$ that we studied can be implemented in \emph{at most} $4 \cdot 3 \cdot 4 = 48$ XORs.
 
-What may be more interesting, is whether the XOR count, as it was used previously, is in fact a good predictor for the actual implementation cost as given by the heuristical methods.
+What may be more interesting, is whether the XOR count, as it was used previously, is in fact a good predictor for the actual implementation cost as given by the heuristic methods.
 Here we see that there are some differences.
 For example,~\cite{FSE:LiWan16}'s circulant $4 \times 4$ matrices over $\GL{8}$ first compared very favorably, but we now find that the subfield matrix of~\cite{ToSC:JPST17} requires fewer XORs.
 
@@ -421,154 +408,13 @@ However, the heuristics sometimes find implementations with even fewer XORs than
 See for example the matrices of~\cite{ToSC:SarSye16} in the table.
 
 Aside from these matrices, we also looked at \MDS/ matrices that are used by various ciphers and hash functions.
-\Cref{slps:tab:ciphers} lists their results.
+\Cref{slps:tab:ciphers} lists their results, it can be found at the end of this chapter, too.
 Not all \MDS/ matrices that are used in ciphers are incorporated here.
 In particular, \led/~\cite{CHES:GPPR11}, \photon/~\cite{C:GuoPeyPos11}, and \primates/~\cite{CAESAR:primates} use efficient serialised \MDS/ matrices.
 Comparing these to our \enquote{unrolled} implementations would be somewhat unfair.
 
-%\widea/~\cite{FSE:JunMac09} is the only design which uses a $16 \times 16$ \MDS/ matrix that we found.
-
-The implementation of the \MDS/ matrix used in \AES/ with 97 XORs is, to the best of our knowledge, the most efficient implementation so far and improves on the previous implementation of 103 XORs, reported by~\cite{CHES:JMPS17}.
+The implementation of the \MDS/ matrix used in \AES/ with 97 XORs is, to the best of our knowledge, the most efficient implementation so far and improves on the previous implementation of 103 XORs, reported by~\citeonly{CHES:JMPS17}.
 As a side note, cancellations do occur in this implementation, we thus conjecture that such a low XOR count is not possible with cancellation-free programs.
-
-\begin{table}
-\begin{fullwidth}
-    \caption[Comparison of $4 \times 4$ and $8 \times 8$ \MDSs/ matrices]{%
-        Comparison of $4 \times 4$ and $8 \times 8$ \MDSs/ matrices over $\GL{4}$ and $\GL{8}$.
-        Bold entries in the Literature column are matrices with up to now lowest XOR counts, bold entries in the BP column are the matrices with now lowest XOR count.
-    }\label{slps:tab:mds_comparison}
-    \centering
-    \begin{threeparttable}
-    \renewcommand{\arraystretch}{1.2}
-    \begin{tabular}{lrrrrr}
-        \toprule
-        Matrix                                           & Na\"ive & Literature & \textsc{Paar1} &    \textsc{Paar2} & \textsc{BP} \\
-        \midrule
-        \multicolumn{6}{c}{$4 \times 4$ matrices over $\GL{4}$}                                                  \\
-        \midrule
-        \citeonly{FSE:SKOP15} (Hadamard)                 &  68   &  $20+48$   &      50        &       48\tnote{*} &  48 \\ \rowcolor{gray!10}
-        \citeonly{FSE:LiuSim16} (Circulant)              &  60   &  $12+48$   &      49        &       46\tnote{*} &  44 \\
-        \citeonly{FSE:LiWan16} (Circulant)\tnote{\dag}   &  60   &  $12+48$   &      48        &       47\tnote{*} &  44 \\ \rowcolor{gray!10}
-        \citeonly{C:BeiKraLea16} (Circulant)\tnote{\dag} &  64   &  $12+48$   &      48        &       47          &  \textbf{42} \\
-        \citeonly{ToSC:SarSye16} (Toeplitz)              &  58   &  $\mathbf{10+48}$   &      46        &       45\tnote{*} &  43 \\ \rowcolor{gray!10}
-        \citeonly{ToSC:JPST17}                           &  61   &  $\mathbf{10+48}$   &      48        &       47          &  43 \\
-        \midrule
-        \citeonly{FSE:SKOP15} (Hadamard, Involutory)     &  72   &  $24+48$   &      52        &       48\tnote{*} &  48 \\ \rowcolor{gray!10}
-        \citeonly{FSE:LiWan16} (Circulant, Involutory)   &  68   &  $20+48$   &      48        &       48          &  48 \\
-        \citeonly{ToSC:SarSye16} (Involutory)            &  64   &  $16+48$   &      50        &       48          &  \textbf{42} \\ \rowcolor{gray!10}
-        \citeonly{ToSC:JPST17} (Involutory)              &  68   &  $\mathbf{15+48}$   &      51        &       47\tnote{*} &  47 \\ %\rowcolor{gray!10}
-        \bottomrule
-        \toprule
-        \multicolumn{6}{c}{$4 \times 4$ matrices over $\GL{8}$}                                                  \\
-        \midrule
-        \citeonly{FSE:SKOP15} (Subfield)                 &  136  & $40+96$ & 100       &      98\tnote{*}  & 100 \\ \rowcolor{gray!10}
-        \citeonly{FSE:LiuSim16} (Circulant)              &  128  & $28+96$\tnote{1} & 116       &     116           & 112 \\
-        \citeonly{FSE:LiWan16}                           &  106  & $\mathbf{10+96}$ & 102       &     102           & 102 \\ \rowcolor{gray!10}
-        \citeonly{C:BeiKraLea16} (Circulant)             &  136  & $24+96$ & 116       &     112\tnote{*}  & 110 \\
-        \citeonly{ToSC:SarSye16} (Toeplitz)              &  123  & $24+96$\tnote{1} & 110       &     108           & 107 \\ \rowcolor{gray!10}
-        \citeonly{ToSC:JPST17} (Subfield)                &  122  & $20+96$ &  96       &      95\tnote{*}  &  \textbf{86} \\
-        \midrule
-        \citeonly{FSE:SKOP15} (Subfield, Involutory)     &  144  & $40+96$\tnote{1} & 104       &     101\tnote{*}  & 100 \\ \rowcolor{gray!10}
-        \citeonly{FSE:LiWan16} (Hadamard, Involutory)    &  136  & $40+96$ & 101       &      97\tnote{*}  &  \textbf{91} \\
-        \citeonly{ToSC:SarSye16} (Involutory)            &  160  & $64+96$ & 110       &     109\tnote{*}  & 100 \\ \rowcolor{gray!10}
-        \citeonly{ToSC:JPST17} (Subfield, Involutory)    &  136  & $\mathbf{30+96}$ & 102       &     100\tnote{*}  &  \textbf{91} \\ %\rowcolor{gray!10}
-        \bottomrule
-        \toprule
-        \multicolumn{6}{c}{$8 \times 8$ matrices over $\GL{4}$}                                                  \\
-        \midrule
-        \citeonly{FSE:SKOP15} (Hadamard)                 &  432  & $\mathbf{160+224}\tnote{1}$ & 210    &     209\tnote{*}  & \textbf{194} \\ \rowcolor{gray!10}
-        \citeonly{ACISP:SarSye17} (Toeplitz)             &  410  & $170+224$          & 212    &     212\tnote{*}  & 204 \\
-        \midrule
-        \citeonly{FSE:SKOP15} (Hadamard, Involutory)     &  512  & $\mathbf{200+224}\tnote{1}$ & 222    &     222\tnote{*}  & \textbf{217} \\
-        \bottomrule
-        \toprule
-        \multicolumn{6}{c}{$8 \times 8$ matrices over $\GL{8}$}                                                  \\ \rowcolor{gray!10}
-        \midrule
-        \citeonly{FSE:SKOP15} (Hadamard)                 &  768  & $256+448\tnote{1}$ & 474    &     ---           & 467 \\
-        \citeonly{FSE:LiuSim16} (Circulant)              &  688  & $\mathbf{192+448}\tnote{1}$ & 464    &     ---           & 447 \\ \rowcolor{gray!10}
-        \citeonly{C:BeiKraLea16} (Circulant)             &  784  & $208+448\tnote{1}$ & 506    &     ---           & 498 \\
-        \citeonly{ACISP:SarSye17} (Toeplitz)             &  680  & $232+448$          & 447    &     ---           & \textbf{438} \\ \rowcolor{gray!10}
-        \midrule
-        \citeonly{FSE:SKOP15} (Hadamard, Involutory)     &  816  & $320+448\tnote{1}$ & 430    &     ---           & \textbf{428} \\
-        \citeonly{ToSC:JPST17} (Hadamard, Involutory)    & 1152  & $\mathbf{288+448}$ & 620    &     ---           & 599 \\
-        \bottomrule
-    \end{tabular}
-    \begin{tablenotes}
-    \footnotesize
-    \item[*] Stopped algorithm after three hours runtime.
-    \item[\dag] The authors of~\citeonly{C:BeiKraLea16,FSE:LiWan16} did not only give one matrix,
-                but instead whole classes of \MDSs/ matrices.
-                For~\citeonly{C:BeiKraLea16}, we chose the canonical candidate from its class.
-                For~\citeonly{FSE:LiWan16}, we chose the matrix presented as an example in the paper.
-        \vspace{0.75em}
-    \item[1] Reported by~\citeonly{ToSC:JPST17}.
-    \end{tablenotes}
-    \end{threeparttable}
-\end{fullwidth}
-\end{table}
-
-\begin{fullwidth}
-\begin{table}
-    \caption[Comparison of matrices used in ciphers or hash functions]{%
-        Matrices used in ciphers or hash functions.
-        Note that matrices in the lower part of the table, marked with $^{\|}$, are not \MDSs/.
-        Additionally these matrices are commonly not a target for \enquote{XOR count}-based implementation optimisations, as they are per se very efficiently implementable.
-    }\label{slps:tab:ciphers}
-    \centering
-    \hspace*{-3em}
-    \begin{threeparttable}
-    \renewcommand{\arraystretch}{1.2}
-    \begin{tabular}{llrrrrr}
-        \toprule
-        Cipher                                                                                       &             Type                               & Na\"ive &     Literature     & \textsc{Paar1} & \textsc{Paar2} &      \textsc{BP}      \\
-        \midrule
-        \AES/~\citeonly{rijndael_book}\tnote{\ddag}\hphantom{\ddag} (Circulant)                      & $\parens{\F_2[x]/\mathtt{0x11b}}^{4 \times 4}$ &  152  & $  7+ 96$\tnote{1} &      108       &   108\tnote{*} &  97\tnote{\dag} \\ \rowcolor{gray!10}
-        \anubis/~\citeonly{NESSIE:anubis} (Hadamard, Involutory)                                     & $\parens{\F_2[x]/\mathtt{0x11d}}^{4 \times 4}$ &  184  & $ 80+ 96$\tnote{2} &      122       &   121\tnote{*} & 113           \\
-        \clefia/ $\mathrm{M}_0$~\citeonly{FSE:SSAMI07} (Hadamard)                                    & $\parens{\F_2[x]/\mathtt{0x11d}}^{4 \times 4}$ &  184  &       ---\tnote{5} &      121       &   121\tnote{*} & 106           \\ \rowcolor{gray!10}
-        \clefia/ $\mathrm{M}_1$~\citeonly{FSE:SSAMI07} (Hadamard)                                    & $\parens{\F_2[x]/\mathtt{0x11d}}^{4 \times 4}$ &  208  &       ---\tnote{5} &      121       &   121\tnote{*} & 111           \\
-        \fox/ \textsc{mu4}~\citeonly{SAC:JunVau04b}                                                  & $\parens{\F_2[x]/\mathtt{0x11b}}^{4 \times 4}$ &  219  &       ---\tnote{5} &      144       &   143\tnote{*} & 137           \\ \rowcolor{gray!10}
-        \twofish/~\citeonly{AES:twofish}                                                             & $\parens{\F_2[x]/\mathtt{0x169}}^{4 \times 4}$ &  327  &       ---\tnote{5} &      151       &   149\tnote{*} & 129           \\
-        \midrule
-        \fox/ \textsc{mu8}~\citeonly{SAC:JunVau04b}                                                  & $\parens{\F_2[x]/\mathtt{0x11b}}^{8 \times 8}$ & 1257  &       ---\tnote{5} &      611       &         ---    &      594      \\ \rowcolor{gray!10}
-        \grostl/~\citeonly{SHA3:grostl} (Circulant)                                                  & $\parens{\F_2[x]/\mathtt{0x11b}}^{8 \times 8}$ & 1112  & $504+448$\tnote{2} &      493       &         ---    &      475      \\ %\rowcolor{gray!10}
-        \khazad/~\citeonly{NESSIE:khazad} (Hadamard, Involutory)                                     & $\parens{\F_2[x]/\mathtt{0x11d}}^{8 \times 8}$ & 1232  & $584+448$\tnote{2} &      488       &         ---    &      507      \\ \rowcolor{gray!10}
-        \whirlpool/~\citeonly{NESSIE:whirlpool}\tnote{\S}\hphantom{\S} (Circulant)                   & $\parens{\F_2[x]/\mathtt{0x11d}}^{8 \times 8}$ &  840  & $304+448$\tnote{2} &      481       &         ---    &      465      \\ %\rowcolor{gray!10}
-        \midrule
-        \joltik/~\citeonly{CAESAR:joltik} (Hadamard, Involutory)                                     & $\parens{\F_2[x]/\mathtt{0x13}}^{4 \times 4}$  &   72  & $ 20+ 48$\tnote{2} &       52       &          48    &       48      \\ \rowcolor{gray!10}
-        \smallscaleaes/~\citeonly{FSE:CidMurRob05} (Circulant)                                       & $\parens{\F_2[x]/\mathtt{0x13}}^{4 \times 4}$  &   72  &       ---\tnote{5} &       54       &          54    &       47      \\ %\rowcolor{gray!10}
-        \midrule
-        \whirlwind/ $\mathrm{M}_0$~\citeonly{DCC:BNNRT10} (Hadamard, Subfield)                       & $\parens{\F_2[x]/\mathtt{0x13}}^{8 \times 8}$  &  488  & $168+224$\tnote{2} &      218       &   218\tnote{*} &      212      \\ \rowcolor{gray!10}
-        \whirlwind/ $\mathrm{M}_1$~\citeonly{DCC:BNNRT10} (Hadamard, Subfield)                       & $\parens{\F_2[x]/\mathtt{0x13}}^{8 \times 8}$  &  536  & $184+224$\tnote{2} &      246       &   244\tnote{*} &      235      \\ %\rowcolor{gray!10}
-        \bottomrule
-        \toprule
-        \qarma/128~\citeonly{ToSC:Avanzi17}\tnote{$\|$}\hphantom{$\|$} (Circulant)                   & $\parens{\F_2[x]/\mathtt{0x101}}^{4 \times 4}$ &   64  &       ---\tnote{5} &       48       &          48    &       48      \\ \rowcolor{gray!10}
-        \midrule
-        \aria/~\citeonly{ICISC/KKPSSS03}\tnote{$\|$}\hphantom{$\|$} (Involutory)                     & $\parens{\F_2}^{128 \times 128}$               &  768  &       480\tnote{3} &      416       &         ---    &      ---      \\ %\rowcolor{gray!10}
-        \midori/~\citeonly{AC:BBISHA15}\tnote{$\|$,\P}\hphantom{$\|$,\P} (Circulant)                 & $\parens{\F_{2^4}}^{4 \times 4}$               &   32  &       ---\tnote{5} &       24       &          24    &       24      \\ \rowcolor{gray!10}
-        \prince/ $\widehat{\mathrm{M}}_0$, $\widehat{\mathrm{M}}_1$~\citeonly{AC:BCGKKK12}\tnote{$\|$} & $\parens{\F_2}^{16 \times 16}$               &   32  &       ---\tnote{5} &       24       &          24    &       24      \\ %\rowcolor{gray!10}
-        \pride/ $\mathrm{L}_0$--$\mathrm{L}_3$~\citeonly{C:ADKLPY14}\tnote{$\|$}                     & $\parens{\F_2}^{16 \times 16}$                 &   32  &       ---\tnote{5} &       24       &          24    &       24      \\ \rowcolor{gray!10}
-        \qarma/64~\citeonly{ToSC:Avanzi17}\tnote{$\|$}\hphantom{$\|$} (Circulant)                    & $\parens{\F_2[x]/\mathtt{0x11}}^{4 \times 4}$  &   32  &       ---\tnote{5} &       24       &          24    &       24      \\ %\rowcolor{gray!10}
-        \skinny/64~\citeonly{C:BJKLMP16}\tnote{$\|$}\hphantom{$\|$}                                  & $\parens{\F_{2^4}}^{4 \times 4}$               &   16  &        12\tnote{4} &       12       &          12    &       12      \\ %\rowcolor{gray!10}
-        \bottomrule
-    \end{tabular}
-    \begin{tablenotes}
-    \footnotesize
-    \item[*] Stopped algorithm after three hours runtime.
-    \item[\dag] For the implementation see our \textsc{GitHub} repository.
-    \item[\ddag] Also used in other primitives, \eg/ its predecessor \square/~\citeonly{FSE:DaeKnuRij97}, and \mugi/~\citeonly{FSE:WFYTP02}.
-    \item[\S] Also used in \maelstrom/~\citeonly{SBSEG:FilBarRij06}.
-    \item[\P] Also used in other ciphers, \eg/ \mantis/~\citeonly{C:BJKLMP16}, and \fides/~\citeonly{CHES:BBKMW13}.
-    \item[$\|$] Not an \MDSs/ matrix.
-        \vspace{0.75em}
-    \item[1] Reported by~\citeonly{CHES:JMPS17}.
-    \item[2] Reported by~\citeonly{ToSC:JPST17}.
-    \item[3] Reported by~\citeonly{ETRI:BCLOP04}.
-    \item[4] Reported by the designers.
-    \item[5] We are not aware of any reported results for this matrix.
-    \end{tablenotes}
-    \end{threeparttable}
-\end{table}
-\end{fullwidth}
 
 \subsection{Statistical Analysis}
 \label{slps:sec:comparison}
@@ -578,7 +424,7 @@ In this section, we present experimental results on different constructions and 
 We also examine the correlation between na\"ive and heuristically improved XOR counts.
 When designing \MDS/ matrices with a low XOR count, we are faced with two major questions.
 First, which construction is preferable?
-Our intuition in this case is, a better construction has better statistical properties, compared to an inferior construction.
+Our intuition in this case is a better construction has better statistical properties compared to an inferior construction.
 We are aware that the statistical behaviour of a construction might not be very important for a designer who only looks for a single, very good instance.
 Nevertheless we use this as a first benchmark.
 Second, is it a good approach to choose the matrices as sparse as possible?
@@ -589,19 +435,19 @@ For the other constructions, we use the following backtracking method to build r
 Choose the new random elements from $\mathrm{GL}(k, \F_2)$ that are needed for the matrix construction in a step-by-step manner.
 In each step, construct all new square submatrices. If any of these is not invertible, discard the chosen element and try a new one. In the case that no more elements are left, go one step back and replace that element with a new one, then again check the according square submatrices, and so on.
 Eventually, we end up with an \MDS/ matrix because we iteratively checked that every square submatrix is invertible.
-The method is also trivially derandomizable, by not choosing the elements randomly, but simply enumerating them in any determined order.
+The method is also trivially derandomisable, by not choosing the elements randomly, but simply enumerating them in any determined order.
 
 Apart from applying this method to the above mentioned constructions, we can also use it to construct an \emph{arbitrary}, \ie/ unstructured, matrix that is simply defined by its $16$ elements.
 This approach was already described in~\cite{ToSC:JPST17}.
 
 In this manner, we generated 1\,000 matrices for each construction and computed the XOR count distributions for the na\"ive, the optimised \textsc{Paar1}, and \textsc{BP} implementations.
-\Cref{slps:tab:stats} lists the statistical parameters of the resulting distributions and \cref{slps:fig:distributions} depicts them (the sample size $N$ is the same for \cref{slps:tab:stats}, \cref{slps:fig:distributions,slps:fig:hadamard_correlation}, and
+\Cref{slps:tab:stats} lists the statistical parameters of the resulting distributions and \cref{slps:fig:distributions} (at the end of the chapter) depicts them (the sample size $N$ is the same for \cref{slps:tab:stats}, \cref{slps:fig:distributions,slps:fig:hadamard_correlation}, and
 \cite[Appendix~A, Figures~3 to~6]{ToSC:KLSW17}%
 %\cref{slps:fig:correlations_naive_paar1_random,slps:fig:correlations_naive_paar1_enum,slps:fig:correlations_naive_bp_random,slps:fig:correlations_naive_bp_enum}
 ).
 
 \begin{table}
-    \begin{sidecaption}[XOR count distributions for differently optimised implementations]{%
+    \begin{sidecaption}[XOR count distributions for optimised implementations]{%
         Distributions for differently optimised implementations.
         By $\mu$ we denote the mean and $\sigma^2$ is the variance.
         The sample size $N$ for all distributions is $N = 1000$.
@@ -648,6 +494,345 @@ In this manner, we generated 1\,000 matrices for each construction and computed 
     \end{threeparttable}
     \end{sidecaption}
 \end{table}
+
+The most obvious characteristic of the statistical distributions is that the means~$\mu$ do not differ much for all randomised constructions.
+The variance~$\sigma^2$ on the contrary differs much more.
+This is most noticeable for the na\"ive implementation, while the differences get much smaller when the implementation is optimised with the \textsc{Paar1} or \textsc{BP} heuristic.
+One might think that the construction with the lowest optimised average XOR count, which is for matrices over $\mathrm{GL}(4, \mathbb{F}_2)$ the arbitrary construction with enumerated elements, yields the best results.
+However, the best matrix we could find for this dimension was a Hadamard matrix.
+An explanation for this might be that the higher variance leads to some particularly bad and some particularly good results.
+
+The graphs in \cref{slps:fig:distributions} convey a similar hypothesis.
+Looking only at the na\"ive implementation, we can notice some differences.
+For example circulant matrices seem to give better results than, \eg/, Hadamard matrices.
+Additionally, the na\"ive XOR count increases step-wise as not every possible count occurs.
+But when optimising the implementation, the distributions get smoother and more similar.
+
+We conclude that all constructions give similarly good matrices when we are searching for the matrix with the lowest XOR count, with one important exception.
+For randomly generated matrices the XOR count increases by a factor of four, if we double the parameter $k$.
+\Cref{slps:tab:stats} covers this for Cauchy and Vandermonde matrices.
+We do not compute the statistical properties for Circulant, Hadamard and Toeplitz matrices with elements of $\mathrm{GL}(8, \F_2)$, as the probability to find a random \MDS/ instance for these constructions is quite low.
+Thus, generating enough instances for a meaningful statistical comparison is computationally tough and -- as we deduce from a much smaller sample size -- the statistical behaviour looks very similar to that of the Cauchy and Vandermonde matrices.
+Instead, and as already mentioned in \cref{slps:lem:subfield}, the subfield construction has a much more interesting behaviour.
+Its implementation simply doubles the XOR count.
+The lower half of \cref{slps:tab:stats} confirms this behaviour.
+
+Thus, when it is computationally infeasible to exhaustively search through all possible matrices, it seems to be a good strategy to use the subfield construction with the best known results from smaller dimensions.
+This conclusion is confirmed by the fact that our best results for matrices over $\mathrm{GL}(8, \mathbb{F}_2)$ are always subfield constructions based on matrices over $\mathrm{GL}(4, \mathbb{F}_2)$.
+
+Next, we want to approach the question if choosing \MDS/ matrices with low Hamming weight entries is a good approach for finding low XOR count implementations.
+To give a first intuition of the correlation between na\"ive and optimised implementations, we plot the na\"ive XOR count against the optimised one.
+For one exemplary plot see \cref{slps:fig:hadamard_correlation}, which corresponds to the construction that we used to find the best $4 \times 4$ \MDS/ matrix for $k = 4$.
+The remaining plots
+can be found in the paper, see~\cite[Appendix~A, Figures~3 to~6]{ToSC:KLSW17}.
+%are in the appendix, see \cref{slps:fig:correlations_naive_paar1_random,slps:fig:correlations_naive_paar1_enum,slps:fig:correlations_naive_bp_random,slps:fig:correlations_naive_bp_enum}.
+
+%\begin{figure}
+\marginpar{%
+    \centering
+    \vspace*{-16\baselineskip}
+    \begin{tikzpicture}
+        \pgfplotsset{%
+            legend style={font=\footnotesize, draw=none, fill=none},
+            label style={font=\footnotesize},
+            every tick label/.append style={font=\footnotesize},
+        }
+        \begin{axis}[height=55mm, width=55mm, ymin=35, ymax=60, xmin=65, xmax=120, xlabel={Na\"ive}, ylabel={BP}]
+            \addplot+[only marks, mark size=0.5pt] table[x index=1, y index=3] {slp/enum_hadamard_4x4_4.dat};
+        \end{axis}
+    \end{tikzpicture}
+    \captionof{figure}[Correlations between na\"ive and \textsc{BP} XOR counts]{%
+        Correlations between na\"ive and \textsc{BP} XOR counts for enumerated Hadamard matrices.
+    }\label{slps:fig:hadamard_correlation}
+%    \begin{sidecaption}[Correlations between na\"ive and \textsc{BP} XOR counts]{%
+%        Correlations between na\"ive (x-axis) and \textsc{BP} (y-axis) XOR counts for enumerated Hadamard matrices.
+%    }[slps:fig:hadamard_correlation]
+%    \end{sidecaption}
+%\end{figure}
+}
+
+In \cref{slps:fig:hadamard_correlation} one can see that several options can occur.
+While there is a general tendency of higher na\"ive XOR counts leading to higher optimised XOR counts, the contrary is also possible.
+For example, there are matrices which have a low na\"ive XOR count (left in the plot), while still having a somewhat high optimised XOR count (top part of the plot).
+But there are also matrices where a higher na\"ive XOR count results in a much better optimised XOR count.
+The consequence is that we cannot restrict ourselves to very sparse matrices when searching for the best XOR count, but also have to take more dense matrices into account.
+A possible explanation for this behaviour is that the heuristics have more possibilities for optimisations, when the matrix is not sparse.
+
+\begin{table}[t]
+    \begin{sidecaption}[\MDSs/ matrices with lowest known XOR count]{%
+        \MDSs/ matrices with the lowest known XOR count.
+        Matrices in the lower half are involutory.
+    }[slps:tab:best-mds]
+    \centering
+    {
+    \begin{threeparttable}
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{lrlrl}
+        \toprule
+        Type                                           & \multicolumn{2}{c}{Previously Best Known}    &    \multicolumn{2}{c}{New Best Known}                      \\
+        \midrule
+        ${\mathrm{GL}(4, \F_2)}^{4 \times 4}$          &  $58$ & \citeonly{ToSC:SarSye16,ToSC:JPST17} &  36\tnote{*}    & Eq.~\eqref{slps:eq:mds_matrix_4x4_4}     \\ \rowcolor{gray!10}
+        ${\mathrm{GL}(8, \F_2)}^{4 \times 4}$          & $106$ & \citeonly{FSE:LiWan16}               &  72             & Eq.~\eqref{slps:eq:mds_matrix_4x4_8}     \\
+        $\parens{\F_2[x]/\mathtt{0x 13}}^{8 \times 8}$ & $384$ & \citeonly{FSE:SKOP15}                & 196\tnote{\dag} & Eq.~\eqref{slps:eq:mds_matrix_8x8_4}     \\ \rowcolor{gray!10}
+        ${\mathrm{GL}(8, \F_2)}^{8 \times 8}$          & $640$ & \citeonly{FSE:LiuSim16}              & 392             & Eq.~\eqref{slps:eq:mds_matrix_8x8_8}     \\
+        \midrule
+        $\parens{\F_2[x]/\mathtt{0x 13}}^{4 \times 4}$ &  $63$ & \citeonly{ToSC:JPST17}               &  42\tnote{*}    & \citeonly{ToSC:SarSye16}                 \\ \rowcolor{gray!10}
+        ${\mathrm{GL}(8, \F_2)}^{4 \times 4}$          & $126$ & \citeonly{ToSC:JPST17}               &  84             & Eq.~\eqref{slps:eq:mds_inv_matrix_4x4_8} \\
+        $\parens{\F_2[x]/\mathtt{0x 13}}^{8 \times 8}$ & $424$ & \citeonly{FSE:SKOP15}                & 212\tnote{\dag} & Eq.~\eqref{slps:eq:mds_inv_matrix_8x8_4} \\ \rowcolor{gray!10}
+        ${\mathrm{GL}(8, \F_2)}^{8 \times 8}$          & $736$ & \citeonly{ToSC:JPST17}               & 424             & Eq.~\eqref{slps:eq:mds_inv_matrix_8x8_8} \\
+        \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+    \footnotesize
+    \item[*] Computed with heuristic from~\citeonly{JC:BoyMatPer13}.
+    \item[\dag] Computed with heuristic from~\citeonly{ISIT:Paar97}.
+    \end{tablenotes}
+    \end{threeparttable}
+    }
+    \end{sidecaption}
+\end{table}
+
+\subsection{Best results}
+Let us conclude by specifying the \MDS/ matrices with the currently best implementations.
+The notation $M_{n,k}$ denotes an $n \times n$ matrix with entries from $\GL{k}$, an involutory matrix is labeled with the superscript $i$.
+\Cref{slps:tab:best-mds} covers non-involutory and involutory matrices of dimension $4 \times 4$ and $8 \times 8$ over $\GL{4}$ and $\GL{8}$.
+$M_{8,4}$ and $M^i_{8,4}$ are defined over $\F_2[x] /\mathtt{0x13}$.
+
+The matrices mentioned are the following:
+\begin{align}
+    M_{4,4} &= \hadamard(\parens{\begin{smallmatrix}
+        0 & 0 & 0 & 1 \\
+        0 & 0 & 1 & 0 \\
+        0 & 1 & 0 & 0 \\
+        1 & 0 & 0 & 0 \\
+    \end{smallmatrix}},
+    \parens{\begin{smallmatrix}
+        0 & 0 & 1 & 1 \\
+        1 & 0 & 0 & 1 \\
+        1 & 1 & 0 & 0 \\
+        0 & 1 & 0 & 0 \\
+    \end{smallmatrix}},
+    \parens{\begin{smallmatrix}
+        1 & 1 & 0 & 1 \\
+        1 & 1 & 0 & 0 \\
+        0 & 1 & 0 & 1 \\
+        0 & 0 & 1 & 0 \\
+    \end{smallmatrix}},
+    \parens{\begin{smallmatrix}
+        1 & 1 & 0 & 0 \\
+        0 & 1 & 0 & 1 \\
+        1 & 0 & 1 & 1 \\
+        0 & 0 & 0 & 1 \\
+    \end{smallmatrix}}) \label{slps:eq:mds_matrix_4x4_4} \\
+    M_{4,8} &= \subfield(M_{4,4}) \label{slps:eq:mds_matrix_4x4_8} \\
+    M_{8,4} &= \cauchy\parens{%
+        \begin{multlined}
+            \scriptstyle
+            x^3 + x^2, x^3, x^3 + x + 1, x + 1, 0, x^3 + x^2 + x + 1, x^2, x^2 + x + 1, \\
+            \scriptstyle
+            1, x^2 + 1, x^3 + x^2 + x, x^3 + 1, x^3 + x^2 + 1, x^2 + x, x^3 + x, x
+        \end{multlined}}\label{slps:eq:mds_matrix_8x8_4} \\
+    M_{8,8} &= \subfield(M_{8,4}) \label{slps:eq:mds_matrix_8x8_8} \\
+    M^i_{4,8} &\ \text{is the subfield construction applied to~\citeonly[Example~3]{ToSC:SarSye16}} \label{slps:eq:mds_inv_matrix_4x4_8} \\
+    M^i_{8,4} &= \vandermonde\parens{%
+        \begin{multlined}
+            \scriptstyle
+            x^3 + x + 1, x + 1, x^3 + x^2 + x, x^3 + x^2 + 1, x^3 + 1, x^3, 0, x^3 + x \\
+            \scriptstyle
+            x^2 + x + 1, x^3 + x^2 + x + 1, x, 1, x^2 + 1, x^2, x^3 + x^2, x^2 + x
+        \end{multlined}}\label{slps:eq:mds_inv_matrix_8x8_4} \\
+    M^i_{8,8} &= \subfield(M^i_{8,4}) \label{slps:eq:mds_inv_matrix_8x8_8}
+\end{align}
+
+All these matrices improve over the previously known matrices, with the only exception being the involutory matrix from~\cite{ToSC:SarSye16} of dimension $4 \times 4$ over $\GL{4}$.
+$M_{4,4}$ was found after enumerating a few thousand Hadamard matrices, while $M_{8,4}$ and $M^i_{8,4}$ are randomly generated and were found after a few seconds.
+Every best matrix over $\GL{8}$ uses the subfield construction.
+
+With these results we want to highlight that, when applying global optimisations, it is quite easy to improve (almost) all currently best known results.
+We would like to emphasise that our results should not be misunderstood as an attempt to construct matrices which cannot be improved.
+
+All our implementations are publicly available online.\footnote{
+    \url{https://github.com/rub-hgi/shorter_linear_slps_for_mds_matrices}
+}
+
+\section{Further work}
+Our work mainly highlights that in order to get a tighter estimate on how few XORs are really needed for a given matrix $M$, we have to take optimisation strategies for its implementation into account.
+As already mentioned, this implementation can be subject to several constraints which we did not further investigate.
+One important aspect in this direction is the depth of the critical path of an implementation.
+The depth is an important factor for the latency of an implementation and thus subject to a different optimisation goal.
+There is some related work, which already takes the depth of the critical path into consideration, \eg/~\cite{BFA:BoyFinPer17}.
+
+A recent work by \textcite{ToSC:DuvLeu18} also compares proposed matrices with implementation depth in mind.
+Additionally, \citeauthor{ToSC:DuvLeu18} propose a graph-based search algorithm to find optimal implementations that yield an \MDS/ matrix.
+Using their algorithm, the authors are able to find matrices with cheaper and less deep implementations.
+Especially when taking the circuit depth into account, their approach is obviously favourable to ours.
+For example, the best implementations for $4 \times 4$ matrices over $\mathrm{GL}(4, \F_2)$ of~\cite{ToSC:DuvLeu18} need 35, 37, resp.\ 41 XORs (with a depth of five, four, resp.\ three), while our implementation of $M_{4,4}$ has depth six, see~\cite[Table~1]{ToSC:DuvLeu18}.
+
+An interesting observation is that their implementations can be further optimised by synthesis tools like Yosys\footnote{%
+    \url{http://www.clifford.at/yosys}
+} -- this indicates, and is also discussed by the authors, that the XOR count is not necessarily a good metric of the actual implementation cost in silicon.
+The example \citeauthor{ToSC:DuvLeu18} give are \FPGAp/, where the XORs are implemented using internal programmable \LUTp/.
+These \LUTp/ can implement not only 2-input XORs, but also 3- or 4-input or even 6- or 8-input XORs with almost no overhead compared to a simple 2-input XOR.
+This can of course greatly improve existing implementations.
+\citeauthor{ToSC:DuvLeu18} further argue that the costs for different XOR gates in \ASIC/ synthesis differ more and thus not so big improvements can be expected.
+
+In our opinion, this is not true.
+Standard cell libraries for \ASIC/ design often offers 2-input and 3-input XORs and the area cost for 3-input XOR gates might be cheap enough that it pays out to use these gates in an optimised implementation.
+For example in the \texttt{UMCL18G212T3} library, see \eg/~\cite[Table~2.1]{PhD:Poschmann09}, the 2-input XOR costs 2.67 GE (gate equivalents), while a 3-input XOR gate costs 4.67 GE which is $\approx 87\%$ of the cost for two 2-input XOR gates.
+A recent work by \textcite{IWSEC:BanFunIso19} explores these differences; one of their main findings is that different matrices are optimal for different libraries.
+
+The observation that it is crucial to take library gate costs into account was also already made by \textcite{TCHES:ReyTahAsh18} in the context of S-box implementation optimisations.
+Here the authors noted that the theoretical best implementations are in practice \emph{worse} than less optimised implementations -- due to the fact that the less optimised implementation uses cheaper standard cell gates than the optimised ones.
+\citeauthor{TCHES:ReyTahAsh18} thus suggest that either directly the synthesis tools or the information these tools use during synthesis, that is the individual costs and characteristics (\eg/ delay) of the available gates, have to be included in the theoretical optimisation process.
+
+The more problematic (obvious) point in our opinion then is that the resulting implementations are highly dependent on the targeted cell library and, see~\cite{IWSEC:BanFunIso19}, different matrices are optimal for different cell libraries.
+On the other hand it is questionable how problematic it is if the area requirements for a matrix implementation differs by a handful of gate equivalents.
+
+An other interesting research question is how the existing heuristics can be improved.
+The already mentioned work by \textcite{TCHES:ReyTahAsh18} proposes some improvements for the BP heuristics, but evaluate their improvements only in the setting of S-box optimisations.
+\textcite{ToSC:LSLWH19} also improves the BP heuristics, to make them depth aware.
+They are also able to find new involutory matrices with cheaper implementations.
+
+%We now turn away from automated methods in the area of implementations and discuss applications in the area of cryptanalysis.
+
+\begin{table}
+    \begin{sidecaption}[Comparison of $4 \times 4$ and $8 \times 8$ \MDSs/ matrices]{%
+        Comparison of $4 \times 4$ and $8 \times 8$ \MDSs/ matrices over $\GL{4}$ and $\GL{8}$.
+        Bold entries in the Literature column are matrices with up to now lowest XOR counts, bold entries in the BP column are the matrices with now lowest XOR count.
+        The matrix constructions are Circulant~(C), Hadamard~(H), Involutory~(I), Subfield~(S), and Toeplitz~(T).
+    }[slps:tab:mds_comparison]
+    \centering
+    \begin{threeparttable}
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{lrrrrr}
+        \toprule
+        Matrix                                           & Na\"ive & Literature & \textsc{Paar1} &    \textsc{Paar2} & \textsc{BP} \\
+        \midrule
+        \multicolumn{6}{c}{$4 \times 4$ matrices over $\GL{4}$}                                                  \\
+        \midrule
+        \citeonly{FSE:SKOP15} (H)                 &  68   &  $20+48$   &      50        &       48\tnote{*} &  48 \\ \rowcolor{gray!10}
+        \citeonly{FSE:LiuSim16} (C)               &  60   &  $12+48$   &      49        &       46\tnote{*} &  44 \\
+        \citeonly{FSE:LiWan16} (C)\tnote{\dag}    &  60   &  $12+48$   &      48        &       47\tnote{*} &  44 \\ \rowcolor{gray!10}
+        \citeonly{C:BeiKraLea16} (C)\tnote{\dag}  &  64   &  $12+48$   &      48        &       47          &  \textbf{42} \\
+        \citeonly{ToSC:SarSye16} (T)              &  58   &  $\mathbf{10+48}$   &      46        &       45\tnote{*} &  43 \\ \rowcolor{gray!10}
+        \citeonly{ToSC:JPST17}                    &  61   &  $\mathbf{10+48}$   &      48        &       47          &  43 \\
+        \midrule
+        \citeonly{FSE:SKOP15} (H, I)              &  72   &  $24+48$   &      52        &       48\tnote{*} &  48 \\ \rowcolor{gray!10}
+        \citeonly{FSE:LiWan16} (C, I)             &  68   &  $20+48$   &      48        &       48          &  48 \\
+        \citeonly{ToSC:SarSye16} (I)              &  64   &  $16+48$   &      50        &       48          &  \textbf{42} \\ \rowcolor{gray!10}
+        \citeonly{ToSC:JPST17} (I)                &  68   &  $\mathbf{15+48}$   &      51        &       47\tnote{*} &  47 \\ %\rowcolor{gray!10}
+        \bottomrule
+        \toprule
+        \multicolumn{6}{c}{$4 \times 4$ matrices over $\GL{8}$}                                                  \\
+        \midrule
+        \citeonly{FSE:SKOP15} (S)                 &  136  & $40+96$ & 100       &      98\tnote{*}  & 100 \\ \rowcolor{gray!10}
+        \citeonly{FSE:LiuSim16} (C)               &  128  & $28+96$\tnote{1} & 116       &     116           & 112 \\
+        \citeonly{FSE:LiWan16}                            &  106  & $\mathbf{10+96}$ & 102       &     102           & 102 \\ \rowcolor{gray!10}
+        \citeonly{C:BeiKraLea16} (C)              &  136  & $24+96$ & 116       &     112\tnote{*}  & 110 \\
+        \citeonly{ToSC:SarSye16} (T)              &  123  & $24+96$\tnote{1} & 110       &     108           & 107 \\ \rowcolor{gray!10}
+        \citeonly{ToSC:JPST17} (S)                &  122  & $20+96$ &  96       &      95\tnote{*}  &  \textbf{86} \\
+        \midrule
+        \citeonly{FSE:SKOP15} (S, I)              &  144  & $40+96$\tnote{1} & 104       &     101\tnote{*}  & 100 \\ \rowcolor{gray!10}
+        \citeonly{FSE:LiWan16} (H, I)             &  136  & $40+96$ & 101       &      97\tnote{*}  &  \textbf{91} \\
+        \citeonly{ToSC:SarSye16} (I)              &  160  & $64+96$ & 110       &     109\tnote{*}  & 100 \\ \rowcolor{gray!10}
+        \citeonly{ToSC:JPST17} (S, I)             &  136  & $\mathbf{30+96}$ & 102       &     100\tnote{*}  &  \textbf{91} \\ %\rowcolor{gray!10}
+        \bottomrule
+        \toprule
+        \multicolumn{6}{c}{$8 \times 8$ matrices over $\GL{4}$}                                                  \\
+        \midrule
+        \citeonly{FSE:SKOP15} (H)                 &  432  & $\mathbf{160+224}\tnote{1}$ & 210    &     209\tnote{*}  & \textbf{194} \\ \rowcolor{gray!10}
+        \citeonly{ACISP:SarSye17} (T)             &  410  & $170+224$          & 212    &     212\tnote{*}  & 204 \\
+        \midrule
+        \citeonly{FSE:SKOP15} (H, I)              &  512  & $\mathbf{200+224}\tnote{1}$ & 222    &     222\tnote{*}  & \textbf{217} \\
+        \bottomrule
+        \toprule
+        \multicolumn{6}{c}{$8 \times 8$ matrices over $\GL{8}$}                                                  \\ \rowcolor{gray!10}
+        \midrule
+        \citeonly{FSE:SKOP15} (H)                 &  768  & $256+448\tnote{1}$ & 474    &     ---           & 467 \\
+        \citeonly{FSE:LiuSim16} (C)               &  688  & $\mathbf{192+448}\tnote{1}$ & 464    &     ---           & 447 \\ \rowcolor{gray!10}
+        \citeonly{C:BeiKraLea16} (C)              &  784  & $208+448\tnote{1}$ & 506    &     ---           & 498 \\
+        \citeonly{ACISP:SarSye17} (T)             &  680  & $232+448$          & 447    &     ---           & \textbf{438} \\ \rowcolor{gray!10}
+        \midrule
+        \citeonly{FSE:SKOP15} (H, I)              &  816  & $320+448\tnote{1}$ & 430    &     ---           & \textbf{428} \\
+        \citeonly{ToSC:JPST17} (H, I)             & 1152  & $\mathbf{288+448}$ & 620    &     ---           & 599 \\
+        \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+    \footnotesize
+    \item[*] Stopped algorithm after three hours runtime.
+    \item[\dag] The authors of~\citeonly{C:BeiKraLea16,FSE:LiWan16} did not only give one matrix,
+                but instead whole classes of \MDSs/ matrices.
+                For~\citeonly{C:BeiKraLea16}, we chose the canonical candidate from its class.
+                For~\citeonly{FSE:LiWan16}, we chose the matrix presented as an example in the paper.
+        \vspace{0.75em}
+    \item[1] Reported by~\citeonly{ToSC:JPST17}.
+    \end{tablenotes}
+    \end{threeparttable}
+    \end{sidecaption}
+\end{table}
+
+\begin{fullwidth}
+\begin{table}
+    \caption[Comparison of matrices used in ciphers or hash functions]{%
+        Matrices used in ciphers or hash functions.
+        Note that matrices in the lower part of the table, marked with $^{\|}$, are not \MDSs/.
+        Additionally these matrices are commonly not a target for \enquote{XOR count}-based implementation optimisations, as they are per se very efficiently implementable.
+        The matrix constructions are Circulant~(C), Hadamard~(H), Involutory~(I), and Subfield~(S).
+    }\label{slps:tab:ciphers}
+    \centering
+    \begin{threeparttable}
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{llrrrrr}
+        \toprule
+        Cipher                                                                                       &             Type                               & Na\"ive &     Literature     & \textsc{Paar1} & \textsc{Paar2} &      \textsc{BP}      \\
+        \midrule
+        \AES/~\citeonly{rijndael_book}\tnote{\ddag}\hphantom{\ddag} (C)      & $\parens{\F_2[x]/\mathtt{0x11b}}^{4 \times 4}$ &  152  & $  7+ 96$\tnote{1} &      108       &   108\tnote{*} &  97\tnote{\dag} \\ \rowcolor{gray!10}
+        \anubis/~\citeonly{NESSIE:anubis} (H, I)                             & $\parens{\F_2[x]/\mathtt{0x11d}}^{4 \times 4}$ &  184  & $ 80+ 96$\tnote{2} &      122       &   121\tnote{*} & 113           \\
+        \clefia/ $\mathrm{M}_0$~\citeonly{FSE:SSAMI07} (H)                   & $\parens{\F_2[x]/\mathtt{0x11d}}^{4 \times 4}$ &  184  &       ---\tnote{5} &      121       &   121\tnote{*} & 106           \\ \rowcolor{gray!10}
+        \clefia/ $\mathrm{M}_1$~\citeonly{FSE:SSAMI07} (H)                   & $\parens{\F_2[x]/\mathtt{0x11d}}^{4 \times 4}$ &  208  &       ---\tnote{5} &      121       &   121\tnote{*} & 111           \\
+        \fox/ \textsc{mu4}~\citeonly{SAC:JunVau04b}                          & $\parens{\F_2[x]/\mathtt{0x11b}}^{4 \times 4}$ &  219  &       ---\tnote{5} &      144       &   143\tnote{*} & 137           \\ \rowcolor{gray!10}
+        \twofish/~\citeonly{AES:twofish}                                     & $\parens{\F_2[x]/\mathtt{0x169}}^{4 \times 4}$ &  327  &       ---\tnote{5} &      151       &   149\tnote{*} & 129           \\
+        \midrule
+        \fox/ \textsc{mu8}~\citeonly{SAC:JunVau04b}                          & $\parens{\F_2[x]/\mathtt{0x11b}}^{8 \times 8}$ & 1257  &       ---\tnote{5} &      611       &         ---    &      594      \\ \rowcolor{gray!10}
+        \grostl/~\citeonly{SHA3:grostl} (C)                                  & $\parens{\F_2[x]/\mathtt{0x11b}}^{8 \times 8}$ & 1112  & $504+448$\tnote{2} &      493       &         ---    &      475      \\ %\rowcolor{gray!10}
+        \khazad/~\citeonly{NESSIE:khazad} (H, I)                             & $\parens{\F_2[x]/\mathtt{0x11d}}^{8 \times 8}$ & 1232  & $584+448$\tnote{2} &      488       &         ---    &      507      \\ \rowcolor{gray!10}
+        \whirlpool/~\citeonly{NESSIE:whirlpool}\tnote{\S}\hphantom{\S} (C)   & $\parens{\F_2[x]/\mathtt{0x11d}}^{8 \times 8}$ &  840  & $304+448$\tnote{2} &      481       &         ---    &      465      \\ %\rowcolor{gray!10}
+        \midrule
+        \joltik/~\citeonly{CAESAR:joltik} (H, I)                             & $\parens{\F_2[x]/\mathtt{0x13}}^{4 \times 4}$  &   72  & $ 20+ 48$\tnote{2} &       52       &          48    &       48      \\ \rowcolor{gray!10}
+        \smallscaleaes/~\citeonly{FSE:CidMurRob05} (C)                       & $\parens{\F_2[x]/\mathtt{0x13}}^{4 \times 4}$  &   72  &       ---\tnote{5} &       54       &          54    &       47      \\ %\rowcolor{gray!10}
+        \midrule
+        \whirlwind/ $\mathrm{M}_0$~\citeonly{DCC:BNNRT10} (H, S)             & $\parens{\F_2[x]/\mathtt{0x13}}^{8 \times 8}$  &  488  & $168+224$\tnote{2} &      218       &   218\tnote{*} &      212      \\ \rowcolor{gray!10}
+        \whirlwind/ $\mathrm{M}_1$~\citeonly{DCC:BNNRT10} (H, S)             & $\parens{\F_2[x]/\mathtt{0x13}}^{8 \times 8}$  &  536  & $184+224$\tnote{2} &      246       &   244\tnote{*} &      235      \\ %\rowcolor{gray!10}
+        \bottomrule
+        \toprule
+        \qarma/128~\citeonly{ToSC:Avanzi17}\tnote{$\|$}\hphantom{$\|$} (C)   & $\parens{\F_2[x]/\mathtt{0x101}}^{4 \times 4}$ &   64  &       ---\tnote{5} &       48       &          48    &       48      \\ \rowcolor{gray!10}
+        \midrule
+        \aria/~\citeonly{ICISC/KKPSSS03}\tnote{$\|$}\hphantom{$\|$} (I)      & $\parens{\F_2}^{128 \times 128}$               &  768  &       480\tnote{3} &      416       &         ---    &      ---      \\ %\rowcolor{gray!10}
+        \midori/~\citeonly{AC:BBISHA15}\tnote{$\|$,\P}\hphantom{$\|$,\P} (C) & $\parens{\F_{2^4}}^{4 \times 4}$               &   32  &       ---\tnote{5} &       24       &          24    &       24      \\ \rowcolor{gray!10}
+        \prince/ $\widehat{\mathrm{M}}_0$, $\widehat{\mathrm{M}}_1$~\citeonly{AC:BCGKKK12}\tnote{$\|$} & $\parens{\F_2}^{16 \times 16}$               &   32  &       ---\tnote{5} &       24       &          24    &       24      \\ %\rowcolor{gray!10}
+        \pride/ $\mathrm{L}_0$--$\mathrm{L}_3$~\citeonly{C:ADKLPY14}\tnote{$\|$} & $\parens{\F_2}^{16 \times 16}$                 &   32  &       ---\tnote{5} &       24       &          24    &       24      \\ \rowcolor{gray!10}
+        \qarma/64~\citeonly{ToSC:Avanzi17}\tnote{$\|$}\hphantom{$\|$} (C)    & $\parens{\F_2[x]/\mathtt{0x11}}^{4 \times 4}$  &   32  &       ---\tnote{5} &       24       &          24    &       24      \\ %\rowcolor{gray!10}
+        \skinny/64~\citeonly{C:BJKLMP16}\tnote{$\|$}\hphantom{$\|$}          & $\parens{\F_{2^4}}^{4 \times 4}$               &   16  &        12\tnote{4} &       12       &          12    &       12      \\ %\rowcolor{gray!10}
+        \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+    \footnotesize
+    \item[*] Stopped algorithm after three hours runtime.
+    \item[\dag] For the implementation see our \textsc{GitHub} repository.
+    \item[\ddag] Also used in other primitives, \eg/ its predecessor \square/~\citeonly{FSE:DaeKnuRij97}, and \mugi/~\citeonly{FSE:WFYTP02}.
+    \item[\S] Also used in \maelstrom/~\citeonly{SBSEG:FilBarRij06}.
+    \item[\P] Also used in other ciphers, \eg/ \mantis/~\citeonly{C:BJKLMP16}, and \fides/~\citeonly{CHES:BBKMW13}.
+    \item[$\|$] Not an \MDSs/ matrix.
+        \vspace{0.75em}
+    \item[1] Reported by~\citeonly{CHES:JMPS17}.
+    \item[2] Reported by~\citeonly{ToSC:JPST17}.
+    \item[3] Reported by~\citeonly{ETRI:BCLOP04}.
+    \item[4] Reported by the designers.
+    \item[5] We are not aware of any reported results for this matrix.
+    \end{tablenotes}
+    \end{threeparttable}
+\end{table}
+\end{fullwidth}
 
 \begin{figure}
 \begin{sidecaption}[XOR count distributions for $4 \times 4$ \MDSs/ matrices over $\GL{4}$]{%
@@ -759,203 +944,3 @@ In this manner, we generated 1\,000 matrices for each construction and computed 
 \end{tikzpicture}
 \end{sidecaption}
 \end{figure}
-
-The most obvious characteristic of the statistical distributions is that the means~$\mu$ do not differ much for all randomised constructions.
-The variance~$\sigma^2$ on the contrary differs much more.
-This is most noticeable for the na\"ive implementation, while the differences get much smaller when the implementation is optimised with the \textsc{Paar1} or \textsc{BP} heuristic.
-One might think that the construction with the lowest optimised average XOR count, which is for matrices over $\mathrm{GL}(4, \mathbb{F}_2)$ the arbitrary construction with enumerated elements, yields the best results.
-However, the best matrix we could find for this dimension was a Hadamard matrix.
-An explanation for this might be that the higher variance leads to some particularly bad and some particularly good results.
-
-The graphs in \cref{slps:fig:distributions} convey a similar hypothesis.
-Looking only at the na\"ive implementation, we can notice some differences.
-For example circulant matrices seem to give better results than, \eg/, Hadamard matrices.
-Additionally, the na\"ive XOR count increases step-wise as not every possible count occurs.
-But when optimising the implementation, the distributions get smoother and more similar.
-
-We conclude that all constructions give similarly good matrices when we are searching for the matrix with the lowest XOR count, with one important exception.
-For randomly generated matrices the XOR count increases by a factor of four, if we double the parameter $k$.
-\Cref{slps:tab:stats} covers this for Cauchy and Vandermonde matrices.
-We do not compute the statistical properties for Circulant, Hadamard and Toeplitz matrices with elements of $\mathrm{GL}(8, \F_2)$, as the probability to find a random \MDS/ instance for these constructions is quite low.
-Thus, generating enough instances for a meaningful statistical comparison is computationally tough and -- as we deduce from a much smaller sample size -- the statistical behaviour looks very similar to that of the Cauchy and Vandermonde matrices.
-Instead, and as already mentioned in \cref{slps:lem:subfield}, the subfield construction has a much more interesting behaviour.
-Its implementation simply doubles the XOR count.
-The lower half of \cref{slps:tab:stats} confirms this behaviour.
-
-Thus, when it is computationally infeasible to exhaustively search through all possible matrices, it seems to be a good strategy to use the subfield construction with the best known results from smaller dimensions.
-This conclusion is confirmed by the fact that our best results for matrices over $\mathrm{GL}(8, \mathbb{F}_2)$ are always subfield constructions based on matrices over $\mathrm{GL}(4, \mathbb{F}_2)$.
-
-%\begin{figure}
-\marginpar{%
-    \centering
-    \vspace*{-10\baselineskip}
-    \begin{tikzpicture}
-        \pgfplotsset{%
-            legend style={font=\footnotesize, draw=none, fill=none},
-            label style={font=\footnotesize},
-            every tick label/.append style={font=\footnotesize},
-        }
-        \begin{axis}[height=50mm, width=50mm, ymin=35, ymax=60, xmin=65, xmax=120, xlabel={Na\"ive}, ylabel={BP}]
-            \addplot+[only marks, mark size=0.5pt] table[x index=1, y index=3] {slp/enum_hadamard_4x4_4.dat};
-        \end{axis}
-    \end{tikzpicture}
-    \captionof{figure}[Correlations between na\"ive and \textsc{BP} XOR counts]{%
-        Correlations between na\"ive and \textsc{BP} XOR counts for enumerated Hadamard matrices.
-    }\label{slps:fig:hadamard_correlation}
-%    \begin{sidecaption}[Correlations between na\"ive and \textsc{BP} XOR counts]{%
-%        Correlations between na\"ive (x-axis) and \textsc{BP} (y-axis) XOR counts for enumerated Hadamard matrices.
-%    }[slps:fig:hadamard_correlation]
-%    \end{sidecaption}
-%\end{figure}
-}
-
-Next, we want to approach the question if choosing \MDS/ matrices with low Hamming weight entries is a good approach for finding low XOR count implementations.
-To give a first intuition of the correlation between na\"ive and optimised implementations, we plot the na\"ive XOR count against the optimised one.
-For one exemplary plot see \cref{slps:fig:hadamard_correlation}, which corresponds to the construction that we used to find the best $4 \times 4$ \MDS/ matrix for $k = 4$.
-The remaining plots
-can be found in the paper, see~\cite[Appendix~A, Figures~3 to~6]{ToSC:KLSW17}.
-%are in the appendix, see \cref{slps:fig:correlations_naive_paar1_random,slps:fig:correlations_naive_paar1_enum,slps:fig:correlations_naive_bp_random,slps:fig:correlations_naive_bp_enum}.
-
-In \cref{slps:fig:hadamard_correlation} one can see that several options can occur.
-While there is a general tendency of higher na\"ive XOR counts leading to higher optimised XOR counts, the contrary is also possible.
-For example, there are matrices which have a low na\"ive XOR count (left in the plot), while still having a somewhat high optimised XOR count (top part of the plot).
-But there are also matrices where a higher na\"ive XOR count results in a much better optimised XOR count.
-The consequence is that we cannot restrict ourselves to very sparse matrices when searching for the best XOR count, but also have to take more dense matrices into account.
-A possible explanation for this behaviour is that the heuristics have more possibilities for optimisations, when the matrix is not sparse.
-
-\subsection{Best results}
-Let us conclude by specifying the \MDS/ matrices with the currently best implementations.
-The notation $M_{n,k}$ denotes an $n \times n$ matrix with entries from $\GL{k}$, an involutory matrix is labeled with the superscript $i$.
-\Cref{slps:tab:best-mds} covers non-involutory and involutory matrices of dimension $4 \times 4$ and $8 \times 8$ over $\GL{4}$ and $\GL{8}$.
-$M_{8,4}$ and $M^i_{8,4}$ are defined over $\F_2[x] /\mathtt{0x13}$.
-
-The matrices mentioned are the following:
-\begin{align}
-    M_{4,4} &= \hadamard(\parens{\begin{smallmatrix}
-        0 & 0 & 0 & 1 \\
-        0 & 0 & 1 & 0 \\
-        0 & 1 & 0 & 0 \\
-        1 & 0 & 0 & 0 \\
-    \end{smallmatrix}},
-    \parens{\begin{smallmatrix}
-        0 & 0 & 1 & 1 \\
-        1 & 0 & 0 & 1 \\
-        1 & 1 & 0 & 0 \\
-        0 & 1 & 0 & 0 \\
-    \end{smallmatrix}},
-    \parens{\begin{smallmatrix}
-        1 & 1 & 0 & 1 \\
-        1 & 1 & 0 & 0 \\
-        0 & 1 & 0 & 1 \\
-        0 & 0 & 1 & 0 \\
-    \end{smallmatrix}},
-    \parens{\begin{smallmatrix}
-        1 & 1 & 0 & 0 \\
-        0 & 1 & 0 & 1 \\
-        1 & 0 & 1 & 1 \\
-        0 & 0 & 0 & 1 \\
-    \end{smallmatrix}}) \label{slps:eq:mds_matrix_4x4_4} \\
-    M_{4,8} &= \subfield(M_{4,4}) \label{slps:eq:mds_matrix_4x4_8} \\
-    M_{8,4} &= \cauchy\parens{%
-        \begin{multlined}
-            \scriptstyle
-            x^3 + x^2, x^3, x^3 + x + 1, x + 1, 0, x^3 + x^2 + x + 1, x^2, x^2 + x + 1, \\
-            \scriptstyle
-            1, x^2 + 1, x^3 + x^2 + x, x^3 + 1, x^3 + x^2 + 1, x^2 + x, x^3 + x, x
-        \end{multlined}}\label{slps:eq:mds_matrix_8x8_4} \\
-    M_{8,8} &= \subfield(M_{8,4}) \label{slps:eq:mds_matrix_8x8_8} \\
-    M^i_{4,8} &\ \text{is the subfield construction applied to~\citeonly[Example~3]{ToSC:SarSye16}} \label{slps:eq:mds_inv_matrix_4x4_8} \\
-    M^i_{8,4} &= \vandermonde\parens{%
-        \begin{multlined}
-            \scriptstyle
-            x^3 + x + 1, x + 1, x^3 + x^2 + x, x^3 + x^2 + 1, x^3 + 1, x^3, 0, x^3 + x \\
-            \scriptstyle
-            x^2 + x + 1, x^3 + x^2 + x + 1, x, 1, x^2 + 1, x^2, x^3 + x^2, x^2 + x
-        \end{multlined}}\label{slps:eq:mds_inv_matrix_8x8_4} \\
-    M^i_{8,8} &= \subfield(M^i_{8,4}) \label{slps:eq:mds_inv_matrix_8x8_8}
-\end{align}
-
-All these matrices improve over the previously known matrices, with the only exception being the involutory matrix from~\cite{ToSC:SarSye16} of dimension $4 \times 4$ over $\GL{4}$.
-$M_{4,4}$ was found after enumerating a few thousand Hadamard matrices, while $M_{8,4}$ and $M^i_{8,4}$ are randomly generated and were found after a few seconds.
-Every best matrix over $\GL{8}$ uses the subfield construction.
-
-With these results we want to highlight that, when applying global optimisations, it is quite easy to improve (almost) all currently best known results.
-We would like to emphasise that our results should not be misunderstood as an attempt to construct matrices which cannot be improved.
-
-\begin{table}
-    \begin{sidecaption}[\MDSs/ matrices with lowest known XOR count]{%
-        \MDSs/ matrices with the lowest known XOR count.
-        Matrices in the lower half are involutory.
-    }[slps:tab:best-mds]
-    \centering
-    {
-    \begin{threeparttable}
-    \renewcommand{\arraystretch}{1.2}
-    \begin{tabular}{lrlrl}
-        \toprule
-        Type                                           & \multicolumn{2}{c}{Previously Best Known}    &    \multicolumn{2}{c}{New Best Known}                      \\
-        \midrule
-        ${\mathrm{GL}(4, \F_2)}^{4 \times 4}$          &  $58$ & \citeonly{ToSC:SarSye16,ToSC:JPST17} &  36\tnote{*}    & Eq.~\eqref{slps:eq:mds_matrix_4x4_4}     \\ \rowcolor{gray!10}
-        ${\mathrm{GL}(8, \F_2)}^{4 \times 4}$          & $106$ & \citeonly{FSE:LiWan16}               &  72             & Eq.~\eqref{slps:eq:mds_matrix_4x4_8}     \\
-        $\parens{\F_2[x]/\mathtt{0x 13}}^{8 \times 8}$ & $384$ & \citeonly{FSE:SKOP15}                & 196\tnote{\dag} & Eq.~\eqref{slps:eq:mds_matrix_8x8_4}     \\ \rowcolor{gray!10}
-        ${\mathrm{GL}(8, \F_2)}^{8 \times 8}$          & $640$ & \citeonly{FSE:LiuSim16}              & 392             & Eq.~\eqref{slps:eq:mds_matrix_8x8_8}     \\
-        \midrule
-        $\parens{\F_2[x]/\mathtt{0x 13}}^{4 \times 4}$ &  $63$ & \citeonly{ToSC:JPST17}               &  42\tnote{*}    & \citeonly{ToSC:SarSye16}                 \\ \rowcolor{gray!10}
-        ${\mathrm{GL}(8, \F_2)}^{4 \times 4}$          & $126$ & \citeonly{ToSC:JPST17}               &  84             & Eq.~\eqref{slps:eq:mds_inv_matrix_4x4_8} \\
-        $\parens{\F_2[x]/\mathtt{0x 13}}^{8 \times 8}$ & $424$ & \citeonly{FSE:SKOP15}                & 212\tnote{\dag} & Eq.~\eqref{slps:eq:mds_inv_matrix_8x8_4} \\ \rowcolor{gray!10}
-        ${\mathrm{GL}(8, \F_2)}^{8 \times 8}$          & $736$ & \citeonly{ToSC:JPST17}               & 424             & Eq.~\eqref{slps:eq:mds_inv_matrix_8x8_8} \\
-        \bottomrule
-    \end{tabular}
-    \begin{tablenotes}
-    \footnotesize
-    \item[*] Computed with heuristic from~\citeonly{JC:BoyMatPer13}.
-    \item[\dag] Computed with heuristic from~\citeonly{ISIT:Paar97}.
-    \end{tablenotes}
-    \end{threeparttable}
-    }
-    \end{sidecaption}
-\end{table}
-
-All our implementations are publicly available online.\footnote{
-    \url{https://github.com/rub-hgi/shorter_linear_slps_for_mds_matrices}
-}
-
-\section{Further work}
-Our work mainly highlights that in order to get a tighter estimate on how few XORs are really needed for a given matrix $M$, we have to take optimisation strategies for its implementation into account.
-As already mentioned, this implementation can be subject to several constraints which we did not further investigate.
-One important aspect in this direction is the depth of the critical path of an implementation.
-The depth is an important factor for the latency of an implementation and thus subject to a different optimisation goal.
-There is some related work, which already takes the depth of the critical path into consideration, \eg/~\cite{BFA:BoyFinPer17}.
-
-A recent work by \textcite{ToSC:DuvLeu18} also compares proposed matrices with implementation depth in mind.
-Additionally, \citeauthor{ToSC:DuvLeu18} propose a graph-based search algorithm to find optimal implementations that yield an \MDS/ matrix.
-Using their algorithm, the authors are able to find matrices with cheaper and less deep implementations.
-Especially when taking the circuit depth into account, their approach is obviously favourable to ours.
-For example, the best implementations for $4 \times 4$ matrices over $\mathrm{GL}(4, \F_2)$ of~\cite{ToSC:DuvLeu18} need 35, 37, resp.\ 41 XORs (with a depth of five, four, resp.\ three), while our implementation of $M_{4,4}$ has depth six, see~\cite[Table~1]{ToSC:DuvLeu18}.
-
-An interesting observation is that their implementations can be further optimised by synthesis tools like Yosys\footnote{%
-    \url{http://www.clifford.at/yosys}
-} -- this indicates, and is also discussed by the authors, that the XOR count is not necessarily a good metric of the actual implementation cost in silicon.
-The example \citeauthor{ToSC:DuvLeu18} give are \FPGAp/, where the XORs are implemented using internal programmable \LUTp/.
-These \LUTp/ can implement not only 2-input XORs, but also 3- or 4-input or even 6- or 8-input XORs with almost no overhead compared to a simple 2-input XOR.
-This can of course greatly improve existing implementations.
-\citeauthor{ToSC:DuvLeu18} further argue that the costs for different XOR gates in \ASIC/ synthesis differ more and thus not so big improvements can be expected.
-
-In our opinion, this is not true.
-Standard cell libraries for \ASIC/ design often offers 2-input and 3-input XORs and the area cost for 3-input XOR gates might be cheap enough that it pays out to use these gates in an optimised implementation.
-For example in the \texttt{UMCL18G212T3} library, see \eg/~\cite[Table~2.1]{PhD:Poschmann09}, the 2-input XOR costs 2.67 GE, while a 3-input XOR gate costs 4.67 GE which is $\approx 87\%$ of the cost for 2 2-input XOR gates.
-A recent work by \textcite{IWSEC:BanFunIso19} explores these differences; one of their main findings is that different matrices are optimal for different libraries.
-
-The observation that it is crucial to take library gate costs into account was also already made by \textcite{TCHES:ReyTahAsh18} in the context of S-box implementation optimisations.
-Here the authors noted that the theoretical best implementations are in practice \emph{worse} than less optimised implementations -- due to the fact that the less optimised implementation uses cheaper standard cell gates than the optimised ones.
-\citeauthor{TCHES:ReyTahAsh18} thus suggest that either directly the synthesis tools or the information these tools use during synthesis, that is the individual costs and characteristics (\eg/ delay) of the available gates, have to be included in the theoretical optimisation process.
-
-The more problematic (obvious) point in our opinion then is that the resulting implementations are highly dependent on the targeted cell library and, see~\cite{IWSEC:BanFunIso19}, different matrices are optimal for different cell libraries.
-On the other hand it is questionable how problematic it is, if the area requirements for a matrix implementation differs by a handful of gate equivalents.
-
-An other interesting research question is, how the existing heuristics can be improved.
-The already mentioned work by \textcite{TCHES:ReyTahAsh18} proposes some improvements for the BP heuristics, but evaluate their improvements only in the setting of S-box optimisations.
-\textcite{ToSC:LSLWH19} also improves the BP heuristics, to make them depth aware.
-They are also able to find new involutory matrices with cheaper implementations.
-
-We now turn away from automated methods in the area of implementations and discuss applications in the area of cryptanalysis.

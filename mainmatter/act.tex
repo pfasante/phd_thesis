@@ -1,14 +1,16 @@
-\chapter{On Autocorrelation Tables and Differential-Linear Cryptanalysis}\label{ch:act}
+\chapter[On Autcorrelation Tables]{On Autocorrelation Tables and Differential-Linear Cryptanalysis}\label{ch:act}
 \openepigraph{Attacks only get better, never get worse.}{Unknown}
 
+\vspace*{-\baselineskip}
 \newthought{Synopsis}\hspace{1.5em}
 We observe that the \DLCT/ coincides with the \ACT/ and provide a detailed analysis of it.
 This chapter is based on the preprint
 \begin{quote}
     \fullfullcite{EPRINT:CanKolWie19}.
 \end{quote}
+All authors contributed equally.
 
-After discussing the equivalence of \DLCT/ and \ACT/, we analyse a link between the \ACT/, \DDT/ and \LAT/, which corresponds to the well known relation between differential and linear cryptanalysis already exhibited by \textcite{EC:ChaVau94,EC:BloNyb13}.
+After discussing the equivalence of \DLCT/ and \ACT/, we analyse a link between the \ACT/, \DDT/ and \LAT/, which corresponds to the well known relation between differential and linear cryptanalysis already exhibited by \textcite{EC:ChaVau94} and later by \textcite{EC:BloNyb13}.
 We then show that the (extended) \ACT/ spectrum is invariant under (extended) affine equivalence, but not under CCZ equivalence.
 The last observation is based on the fact that the \ACT/ of a function and that of its inverse can behave quite differently.
 This is of particular interest, as it might lead to the case where a differential-linear attack work better for the decryption than the encryption of a block cipher.
@@ -103,7 +105,7 @@ The same property holds when the entries $\AC{F}(\alpha,\beta)$, $\alpha \neq 0$
 \newthoughtpar{Link between differential and linear cryptanalysis}
 The following proposition shows that the restriction of the autocorrelation function $\alpha \mapsto \AC{F}(\alpha,\beta)$ can be seen as the discrete Fourier transform of the squared Walsh transform of $F_\beta$: $\gamma \mapsto \FC{F}^2(\gamma,\beta)$.
 As previously mentioned, $\beta \mapsto \AC{F}(\alpha,\beta)$ similarly corresponds to the Fourier transform of the row of index~$\alpha$ in the \DDT/: $\theta \mapsto \DC{F}(\alpha,\theta)$.
-It is worth noticing that this correspondence points out the well-known relationship between the Walsh transform of~$F$ and its \DDT/ exhibited by~\textcite{EC:ChaVau94,EC:BloNyb13}.
+It is worth noticing that this correspondence points out the well-known relationship between the Walsh transform of~$F$ and its \DDT/, which was exhibited in~\citeonly{EC:ChaVau94,EC:BloNyb13}.
 
 \begin{proposition}
   Let $F$ be a function from $\F_2^n$ to $\F_2^n$.
@@ -144,7 +146,7 @@ It is worth noticing that this correspondence points out the well-known relation
         &= \sum_{x \in \F_2^n} \sum_{\theta \in \F_2^n} (-1)^{\iprod{\theta}{(\beta + \derive{\alpha}{F}(x)))}}\\
         &= \sum_{x \in \derive{\alpha}{F}^{-1}(\beta)} 2^n = 2^n \DC{F}(\alpha,\beta)\;.
     \end{align*}
-    \cref{eq2} then follows directly by applying the inverse Fourier transform.
+    \cref{eq2} then follows directly by the inverse Fourier transform.
 \end{proof}
 
 As a corollary, Parseval's equality leads to an expression of the sum of all squared entries in each row, and in each column of the autocorrelation table.
@@ -176,7 +178,7 @@ Three well-known equivalences are the following:
     Here, the graph of a function is defined as $\set{(x, F(x)) \given x \in \F_2^n}$.
 \end{definition}
 
-A nice property of the \ACT/ is that its spectrum is invariant under affine equivalence, and further its extended \ACT/ spectrum, that is the multiset $\set*{\abs*{\AC{F}(\alpha, \beta)} \given \alpha, \beta \in \F_2^n}$, is invariant under extended affine equivalence.
+A nice property of the \ACT/ is that its spectrum is invariant under affine equivalence, and further its extended \ACT/ spectrum, that is the multiset of absolute autocorrelation coefficients, $\set*{\abs*{\AC{F}(\alpha, \beta)} \given \alpha, \beta \in \F_2^n}$, is invariant under extended affine equivalence.
 
 \begin{proposition}[Affine and Extended Affine Invariance]\label{act:prop:affine}
     Given two permutations $F$, and $G$ on $\F_2^n$.
@@ -190,7 +192,10 @@ A nice property of the \ACT/ is that its spectrum is invariant under affine equi
     where $L^\top$ denotes the adjoint of the linear mapping~$L$.
 \end{proposition}
 \begin{proof}
-    From the affine equivalence of $F$ and $G$, we have $G(x) = L_b(F(L_a(x) + a)) + b$.
+    From the affine equivalence of $F$ and $G$, we have
+    \begin{equation*}
+        G(x) = L_b(F(L_a(x) + a)) + b\;.
+    \end{equation*}
     Each entry $\ACT/_F[\alpha, \beta]$ corresponds to the number of solutions $x$ for the equation
     \begin{equation*}
         \iprod{\beta}{(F(x) + F(x + \alpha))} = 0.
@@ -226,7 +231,7 @@ The (extended) affine invariance of the (extended) \ACT/ spectra follows directl
     \end{itemize}
 \end{corollary}
 
-To examine the behaviour under CCZ equivalence, let us first recall that the \ACT/ is related to linear structures in the following way, see also~\cite{DCC:ZhaZheIma00,LIGHTSEC:MakTez14}.
+To examine the behaviour under CCZ equivalence, let us first recall that the \ACT/ is related to linear structures in the following way, see also~\citeonly{DCC:ZhaZheIma00,LIGHTSEC:MakTez14}.
 \begin{lemma}[Linear Structures]\label{act:lem:ls}
     Given $F : \F_2^n \to \F_2^n$, then
     \begin{equation*}
@@ -248,7 +253,7 @@ One consequence of this is the next corollary.
     Given a permutation $F : \F_2^n \to \F_2^n$, then the \ACT/ spectrum of $F$ is in general not equal to the \ACT/ spectrum of $F^{-1}$.
 \end{corollary}
 \begin{proof}
-    Counterexamples are the S-boxes from \safer/~\cite{FSE:Massey93}, \sc2000/~\cite{FSE:SYYTIYTT01}, and \fides/~\cite{CHES:BBKMW13}, where the S-box has linear structures in one direction but non in the other direction, and the Gold permutations as analysed in \cref{sec:APN}.
+    Counterexamples are the S-boxes used in the ciphers \safer/~\citeonly{FSE:Massey93}, \sc2000/~\citeonly{FSE:SYYTIYTT01}, and \fides/~\citeonly{CHES:BBKMW13}, where the S-boxes have linear structures in one direction but non in the other direction, and the Gold permutations as analysed in \cref{sec:APN}.
 \end{proof}
 An interesting implication of this is that it might be advantageous when doing a differential-linear cryptanalysis, to look at both directions, encryption and decryption, of a cipher.
 
@@ -670,7 +675,7 @@ We actually conjecture the following.
     If $n$ odd and $n \not \equiv 0 \bmod{3}$, then $\absoluteindicator{K_i} = 2^{\frac{n+1}{2}}$.
 \end{conjecture}
 
-Some other results on the autocorrelations of the Boolean functions $\tr(x^k)$ are known in the literature, which can be trivially extended to the vectorial power functions $x^k$ if $\gcd(k,n)=1$, see~\cite[Theorem 5]{SAC:GonKho03}, \cite{TIT:Carlet08} and \cite[Lemmata 2 and 3]{IS:SunWu09}.
+Some other results on the autocorrelations of the Boolean functions $\tr(x^k)$ are known in the literature, which can be trivially extended to the vectorial power functions $x^k$ if $\gcd(k,n)=1$, see~\cite[Theorem~5]{SAC:GonKho03}, \cite{TIT:Carlet08} and \cite[Lemmata 2 and 3]{IS:SunWu09}.
 In the case $n = 6r$ and $k=2^{2r}+2^r+1$, the power monomial $x^k$ is not a permutation, but results for all component functions of $x^k$ were derived by \textcite{FFA:CanChaKyu08}.
 We summarise the results in the following proposition.
 
@@ -750,4 +755,4 @@ Indeed, $(4^{(n-i)}-2^{n-i}+1)2^{2i} \equiv 4^{i}-2^i+1 \pmod {2^n-1}.$
 
 \newthought{Note}\hspace{1.5em}
 \textcite{ARXIV:LLLQ19} independently observed similar results.
-In~\citeonly{CKLLLQW19} we merged both drafts; the paper is currently under submission.
+In \citeonly{CKLLLQW19} we merged both drafts; the paper is currently under submission.

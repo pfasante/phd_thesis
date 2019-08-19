@@ -5,6 +5,7 @@
 }{Johann Wolfgang von Goethe}
 \openepigraph{During human progress, every science is evolved out of its corresponding art.}{Herbert Spencer}
 
+\vspace*{-\baselineskip}
 \newthought{Shannon's}\hspace{1.5em} \enquote{A Mathematical Theory of Cryptography}~\citeonly{shannon45} is commonly referred to as the founding stone of modern cryptography.
 While modern cryptography knows several kinds of encryption and authentication schemes, the trinity of symmetric cryptography consists of encryption schemes, hash functions and message authentication codes.
 This thesis focuses on the design and analysis of symmetric encryption schemes, in particular block ciphers.
@@ -16,16 +17,18 @@ Before coming to the technical parts, let us quickly recall some basic notations
 \section{Basics and Notations}
 By $\F_2 = \set{0,1}$ we denote the finite field with two elements, by $\F_{2^k}$ the extension field with $2^k$ elements, often also denoted as $\mathrm{GF}(2^k)$, and by $\F_2^n$ the $n$ dimensional vector space over $\F_2$.
 We denote the addition in a finite field, an extension field and vector space by $+$; in the last case it corresponds to the component-wise addition in the underlying field.
-The addition is also commonly referred to as \enquote{xor}.
+The addition is also commonly referred to as \enquote{XOR}.
 For the (scalar) multiplication in $\F_2$, $\F_{2^n}$ and $\F_2^n$, as well as the canonical \emph{inner product} in $\F_2^n$ we write $\iprod{x}{y} \coloneqq \sum_i x_i y_i$ (for $x,y \in \F_2^n$), and it is clear from the context whether the multiplication or inner product is meant.
-The \emph{span} of a set $U \subseteq \F_2^n$ denotes the minimal subspace of $\F_2^n$ that contains all linear combinations of elements in $U$, \ie/
+The \emph{span} of a set $U \subseteq \F_2^n$
 \begin{equation*}
-    \Span{U} \coloneqq \set{\sum_{u \in U} \lambda_u u \given \lambda_i \in \F_2}\;.
+    \Span{U} \coloneqq \set{\sum_{u \in U} \lambda_u u \given \lambda_i \in \F_2}
 \end{equation*}
-Given a subspace $U \subseteq \F_2^n$, we denote a basis of $U$ by $\Basis{U}$, that is a minimal subset of $U$ such that it's span is equal to $U$:
+denotes the minimal subspace of $\F_2^n$ that contains all linear combinations of elements in $U$.
+Given a subspace $U \subseteq \F_2^n$, we denote a \emph{basis} of $U$ by $\Basis{U}$, that is a minimal subset of $U$ such that it's span is equal to $U$:
 \begin{equation*}
     U = \Span{\Basis{U}}\;.
 \end{equation*}
+Note that in general a basis is not unique.
 The canonical basis vectors are $e_i$, \ie/ $e_i$ has exactly one component equal to one at position~$i$.
 The \emph{dimension} of a subspace is the size of its basis, denoted $\dim{U} = \abs{\Basis{U}}$.
 Given another subspace $V \subseteq \F_2^n$ with trivial intersection $U \cap V = \set{0}$, we denote the \emph{direct sum} by
@@ -70,7 +73,7 @@ The two following properties of orthogonal complements are well known.
 
 \begin{lemma}[Orthogonal Complement of subsets]\label{st:lem:subset_complements}
     Let $U \subseteq V$ be a subspace.
-    The orthogonal complement of $V$ is a subset of the orthogonal complement of $U$.
+    The orthogonal complement of $V$ is a subset of the orthogonal complement of~$U$.
     Formally:
     \begin{equation*}
         U \subseteq V \Rightarrow V^\perp \subseteq U^\perp\;.
@@ -81,21 +84,12 @@ The two following properties of orthogonal complements are well known.
     As $U$ is a subset of $V$ this also holds in particular for all the elements in $U$: $\Rightarrow \forall a \in V^\perp : \forall u \in U : \iprod{a}{u} = 0$.
     Which finally implies that $V^\perp \subseteq U^\perp$.
 \end{proof}
-%The complement of a direct sum is the direct sum of its complements, \ie/
-%\begin{equation*}
-%    \parens{V_1 \times \cdots \times V_n}^\perp = V_1^\perp \times \cdots \times V_n^\perp,
-%\end{equation*}
-%Given two subspaces $U,V$ it holds that
-%\begin{equation*}
-%    U \subseteq V \Rightarrow V^\perp \subseteq U^\perp.
-%\end{equation*}
-%Some well known properties of complements are the following.
 
-We denote the set of $\F_2$-linear functions $L : \F_2^n \to \F_2^m$ ($\F_2$-homomorphisms) as
+We denote the set of $\F_2$-linear functions $L : \F_2^n \to \F_2^m$ ($\F_2$-homo\-mor\-phisms) as
 \begin{equation*}
     \mathrm{Hom}_{\F_2}(\F_2^n, \F_2^m) \coloneqq \set{L : \F_2^n \to \F_2^m \given L\ \text{is linear}}\;.
 \end{equation*}
-There exists a natural isomorphism to $m \times n$ matrices, $\mathrm{Hom}_{\F_2}(\F_2^n, \F_2^m) \cong \mathrm{Mat}_{m,n}(\F_2)$ and we can thus identify every linear function $L$ by a corresponding matrix $T_L$, called the \emph{matrix representation} of $L$.
+By fixing a basis there exists a natural isomorphism to $m \times n$ matrices, $\mathrm{Hom}_{\F_2}(\F_2^n, \F_2^m) \cong \mathrm{Mat}_{m,n}(\F_2)$ and we can thus identify every linear function~$L$ by a corresponding matrix $T_L$, called the \emph{matrix representation} of $L$.
 The \emph{kernel} of $L$ (or $T_L$) is the set of all elements mapped to zero:
 \begin{equation*}
     \Ker{L} \coloneqq \set{x \in \F_2^n \given L(x) = 0} \subseteq \F_2^n
@@ -121,12 +115,12 @@ This implies the fundamental fact
         0   & else
     \end{cases*}\;.
 \end{equation}
-$L$'s adjoint function $L^\top$ is the function, such that
+The \emph{adjoint} function $L^\top$ of $L$ is the function, such that
 \begin{equation}\label{eqn:adjoint}
     \forall x,y \in \F_2^n : \iprod{x}{L(y)} = \iprod{L^\top(x)}{y}
 \end{equation}
 The matrix representation of $L^\top$ corresponds to the transposed matrix representation of $L$.
-For further background on Boolean functions, refer to \cref{sec:prelim:bf}.
+For further background on Boolean functions, we refer to \cref{sec:prelim:bf}.
 
 A fundamental theorem is the following.
 \begin{theorem}[Rank-Nullity Theorem]\label{thm:rank-nullity}
@@ -156,7 +150,7 @@ A fundamental theorem is the following.
           &= L\parens{\sum_{i=1}^m \lambda_i v_i}\;,
     \end{align*}
     which implies that $\sum_{i=1}^m \lambda_i v_i$ is actually in the kernel of $L$.
-    This contradicts the assumption of A being a basis.
+    This contradicts the assumption of $A \cup B$ being a basis of $\F_2^n$.
 
     Finally
     \begin{equation*}
@@ -166,25 +160,27 @@ A fundamental theorem is the following.
 \end{proof}
 The name of the theorem stems from the fact that the dimension of the image is called \emph{rank} and the dimension of the kernel \emph{nullity}.
 
-Up to isomorphisms, every extension field with $2^k$ elements is equal to the univariate polynomial ring over $\F_2$ modulo an irreducible polynomial $q$ of degree $k$: $\F_{2^k} \cong \F_2[x]/q$.
+Up to isomorphisms, every extension field with $2^k$ elements is equal to the univariate polynomial ring over $\F_2$ modulo an irreducible polynomial~$q(x)$ of degree $k$: $\F_{2^k} \cong \F_2[x]/q(x)$.
 In favour of a more compact notation, we stick to the common habit and write a polynomial as its coefficient vector interpreted as a hexadecimal number, \ie/ $q(x) = x^4 + x + 1$ corresponds to $\mathtt{0x13}$.
 
 It is well known that we can represent the elements in a finite field with characteristic two as vectors with coefficients in $\F_2$.
-More precisely, there exists a vector space isomorphism $\Phi: \F_{2^k} \to \F_2^k$.
+More precisely, by fixing a basis there exists a vector space isomorphism $\Phi: \F_{2^k} \to \F_2^k$.
 Every multiplication by an element $\alpha \in \F_{2^k}$ can then be described by a left-multiplication with a matrix $T_{\alpha} \in \F_2^{k \times k}$ as shown in \cref{fig:slps:vs_iso} (and is thus a linear operation).
-$T_{\alpha}$ is usually called the \emph{multiplication matrix} of the element $\alpha$.
+For an element~$\alpha$,~$T_{\alpha}$ is usually called its \emph{multiplication matrix}.
+Note that $T_\alpha$ depends on the chosen basis.
 \marginpar{%
     \centering
+    \footnotesize
     \begin{tikzpicture}[node distance=2cm]
         \node (ul) {$\mathbb{F}_{2^k}$};
         \node (ur) [right of=ul] {$\mathbb{F}_{2^k}$};
         \node (ll) [below of=ul] {$\mathbb{F}_2^k$};
         \node (lr) [below of=ur] {$\mathbb{F}_2^k$};
 
-        \path [draw, ->] (ul) edge node[above] {$\cdot \alpha$} (ur);
-        \path [draw, ->] (ul) edge node[left] {$\Phi$} (ll);
-        \path [draw, ->] (ll) edge node[below] {$T_{\alpha}$} (lr);
-        \path [draw, ->] (lr) edge node[right] {$\Phi^{-1}$} (ur);
+        \path [line, thin] (ul) edge node[above] {$\cdot \alpha$} (ur);
+        \path [line, thin] (ul) edge node[left] {$\Phi$} (ll);
+        \path [line, thin] (ll) edge node[below] {$T_{\alpha}$} (lr);
+        \path [line, thin] (lr) edge node[right] {$\Phi^{-1}$} (ur);
     \end{tikzpicture}
     \captionof{figure}{Multiplication using a vector space isomorphism}
     \label{fig:slps:vs_iso}
@@ -196,11 +192,11 @@ Given an $n \times n$ matrix $M = (\alpha_{i,j})$ with $\alpha_{i,j} \in \F_{2^k
 \end{equation*}
 Here, $\mathrm{GL}(k, \F_2)$ denotes the general linear group, that is the group of invertible matrices over $\F_2$ of dimension $k \times k$.
 
-Given a matrix $M$ and a vector $u$, the \emph{Hamming weights} $\mathrm{hw}(M)$ and $\mathrm{hw}(u)$ are defined as the number of nonzero entries in $M$ and $u$, respectively.
+Given a matrix $M$ and a vector $u$, the \emph{Hamming weights} $\mathrm{hw}(M)$ and~$\mathrm{hw}(u)$ are defined as the number of nonzero entries in $M$ and $u$, respectively.
 In the case of a binary vector $v \in \F_2^{nk}$, we define the \emph{$k$-bit word Hamming weight} as $\mathrm{hw}_k(v) \coloneqq \mathrm{hw}(v')$, where $v' \in (\F_2^k)^n$ is the vector that has been constructed by partitioning $v$ into groups of $k$ bits.
 
 Finally, some notational conventions:
-We denote uniformly random sampling from a finite set by $\in_R$ that is $x \in_R M$ denotes that $x$ is drawn uniformly at random from the set~$M$.
+We denote uniformly random sampling from a finite set by $\in_R$, that is $x \in_R M$ denotes that $x$ is drawn uniformly at random from the set~$M$.
 Given a vector $x \in \F_2^n$, we normally index a single element at position $i$ as $x_i$.
 However, to avoid ambiguity, we might also denote the $i$-th element as $x[i]$.
 If $x$ is split into parts, we denote a \enquote{slice} of $x$ as $x[i:j] \coloneqq (x_i, x_{i+1}, \ldots, x_j)$ for $i \leqslant j$.
@@ -226,16 +222,15 @@ Afterwards we turn to block ciphers in more detail and discuss typical construct
 Eventually we recall concrete security statements for the most common block cipher construction.
 
 \subsection{Generic Security for Generic Constructions}
-Our ultimate goal for a secure encryption is, to hide information from an adversary, \ie/ providing \emph{confidentiality}.\footnote{%
+Our ultimate goal for a secure encryption is to hide information from an adversary, \ie/ providing \emph{confidentiality}.\footnote{%
     The other two most important security goals are \emph{integrity} (the data is unmodified) and \emph{message authentication} (verifying the identity of the sender), which can be achieved by message authentication codes.
     However, for the remainder of the thesis, we focus on confidentiality.
 }
 We thus want to design a secure encryption scheme for which an adversary is not capable of deducing any information from the plaintext.
 
 \newthoughtpar{Attacker Model}
-
-We assume probabilistic polynomial time (and thus computationally bounded) adversaries.
-Typically three \emph{attack scenarios} are discussed, which describe the capabilities of such an attacker.
+We assume probabilistic polynomial-time (and thus computationally bounded) adversaries.
+Typically three \emph{attack scenarios} are discussed which describe the capabilities of such an attacker.
 \begin{description}
     \item[\KPA/] The adversary learns some pairs of plain- and ciphertexts, encrypted under the same key.
     \item[\CPA/] The adversary \begin{inparaenum}[1)]
@@ -250,7 +245,7 @@ Typically three \emph{attack scenarios} are discussed, which describe the capabi
 \end{description}
 Clearly, \KPA/ is the weakest and \CCA/ the strongest scenario.
 
-When dealing with asymptotic security, the standard goal of an attacker in the above scenarios is, to distinguish between two messages, \ie/ guessing the bit~$b$.
+When dealing with asymptotic security, the standard goal of an attacker in the above scenarios is to distinguish between two messages, \ie/ guessing the bit~$b$ correctly.
 However, for an practical attack on an encryption scheme, other goals might also be of interest.
 Standard goals of an attacker are thus
 \begin{description}
@@ -259,21 +254,22 @@ Standard goals of an attacker are thus
     \item[Key Recovery] The adversary has to recover the secret key used by the oracle.
 \end{description}
 In general, security against a distinguishing attack is the most generic goal and thus the most difficult to achieve.
-This is intuitively clear, as an attacker that successfully recovers a key or a plaintext can easily be turned in an attacker that distinguishes ciphertexts (\ie/ by recovering the key, decrypting the ciphertext or directly recovering the plaintext and then distinguish based on this plaintext).
-If not specified, we thus assume the adversaries goal to be a distinguishing attack.
+This is intuitively clear, as an attacker that successfully recovers a key or a plaintext can easily be turned into an attacker that distinguishes ciphertexts (\ie/ by recovering the key, decrypting the ciphertext or directly recovering the plaintext and then distinguish based on this plaintext).
+If not specified, we thus assume the adversary's goal to be a distinguishing attack.
 We later discuss the connection between different goals in the specific case of symmetric cryptanalysis, but keep the discussion general for this introduction.
 
 In order to prove asymptotic security, the standard technique are reductionistic, game-based proofs.
 For these, we define a security game that an adversary has to win with a high enough probability, in order to break the security claim of the scheme.
-One then shows, under a suitable hardness assumption that such an attacker can be transformed into an attacker on the underlying hardness assumption.
-However, we refrain from defining all these notions in full rigor, as provable security is not topic of the remaining thesis.
+One then shows under a suitable hardness assumption that such an attacker can be transformed into an attacker on the underlying hardness assumption.
+In the context of symmetric cryptography, we do not base our proofs on hardness assumptions, but give \emph{concrete} bounds on the adversary's advantage.
+Thus we refrain from defining all these notions in full rigor; provable security is anyway not the topic of the remaining thesis.
 
 Let us now turn to the constructive part and discuss approaches to achieve a secure encryption system.
 
 \newthoughtpar{Constructions: Pseudorandom Permutations and Block Ciphers}
 The first encryption scheme that can be proven secure is the \emph{\OTP/}.
 It was developed even before World War II and used then, during the Cold War, and most probable is still in use today.
-The encryption is simply $\mathrm{OTP}_k : m \mapsto k + m$, while the crucial fact for the \OTP/'s security is based on the \emph{one time} use of the key $k$.
+The encryption is simply $\mathrm{OTP}_k : m \mapsto k + m$, where key and message are both in $\F_2^n$, while the crucial fact for the \OTP/'s security is based on the \emph{one time} use of the key $k$.
 In particular, for every message, we need a fresh key sampled uniformly at random.
 
 The \OTP/ comes with one prime advantage and one prime disadvantage.
@@ -292,36 +288,34 @@ This is achievable, as we are aiming for security against computationally \emph{
 
 A candidate for such a secure (probabilistic) encryption scheme is the following:
 \begin{equation}\label{eqn:enc-prp}
-    \begin{aligned}
-        E_k &: \F_2^n \to \F_2^n \times \F_2^n \\
-        E_k(x) &\coloneqq (r, F_k(r) + x)\;.
-    \end{aligned}
+        E_k(x) \coloneqq (r, F_k(r) + x)\;.
 \end{equation}
-Here, $r$ is used to randomise the encryption as otherwise we cannot achieve \CPA/-security.\footnote{%
-    Any deterministic encryption scheme is trivially \CPA/-insecure.
-    An attacker can simply query the encryption of its challenge messages and distinguish the challenge ciphertext based on these two encryptions.
-}
+Here, $r$ is used to randomise the encryption as otherwise we cannot achieve \CPA/-security.
+Any deterministic encryption scheme is \CPA/-insecure:
+An attacker can simply query the encryption of its challenge messages and distinguish the challenge ciphertext based on these two encryptions.
+
 The remaining, yet unspecified, part is~$F_k$, and we want to take a more detailed look at what properties it has to exhibit, so that our scheme is secure.
 
 The intuition we follow here is that the output of~$F_k$, for any fixed key~$k$, should look random and is (against our computationally bounded adversary) indistinguishable from a true uniformly random output.
 This is captured in the notion of a pseudorandom permutation, that is: an efficient, (length-preserving), keyed permutation which is computationally indistinguishable from a random permutation.
-Here, being efficient implies a polynomial time algorithm for evaluating the permutation.
+Here, being efficient implies a polynomial-time algorithm for evaluating the permutation.
 Length-preserving is assumed for simplicity and denotes a permutation of~$\F_2^n$, where the key is also an element of~$\F_2^n$.\footnote{%
     We later discuss an instance of a pseudorandom permutation with a different key length than~$n$ -- which in practice often occurs, but for the moment we stay with the simplified notation (as the generalisation is trivial anyway).
 }
-The notion of computationally indistinguishability captures the intuition that any probabilistic polynomial time attacker's success probability is negligible, \ie/ smaller than $1/\mathrm{poly}(n)$.
+The notion of computationally indistinguishability captures the intuition that any probabilistic polynomial-time attacker's success probability is negligible, \ie/ smaller than $1/\mathrm{poly}(n)$.
 More formally we end up with the following definition.
 \begin{definition}[Pseudorandom Permutation]\label{def:prp}
-    A family of functions $F$ on $\F_2^n$ is a \emph{\PRP/} if for any $k \in \F_2^n$,
+    Given a family of functions~$F$ on $\F_2^n$.
+    We call $F_k$ a \emph{\PRP/} if
     \begin{itemize}
         \item $F_k$ is a permutation of~$\F_2^n$,
-        \item there exists polynomial time algorithms evaluating $F_k$ and $F_k^{-1}$, and finally
-        \item for all probabilistic polynomial time distinguishers $D$ the following probability bound holds:
+        \item there exists polynomial-time algorithms evaluating $F_k$ and $F_k^{-1}$, and finally
+        \item for all probabilistic polynomial-time distinguishers $D$ the following probability bound holds:
               \begin{equation}\label{eqn:prp-def}
                   \abs{\Prob\bracket{D^{F_k}(1^n) = 1} - \Prob\bracket{D^{f}(1^n) = 1}} \leqslant \negl{n}\;,
               \end{equation}
-              where $\negl{n} = \frac{1}{\mathrm{poly}(n)}$ is bounded by the inverse of any polynomial as~$n$ tends to infinity.
-              The probability space is over the uniform choice of the key $k$, the permutation $f \in_R \perm/_n$ and the randomness of $D$.
+              where $\negl{n} < \frac{1}{\mathrm{poly}(n)}$ for all polynomials in $n$.
+              The probability space is over the uniform choice of the key~$k$, the permutation $f \in_R \perm/_n$ and the randomness of $D$.
     \end{itemize}
     We call $n$ the \emph{security parameter}, which is, for length-preserving functions, equal to the \emph{block size} and \emph{key size}.
 \end{definition}
@@ -339,8 +333,8 @@ The $1^n$ input specifies the all-one-vector $(1, \ldots, 1) \in \F_2^n$, a tech
 Note that a computationally unbounded adversary can always violate the computational indistinguishable notion, see the margin note.
 \marginpar{%
     \footnotesize
-    %\vspace*{-29em}
-    \textbf{An unbounded adversary breaks\\computational indistinguisability}\\[2pt]
+    \vspace*{-4\baselineskip}
+    \textbf{An unbounded adversary breaks\\computational indistinguishability}\\[2pt]
     The following distinguisher $D$ has a non negligible advantage.
 
     \begin{itemize}
@@ -358,12 +352,12 @@ Note that a computationally unbounded adversary can always violate the computati
     This occurs with probability less than $1/(2^n-1)$ and hence is negligible.
     $D$'s overall advantage is thus close to one.
 }
-This problem does not occur when analysing the concrete security of a cipher, as the adversaries advantage is then bounded by her resources.
+This problem does not occur when analysing the concrete security of a cipher, as the adversary's advantage is then bounded by her resources.
 
 The above security definition can be extended, by allowing the distinguisher to access the inverse permutation, too.
 This leads to the notion of a strong pseudorandom permutation:
 \begin{definition}[Strong Pseudorandom Permutation]\label{def:strong-prp}
-    A function-family $F$ on $\F_2^n$ is a \emph{strong \PRPl/} if $F$ is a \PRP/ and for any $k \in \F_2^n$ and for all probabilistic polynomial time distinguishers $D$ the following probability bound holds:
+    A function-family $F$ on $\F_2^n$ is a \emph{strong \PRPl/} if $F$ is a \PRP/ and for any $k \in \F_2^n$ and for all probabilistic polynomial-time distinguishers $D$ the following probability bound holds:
     \begin{equation*}
         \abs{\Prob\bracket{D^{F_k,F_k^{-1}}(1^n) = 1} - \Prob\bracket{D^{f,f^{-1}}(1^n) = 1}} \leqslant \negl{n}\;.
     \end{equation*}
@@ -381,16 +375,20 @@ Block ciphers are designed to yield exactly this, a secure instance of a (strong
     A \emph{Block Cipher} is a family of permutations $E$ of the~$\F_2^n$.
     Any instance of $E$ is indexed by the \emph{master key} $k \in \F_2^m$.
     We call $n$ the \emph{block size} and $m$ the \emph{key size} of $E$.
-    Furthermore we require that (for every $k$) $E_k$ (and its inverse $D_k = E_k^{-1}$) is efficiently computable, \ie/ there exists a probabilistic polynomial time algorithm evaluating $E_k$.
+    Furthermore we require that (for every $k$) $E_k$ (and its inverse $D_k = E_k^{-1}$) is efficiently computable, \ie/ there exists a probabilistic polynomial-time algorithm evaluating $E_k$.
 \end{definition}
-In order that a block cipher is secure, we would typically request it to be a (strong)~\PRP/.
-A rigorous security proof would then require proving this under a (weak) complexity theoretic hardness assumption (as it is done for most asymmetric designs).
-However, fixing any block size $n$ directly renders the asymptotic argument of bounding the advantage by some negligible term useless.
+While standard block cipher designs fix one block size $n$, a technical oddity is that among others polynomial time looses its meaning.
+For the efficient computable aspect, we simply ignore this and just require \enquote{an efficient implementation}.
+However, for the asymptotic security argument, this fixed $n$ is problematic, too.
+Namely in order that a block cipher is secure, we would typically request it to be a (strong)~\PRP/.
+Above, we have already mentioned the problems with a standard rigorous security proof: it would require proving the \PRP/ property under a (weak) complexity theoretic hardness assumption (as it is done for most asymmetric designs).
+Now, fixing any block size $n$ directly renders the asymptotic argument of bounding the advantage by some negligible term useless.
+In contrast to encryption schemes or similar, for block ciphers it is often not possible to give a generic construction for any block size $n$.
 This problem is typically circumvented by bounding the adversary's advantage with the concrete resources she spends, see also the discussion in \cref{sec:prelim:concrete-sec}, in particular \cref{def:concrete-prp}.
 
 Nevertheless, proofs in this concrete setting still retain the problem that they base on idealised building blocks.
 Instead of doing such a proof, we typically \enquote{just assume} that any \emph{practical} block cipher instance is secure, \ie/ a (strong) \PRP/.
-The main reason for this approach is owed to efficiency requirements and the fact that designs, asymptotically proven to be secure, are often several magnitudes slower than modern block ciphers.
+The main reason for this approach is owed to efficiency requirements and the fact that designs asymptotically proven to be secure are often several magnitudes slower than modern block ciphers.
 Certainly, this missing last brick in the security proof should not be interpreted wrongly.
 Years of public scrutiny support our assumption that a specific block cipher actually yields a \PRP/.
 Comparing such a thoroughly understood design with asymmetric schemes that rely on \eg/ the complex Gap-Diffie-Hellman assumption,\footnote{%
@@ -398,19 +396,21 @@ Comparing such a thoroughly understood design with asymmetric schemes that rely 
 }
 we should be much more confident in the security of the block cipher.
 Additionally to the used hardness assumption, a block cipher also typically corresponds to one fixed instance for any parameter set, while an asymmetric scheme might change the parameters for every key pair.
-This is the case \eg/ in RSA, where every key pair has to use a different modulus (otherwise the encryption is directly broken), and is in some sense even worse for elliptic curve based systems.
+This is the case \eg/ in RSA, where every key pair has to use a different modulus (otherwise the encryption is directly broken), and is in some sense even worse for elliptic curve-based systems.
 Choosing efficient and secure elliptic curves is a highly non-trivial task -- and examples as the \texttt{Dual\_EC\_DRBG} incident\footnote{%
     See the Snowden leaks, in particular NSA's \enquote{Bullrun} program.
-} confirm that it is possible to easily hide backdoors in such parameters, whereas no such way to hide backdoors for symmetric schemes are publicly knonw.
+} confirm that it is possible to easily hide backdoors in such parameters, whereas no such way to hide backdoors for symmetric schemes are publicly known.
 
 As our encryption scheme in \cref{eqn:enc-prp}, and analogously any block cipher, only encrypts single $n$-bit blocks of data, we typically need a \emph{mode of operation} for $E$, such that we can encrypt data of arbitrary length.
+In the next section, we discuss these modes together with padding schemes, completing our treatment of generic constructions for symmetric encryption schemes.
+
 \newthoughtpar{Modes of Operation}
 Actually, the scheme from \cref{eqn:enc-prp} can already be seen as a mode of operation, which turns a \PRP/ into a fixed-length \CPA/-secure encryption function.
 However, as just mentioned, in practice we need to encrypt multiple blocks of data.
 A mode of operation then serves as a sort of protocol, describing how these multiple blocks can be encrypted.
 It is then important to show the security guarantees of such a mode, typically under the assumption that the used block cipher is a \PRP/.
 
-Given several blocks of a plaintext message $m_1, m_2, \ldots \in \F_2^n$ and a block cipher $E : \F_2^n \to \F_2^n$.
+Given several blocks of a plaintext message $m_1, m_2, \ldots \in \F_2^n$ and a block cipher $E : \F_2^n \times \F_2^m \to \F_2^n$.
 We recall three standard modes of operation, which encrypt the message as follows, see~\cref{fig:modes} for a graphical representation.
 %\marginpar{%
 %    \centering
@@ -424,32 +424,6 @@ We recall three standard modes of operation, which encrypt the message as follow
 %    \end{tikzpicture}
 %    \captionof{figure}{ECB Mode of Operation}\label{fig:modes-ecb}
 %}
-\marginpar{%
-    \centering
-    \vspace*{-12em}
-    \begin{tikzpicture}
-        \node (Ek_in) {$m_i$};
-        \node (Ek) [below=2em of Ek_in,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1cm] {$E_k$};
-        \node (Ek_out)[below=2em of Ek] {$c_i$};
-        \path[line] (Ek_in) edge (Ek);
-        \path[line] (Ek) edge (Ek_out);
-    \end{tikzpicture}
-    \captionof{subfigure}{ECB}\label{fig:modes-ecb}
-    \vspace{1em}
-    \begin{tikzpicture}
-        \node (Ek_in_xor)[XOR,scale=1.2] {};
-        \node (p) [above=2em of Ek_in_xor] {$m_i$};
-        \node (iv) [left=2em of Ek_in_xor] {$c_{i-1}$};
-        \node (Ek) [below=2em of Ek_in_xor,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1cm] {$E_k$};
-        \node (Ek_out)[below=2em of Ek] {$c_i$};
-        \path[line] (p) edge (Ek_in_xor);
-        \path[line] (iv) edge (Ek_in_xor);
-        \path[line] (Ek_in_xor) edge (Ek);
-        \path[line] (Ek) edge (Ek_out);
-        \path[line] (Ek.south) -- +(0,-7.5pt) -- +(25pt,-7.5pt) -- +(25pt,55.5pt) -- +(+40pt,55.5pt);
-    \end{tikzpicture}
-    \captionof{subfigure}{CBC}\label{fig:modes-cbc}
-}
 \begin{description}
     \item[\ECB/] Deterministically encrypts every block independently:
                  \begin{equation*}
@@ -473,10 +447,34 @@ We recall three standard modes of operation, which encrypt the message as follow
 \end{description}
 \marginpar{%
     \centering
-    \vspace*{-15em}
+    \footnotesize
+    \vspace*{-40\baselineskip}
+    \begin{tikzpicture}
+        \node (Ek_in) {$m_i$};
+        \node (Ek) [below=2em of Ek_in,draw,rectangle,thick,rounded corners,minimum width=7.5mm,minimum height=7.5mm] {$E_k$};
+        \node (Ek_out)[below=2em of Ek] {$c_i$};
+        \path[line] (Ek_in) edge (Ek);
+        \path[line] (Ek) edge (Ek_out);
+    \end{tikzpicture}
+    \captionof{subfigure}{ECB}\label{fig:modes-ecb}
+    \vspace*{2em}
+    \begin{tikzpicture}
+        \node (Ek_in_xor)[XOR,scale=1.2] {};
+        \node (p) [above=2em of Ek_in_xor] {$m_i$};
+        \node (iv) [left=2em of Ek_in_xor] {$c_{i-1}$};
+        \node (Ek) [below=2em of Ek_in_xor,draw,rectangle,thick,rounded corners,minimum width=7.5mm,minimum height=7.5mm] {$E_k$};
+        \node (Ek_out)[below=2em of Ek] {$c_i$};
+        \path[line] (p) edge (Ek_in_xor);
+        \path[line] (iv) edge (Ek_in_xor);
+        \path[line] (Ek_in_xor) edge (Ek);
+        \path[line] (Ek) edge (Ek_out);
+        \path[line] (Ek.south) -- +(0,-5pt) -- +(15pt,-5pt) -- +(15pt,42pt) -- +(+30pt,42pt);
+    \end{tikzpicture}
+    \captionof{subfigure}{CBC}\label{fig:modes-cbc}
+    \vspace*{2em}
     \begin{tikzpicture}
         \node (Ek_in) {$\mathrm{ctr}+i$};
-        \node (Ek) [below=2em of Ek_in,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1cm] {$E_k$};
+        \node (Ek) [below=2em of Ek_in,draw,rectangle,thick,rounded corners,minimum width=7.5mm,minimum height=7.5mm] {$E_k$};
         \node (xor)[below=2em of Ek,XOR,scale=1.2] {};
         \node [left=7.5mm of xor] (m) {$m_i$};
         \node [right=7.5mm of xor] (c) {$c_i$};
@@ -486,25 +484,8 @@ We recall three standard modes of operation, which encrypt the message as follow
         \path[line] (xor) edge (c);
     \end{tikzpicture}
     \captionof{subfigure}{CTR}\label{fig:modes-ctr}
-    \captionof{figure}[Modes of Operation]{Block Cipher Modes of Operation: ECB (a), CBC (b), and CTR (c)}\label{fig:modes}
+    \captionof{figure}[Modes of Operation]{Modes of Operation}\label{fig:modes}
 }
-%\marginpar{%
-%    \centering
-%    \vspace*{-26em}
-%    \begin{tikzpicture}
-%        \node (Ek_in_xor)[XOR,scale=1.2] {};
-%        \node (p) [above=2em of Ek_in_xor] {$m_i$};
-%        \node (iv) [left=2em of Ek_in_xor] {$c_{i-1}$};
-%        \node (Ek) [below=2em of Ek_in_xor,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1cm] {$E_k$};
-%        \node (Ek_out)[below=2em of Ek] {$c_i$};
-%        \path[line] (p) edge (Ek_in_xor);
-%        \path[line] (iv) edge (Ek_in_xor);
-%        \path[line] (Ek_in_xor) edge (Ek);
-%        \path[line] (Ek) edge (Ek_out);
-%        \path[line] (Ek.south) -- +(0,-7.5pt) -- +(25pt,-7.5pt) -- +(25pt,55.5pt) -- +(+40pt,55.5pt);
-%    \end{tikzpicture}
-%    \captionof{figure}{CBC Mode of Operation}\label{fig:modes-cbc}
-%}
 %\marginpar{%
 %    \centering
 %    \vspace*{-10em}
@@ -522,14 +503,16 @@ We recall three standard modes of operation, which encrypt the message as follow
 %    \captionof{figure}{CTR Mode of Operation}\label{fig:modes-ctr}
 %}
 As just mentioned, \cref{eqn:enc-prp} can be seen as a fixed-length mode of operation; it is actually almost equal to the \CTR/ mode.
-Besides the above mentioned modes, there are also other modes of operation, which turn the block cipher into a hash function (\eg/ Davies-Meyer, proven secure in~\cite{C:BlaRogShr02}) or a message authentication code (\eg/ CBC-MAC, proven secure in~\cite{C:BelKilRog94}).
+Besides the above mentioned modes, there are also other modes of operation which be used to build other symmetric primitives.
+In particular, to turn a block cipher into a hash function the Davies-Meyer mode (proven secure in~\cite{C:BlaRogShr02}) can be used.
+For a message authentication code \citeauthor{C:BelKilRog94} proved the CBC-MAC to be secure, see~\cite{C:BelKilRog94}.
 More advanced modes are those that provide not only confidentiality, but also authentication.
 These are known as authenticated encryption~(AE) or authenticated encryption with associated data~(AEAD).
 As we normally want to provide a \CCA/-secure encryption scheme, such authentication is needed.
-Hence the NIST \LWC/ competition's objective is, to standardise such an AEAD scheme.
+Hence the NIST \LWC/ competition's objective is to standardise such an AEAD scheme.
 
 These manifold applications have lead to the fact that block ciphers are today's best understood primitives in the area of symmetric cryptography.
-In particular the \AES/~\cite{FIPS:AES} has been scrutinised by cryptanalysts ever since its development in 1998~\cite{CARDIS:DaeRij98} without any significant security threat discovered for the full cipher (see \eg/~\citeonly{AES:Gilbert00,FSE:FKLSSWW00,C:BirKhoNik09,AC:BirKho09,AC:DunKelSha10,EC:DerFouJea13,ToSC:GraRecRon16,EC:GraRecRon17,AC:RonBarHel17}).
+In particular the \AES/~\citeonly{FIPS:AES} has been scrutinised by cryptanalysts ever since its development in 1998~\cite{CARDIS:DaeRij98} without any significant security threat discovered for the full cipher (see \eg/~\citeonly{AES:Gilbert00,FSE:FKLSSWW00,C:BirKhoNik09,AC:BirKho09,AC:DunKelSha10,EC:DerFouJea13,ToSC:GraRecRon16,EC:GraRecRon17,AC:RonBarHel17}).
 
 Before turning our attention to actually designing block ciphers, we want to cover one last part which is needed for the design of an encryption scheme: padding.
 As the mode of operation allows us to encrypt messages of arbitrary length, it might well be the case that the message to be encrypted has not a length that is a multiple of the block cipher's block length.
@@ -537,7 +520,7 @@ Padding is then used to expand the last message block to the block length.
 A very simple variant is the following bit-padding.
 Given a message with $\ell$ blocks, where the last block $m_\ell$ is of length $r \leqslant n$.
 We then extend $m_\ell$ by the string $10^k$, where $k = n-r-1$, if $r < n$, or $k = n-1$ in the case $r=n$.
-Note that the last case actually result in a new message block $m_{\ell+1} = 0$ and thus in a worst-case ciphertext expansion of $n$~bits.
+Note that the last case actually result in a new message block $m_{\ell+1} = 10 \ldots 0$ and thus in a worst-case ciphertext expansion of $n$~bits.
 
 An alternative to a padding scheme which does not expand the ciphertext is the so called ciphertext stealing technique as described \eg/ by \textcite[Section~2.4]{meyermatyas}.
 
@@ -548,34 +531,36 @@ We now turn to a detailed discussion on the inner constructions for block cipher
 Shannon's seminal work~\cite{shannon45,Shannon49} already contains several ideas, which are nowadays standard design approaches for block ciphers.
 
 \newthoughtpar{Product Cipher}
-A first idea is, to build a secure encryption function by iterating a (weaker) function over several rounds, see~\cite[Sections~37 and~38]{shannon45}.
+A first idea is to build a secure encryption function by iterating a (weaker) function over several rounds, see~\cite[Sections~37 and~38]{shannon45}.
 This is nowadays typically expressed as a product cipher, see also \cref{fig:product-cipher}.
 
 \begin{definition}[Product cipher]\label{def:product-cipher}
-    Given a block cipher $E : \F_2^n \to \F_2^n$, with keys $k = (k_1, \ldots, k_r) \in \F_2^{rm}$.
-    We call $E$ an ($r$-round) \emph{product cipher}, if it can be written as the ($r$-times) application of (key-dependent) round functions $R_{i,k_i}$:
+    Given a block cipher $E : \F_2^n \times \F_2^{rm} \to \F_2^n$, with keys $k = (k_1, \ldots, k_r) \in \F_2^{rm}$.
+    We call $E$ an ($r$-round) \emph{product cipher}, if it can be written as the ($r$-times) application of (key-dependent) round functions~$R_{i,k_i}$:
     \begin{equation*}
         E_k^r = R_{r,k_r} \circ \cdots \circ R_{1,k_1}
     \end{equation*}
-    where $R_{i,k_i}$ permutes the $\F_2^n$.
+    where $R_{i,k_i}$ permutes $\F_2^n$.
     Further, $k$ is the \emph{master key} and the $k_i$'s are \emph{round keys}.
 \end{definition}
 \marginpar{%
     \centering
+    \vspace*{-10\baselineskip}
+    \footnotesize
     \begin{tikzpicture}
         \tikzstyle{every node}=[transform shape];
 
         \node (p) {$m$};
-        \node (f-1) [below=1em of p,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1cm] {$R_{1}$};
+        \node (f-1) [below=2em of p,draw,rectangle,thick,rounded corners,minimum width=7.5mm,minimum height=7.5mm] {$R_{1}$};
         \path[line] (p) edge (f-1);
 
-        \node (dots)[below=0.5em of f-1,node distance=1.5cm] {$\vdots$};
+        \node (dots)[below=1.5em of f-1,node distance=1.5cm] {$\vdots$};
         \path[line] (f-1) edge ($(dots.north)+(0,-0.5em)$) ;
 
-        \node (f-r) [below=1em of dots,node distance=1.5cm,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1cm] {$R_{r}$};
+        \node (f-r) [below=2em of dots,node distance=1.5cm,draw,rectangle,thick,rounded corners,minimum width=7.5mm,minimum height=7.5mm] {$R_{r}$};
         \path[line] (dots) edge (f-r) ;
 
-        \node [below = 1em of f-r] (c) {$c$};
+        \node [below = 2em of f-r] (c) {$c$};
         \path[line] (f-r) edge (c);
 
         %% Subkeys
@@ -591,43 +576,48 @@ This is nowadays typically expressed as a product cipher, see also \cref{fig:pro
 
 \newthoughtpar{Key-Alternating Cipher and Substitution-Permutation-Network}
 A second idea by Shannon are the notions of confusion and diffusion, see~\cite[Section~35]{shannon45}.
-Roughly, the idea is that statistical properties are spread localy due to the confusion property of non-linear elements and globally due to the diffusion property of the linear elements in the round functions.
+Roughly, the idea is that statistical properties are spread locally due to the confusion property of non-linear elements and globally due to the diffusion property of the linear elements in the round functions.
 Interestingly, this suggested splitting, see also~\cite[pp.~712f]{Shannon49}, is the de facto standard in today's block ciphers.
 This can be seen as a first description of the so called \SPN/ -- the by far most common construction for modern block ciphers.
 Here, we directly introduce it with the idea of \emph{key-alternating} ciphers.
-These introduce the key material in a very specific way: instead of consisting of merely key dependend round functions, the round keys are added to the state in between the round functions.
+These introduce the key material in a very specific way: instead of consisting of merely key dependent round functions, the round keys are added to the state in between the round functions.
 Denoting this key addition by $\oplus_k : x \mapsto x + k$, we get the following definition.
 \begin{definition}[Key-alternating Substitution-Permutation-Network]\label{def:spn}
     Given a block cipher $E^r : \F_2^n \to \F_2^n$, with keys $k = (k_1, \ldots, k_r) \in \F_2^{rm}$.
-    We call $E^r$ an ($r$-round) \emph{\SPNf/}, if it can be written as the ($r$-times) application of round functions $R_{i, k_i} = L_{i,k_i} \circ S_{i,k_i}$, where the $S_{i,k_i}$ (substitution layer) are non-linear and the $L_{i,k_i}$ (permutation or linear layer) are linear.
+    We call $E^r$ an ($r$-round) \emph{\SPNf/}, if it can be written as the ($r$-times) application of round functions $R_{i, k_i} = L_{i,k_i} \circ S_{i,k_i}$, where the $S_{i,k_i}$ (substitution layer) are non-linear and can be split into the parallel application of (small) \emph{S-boxes}, and the $L_{i,k_i}$ (permutation or linear layer) are linear.
     We further call $E$ \emph{key-alternating}, if $R_{i,k_i} = \oplus_{k_i} \circ L_i \circ S_i$.
 \end{definition}
 \marginpar{%
     \centering
+    \footnotesize
     \begin{tikzpicture}
         \tikzstyle{every node}=[transform shape];
 
         \node (XOR-1)[XOR,scale=1.2] {};
-        \node [above=1em of XOR-1] (p) {$m$};
-        \node (fs-1) [below=1em of XOR-1,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=0.5cm] {$S$};
-        \node (fl-1) [below=-0.5pt of fs-1,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=0.5cm] {$L$};
+        \node [above=2em of XOR-1] (p) {$m$};
+        \node (fs-1) [below=2em of XOR-1,minimum width=2mm,minimum height=0.5cm] {$\ldots$};
+        \node (fsl-1) [left=0mm of fs-1,draw,rectangle,thick,rounded corners,minimum width=3mm,minimum height=0.5cm] {$S$};
+        \node (fsr-1) [right=0mm of fs-1,draw,rectangle,thick,rounded corners,minimum width=3mm,minimum height=0.5cm] {$S$};
+        \node (fl-1) [below=-0.5pt of fs-1,draw,rectangle,thick,rounded corners,minimum width=12mm,minimum height=0.5cm] {$L$};
         \path[line] (p) edge (XOR-1);
         \path[line] (XOR-1) edge (fs-1);
 
-        \node (XOR-2)[below=1em of fl-1,XOR,scale=1.2] {};
+        \node (XOR-2)[below=2em of fl-1,XOR,scale=1.2] {};
         \path[line] (fl-1) edge node[right] {} (XOR-2);
-        \node (dots)[below=0.5em of XOR-2] {$\vdots$};
+        \node (dots)[below=1.5em of XOR-2] {$\vdots$};
         \path[line] (XOR-2) edge ($(dots.north)+(0,-0.5em)$) ;
 
-        \node (XOR-3)[below=1em of dots,XOR,scale=1.2,node distance=1.5cm] {};
+        \node (XOR-3)[below=2em of dots,XOR,scale=1.2,node distance=1.5cm] {};
         \path[line] (dots) edge (XOR-3) ;
-        \node (fs-3) [below=1em of XOR-3,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=0.5cm] {$S$};
-        \node (fl-3) [below=-0.5pt of fs-3,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=0.5cm] {$L$};
+        \node (fs-3) [below=2em of XOR-3,minimum width=2mm,minimum height=0.5cm] {$\ldots$};
+        \node (fsl-3) [left=0mm of fs-3,draw,rectangle,thick,rounded corners,minimum width=3mm,minimum height=0.5cm] {$S$};
+        \node (fsr-3) [right=0mm of fs-3,draw,rectangle,thick,rounded corners,minimum width=3mm,minimum height=0.5cm] {$S$};
+        \node (fl-3) [below=-0.5pt of fs-3,draw,rectangle,thick,rounded corners,minimum width=12mm,minimum height=0.5cm] {$L$};
         \path[line] (XOR-3) edge (fs-3);
 
-        \node (XOR-4)[below=1em of fl-3,XOR,scale=1.2] {};
+        \node (XOR-4)[below=2em of fl-3,XOR,scale=1.2] {};
         \path[line] (fl-3) edge node[below] {} (XOR-4);
-        \node [below = 1em of XOR-4] (c) {$c$};
+        \node [below = 2em of XOR-4] (c) {$c$};
         \path[line] (XOR-4) edge (c);
 
         %% Subkeys
@@ -670,7 +660,7 @@ Turning to the single layers of an \SPN/ construction, the most common design of
         S_1 || \cdots || S_k : \parens{\F_2^n}^k \to \parens{\F_2^n}^k \\
         S_1 || \cdots || S_k(x_1, \ldots, x_k) \coloneqq (S_1(x_1), \ldots, S_k(x_k))\;.
     \end{gather*}
-    If $S = S_1 = \cdots = S_k$, we may simply write $S^k = S_1 || \cdots || S_k$.
+    If $S = S_1 = \cdots = S_k$, we may simply write $S^{||k} = S_1 || \cdots || S_k$.
 \end{definition}
 This further splitting into S-boxes greatly simplifies the design exploration for substitution layers: typical S-boxes operate on a single byte (8~bit) or even only a byte nibble (4~bit).
 For such small input sizes it can actually be possible to find optimal instances for this building block, when no generic construction with equally good properties is known.
@@ -694,16 +684,17 @@ Besides \SPNp/, the second popular construction for block ciphers are Feistel ne
 \end{definition}
 \marginpar{%
     \centering
+    \footnotesize
     \begin{tikzpicture}
         \node (in_l) {$x_i$};
-        \node (in_r) [right = 6em of in_l] {$y_i$};
-        \node (xor) [below=4em of in_l,XOR,scale=1.2,node distance=1.5cm] {};
-        \node (f) [right = 2em of xor,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1cm] {$G_i$};
-        \node (k) [above = 1em of f] {$k_i$};
-        \node (swap_l) [below = 2em of xor] {\hphantom{$x_i$}};
-        \node (swap_r) [right = 6em of swap_l] {\hphantom{$y_i$}};
-        \node (out_l) [below = 3em of swap_l] {$x_{i+1}$};
-        \node (out_r) [below = 3em of swap_r] {$y_{i+1}$};
+        \node (in_r) [right = 7em of in_l] {$y_i$};
+        \node (xor) [below=5em of in_l,XOR,scale=1.2,node distance=1.5cm] {};
+        \node (f) [right = 2em of xor,draw,rectangle,thick,rounded corners,minimum width=7.5mm,minimum height=7.5mm] {$F_i$};
+        \node (k) [above = 2em of f] {$k_i$};
+        \node (swap_l) [below = 3em of xor] {\hphantom{$x_i$}};
+        \node (swap_r) [right = 7em of swap_l] {\hphantom{$y_i$}};
+        \node (out_l) [below = 4em of swap_l] {$x_{i+1}$};
+        \node (out_r) [below = 4em of swap_r] {$y_{i+1}$};
 
         \path[line] (in_l) edge (xor);
         \path[line] (in_r) |- (f);
@@ -725,13 +716,13 @@ However, as we typically assume independent round keys during our analysis, see 
 
 \subsection{On the concrete and practical security of block cipher constructions}\label{sec:prelim:concrete-sec}
 Similar to the above discussed asymptotic security proofs, we can see the \SPN/ and Feistel constructions as a way to turn an even simpler and smaller building block into a \PRP/, \resp/ block cipher.
-A legitimate question is thus, how the security of \SPNp/ or Feistel networks can be judged.
+A legitimate question is thus how the security of \SPNp/ or Feistel networks can be judged.
 While we could just use another asymptotic reduction, this notion also has drawbacks.
 Typically, asymptotic reductions come with a security degradation, caused by non-tight reductions or similar.
 Additionally, while this proof technique is obviously \emph{asymptotic}, block ciphers are typically instantiated with fixed block lengths like 64- or 128-bit and thus work on finite domains.
 We thus cannot scale this security factor asymptotically and loose the main point of our argumentation.
 
-A different approach is the notion of concrete security, developed by \textcite{C:BelKilRog94} and applied to assess the security of typical modes of operations~\cite{FOCS:BDJR97}.
+A different approach is the notion of concrete security, developed by \textcite{C:BelKilRog94} and applied to assess the security of typical modes of operations~\citeonly{FOCS:BDJR97}.
 Here, one looks for (tight) reductions which link the adversary's advantage with the resources she spent, \ie/ the running time and number of queries to the given oracle, in order to get a bound on the advantage.
 Additionally, by finding an attacker strategy matching this, it is turned into a (tight) \enquote{concrete} bound.
 A \enquote{concrete} pseudorandom permutation is then defined as follows, see~\cite[Definition~2.2]{C:BelKilRog94}.
@@ -746,9 +737,7 @@ A \enquote{concrete} pseudorandom permutation is then defined as follows, see~\c
 Note that this notion does not define a \enquote{secure} \PRP/, instead the \PRP/-insecurity provides a measure of the \enquote{pseudorandomness} of the studied permutation and we call a family of permutations a \PRP/, if $\mathrm{Adv}^{\text{\PRP/}}_F$ is \enquote{low enough}.
 
 Interestingly, besides its overwhelming use in practice and the intense cryptanalytic efforts spent to understand its practical security, that is the resistance to known attacks, the concrete security of key-alternating ciphers has not been investigated until 2012.
-Here, following the above definition, an attacker is given access to the key-alternating round functions via oracle queries and additional oracle access to either the block cipher or a random permutation.
-%The goal of the attacker is to tell apart those two cases, \ie/ distinguish them.
-%This distinguishing probability is the attackers \emph{advantage}; for a block cipher $E$ and adversary $A$ making at most $q$ queries, we denote it $\mathrm{Adv}_{E,A}(q)$.
+Here, following the above definition, an attacker is given access to the key-alternating round functions via oracle queries and additional oracle access to the block cipher or a random permutation.
 As any attack in this setting is obviously independent of any particular structure of the round function, those attacks are generic for all key-alternating ciphers.
 In this setting, the construction behind key-alternating ciphers is referred to as the iterated Even-Mansour construction.
 Indeed, the Even-Mansour cipher~\cite{JC:EveMan97},
@@ -778,22 +767,27 @@ Tessaro's construction, coined \WSNf/, requires only two public random (Boolean)
 We take a detailed look at this construction in \cref{ch:bison}.
 Up to the time of writing, there are no practical instances of this construction, we thus pursuit exactly such a first instance of the \WSN/, completing this solution to \cref{prob:cipher_constructions}.
 
-We now turn our attention to \emph{practical security} that is the resistance to actual cryptanalytic attacks.
+We now turn our attention to \emph{practical security}, that is the resistance to actual cryptanalytic attacks.
 
 \section{Practical Security -- Symmetric Cryptanalysis}\label{sec:prelim:cryptanalysis}
 \openepigraph{Secure, or not secure, that is the question}{freely adapted from Hamlet}
 Instantiating any ideal primitive, such as a \PRP/ by building an actual block cipher, turns our system from a black box model into one which inner workings we can exploit in our analysis (due to Kerckhoffs' principle).
 Thus any proposed design has to withstand currently known attacks, and those which are only developed in the future, see \crefName{prob:prove_res_attack} and \crefName{prob:alg_res_attack}, to be still considered secure.
 During the design of a new cipher, the designers typically justify their design choices and give first cryptanalytic results on their new proposal.
-This initial cryptanalysis is also used to finalise parameter choices as the number of rounds used for the cipher.
+This initial cryptanalysis is also used to finalise parameter choices, \eg/ the number of rounds used for the cipher.
 One surely can argue that this process is not optimal: future improvements to the cryptanalysis can hardly be taken into account and specifying an efficient cipher with a not too big security margin (as this would result in a performance loss) can only be done with the right intuition at hand.
-This process might thus be the most artistic part of the design process, however below we discuss heuristic arguments which do work out well in practice, to give this process some guidance.
+This process might thus be the most artistic part of the design process, however below we discuss heuristic arguments, which do work out well in practice, to give this process some guidance.
 
 While today several distinct attacks on block ciphers exist, normally categorised as statistical, algebraic or structural, we concentrate on statistical attacks.
 
+In particular we start with discussing the general idea of statistical attacks, that is finding some non-random characteristic of the (round-reduced) cipher under scrutiny and then turning this distinguisher into a key recovery attack.
+When covering the individual attacks, we recall standard assumptions which are taken to facilitate cryptanalysis (or make it possible in the first place).
+We do not exhaustively discuss statistical cryptanalysis techniques, but restrict ourselves to differential, linear, differential-linear, truncated differential and subspace trail cryptanalysis.
+The description of the standard security argument against differential and linear cryptanalysis, based on the so called wide trail strategy, is split into three parts: one in each of the corresponding parts on the attack and a third part concluding with the remaining part on the wide trail strategy, where we discuss two approaches to compute a lower bound on the number of active S-boxes.
+The margin note gives an overview of this structure.
 \marginpar{%
     \footnotesize
-    \vspace*{8\baselineskip}
+    \vspace*{-15\baselineskip}
     \textbf{Roadmap to Practical Security}
     \begin{enumerate}[leftmargin=*]
         \item Distinguisher vs.\ Key Recovery
@@ -803,11 +797,6 @@ While today several distinct attacks on block ciphers exist, normally categorise
         \item Differential-Linear,\\Truncated Differentials and\\Subspace Trails
     \end{enumerate}
 }
-In particular we start with discussing the general idea of statistical attacks, that is finding some non-random characteristic of the (round-reduced) cipher under scrutiny and then turning this distinguisher into a key recovery attack.
-When covering the individual attacks, we recall standard assumptions which are taken to facilitate cryptanalysis (or make it possible in the first place).
-We do not exhaustively discuss statistical cryptanalysis techniques, but restrict ourselves to differential, linear, differential-linear, truncated differential and subspace trail cryptanalysis.
-The standard security argument against differential and linear cryptanalysis, based on the so called wide trail strategy, is split into three parts: one in each of the corresponding parts on the attack and a third part concluding with the remaining part on the wide trail strategy, where we discuss two approaches to compute a lower bound on the number of active S-boxes.
-The margin note gives an overview of this structure.
 
 \subsection{From Distinguishing to Key Recovery}\label{sec:dist-to-keyrec}
 A typical attack procedure works in a two step manner.
@@ -817,14 +806,14 @@ This property can be used to distinguish an $r$-round version of the cipher from
 In the second step, we extend this distinguisher to a key recovery attack over $r+s$ rounds.
 Hereto we pre- and append some rounds before and after the distinguisher (overall $s = s_1 + s_2$ more rounds).
 To still be able to evaluate the distinguisher, we analyse which key bits are necessary to evaluate if an input is valid for the distinguisher after $s_1$ rounds and which key bits influence the output of the distinguisher after $s_2$ rounds.
-We thus split $E^{s_1 + r + s_2} = E^{s_2} \circ E^r \circ E^{s_1}$ into three parts, where we guess key bits in $E^{s_1}$ and $E^{s_2}$ and use a distinguisher over $E^r$, see \cref{fig:generic-key-recovery}.
+We thus split $E^{s_1 + r + s_2} = E^{s_2} \circ E^r \circ E^{s_1}$ into three parts, where we guess key bits in~$E^{s_1}$ and~$E^{s_2}$ and use a distinguisher over $E^r$, see \cref{fig:generic-key-recovery}.
 
 After this analysis, we end up with a distinguisher (which holds with probability~$p$), and a key recovery strategy.
 This consists of conditions for the initial $s_1$ rounds which a valid input to the distinguisher has to fulfill and conditions for the last $s_2$ rounds which we need to invert to check the distinguishers output.
-Both sets of conditions come with a set of key bits that have an influence on them, hence these are the key bits, we have to guess to check the conditions.
+Both sets of conditions come with a set of key bits that have an influence on them, hence these are the key bits we have to guess to check the conditions.
 A good example of this process is the paper by \citeauthor{INDOCRYPT:LalRas17}, in particular see~\cite[Section~6.3, pp.~14f]{INDOCRYPT:LalRas17} for the final strategy.
 
-The intuition, why this key guessing works is captured in the hypothesis of wrong key randomisation, first stated in~\cite[Section~4]{EC:HarKraMas95}.
+The intuition why this key guessing works is captured in the hypothesis of wrong key randomisation, first stated in~\cite[Section~4]{EC:HarKraMas95}.
 \begin{hypothesis}[Wrong Key Randomisation]\label{hypo:rand}
     Given a fixed-key, $r$-round product cipher $E_k^r$ with round function $R_{k_i}$ and a distinguishing property $D$ over $(r-1)$ rounds that holds with some probability $p$, \ie/ $\mathrm{Adv}_D^\mathrm{PRP}(E_k^{r-1}, f) = p$.
     We assume that
@@ -838,6 +827,8 @@ But if she instead guesses the last round key wrongly, her advantage drops signi
 
 \marginpar{%
     \centering
+    \footnotesize
+    \vspace*{-11\baselineskip}
     \begin{tikzpicture}
         \node (p) {$m$};
         \node (e1) [below=2em of p,draw,rectangle,thick,rounded corners,minimum width=1cm,minimum height=1.5cm] {$E^{s_1}$};
@@ -882,34 +873,20 @@ In \cref{ch:key_rec} we discuss steps towards automating this approach, giving f
 There, we also discuss the exact key recovery in more detail, but for now this high level overview shall be enough for this introduction.
 
 Let us now consider specific types of distinguishers.
-We start with the two most common types of cryptanalysis, differential and linear, and then look at three more advanced types of cryptanalysis, differential-linear, truncated differentials and subspace trails.
+We start with the two most common types of cryptanalysis, differential and linear, and then look at three more advanced types of cryptanalysis, \ie/ differential-linear, truncated differentials and subspace trails.
 
 \subsection{Differential Cryptanalysis}\label{sec:prelim:dc}
 \textcite{C:BihSha90} developed differential cryptanalysis while studying the \DES/.
-The underlying idea is, to trace the propagation of \emph{differences} of plaintext pairs through the encryption rounds.
-In particular, we are interested in the probability
-\begin{equation*}
-    \Prob_x\bracket{E_k^r(x) + E_k^r(x + \alpha) = \beta} = p\;,
-\end{equation*}
-for some chosen $\alpha$ and $\beta \in \F_2^n$.
-We call $\alpha$ the input difference and $\beta$ the output difference.
-If we found such a pair of differences that holds with a high enough probability, we can use it as a distinguisher for the cipher.
-Here, high enough means a probability $p > 2^{-n}$, which is related to the complexity of the resulting distinguisher.
-To observe the occurrence of the above event, \ie/ the input difference $\alpha$ leads to an output difference $\beta$, we have to test $\mathcal{O}(p^{-1})$ plaintext pairs, after which we expect that the differential is fulfilled at least once.
-In particular, the expectation of the event $\propDiff{\alpha}{}{}{\beta}$ to happen is 0.5 after $1/p$ trials, if we assume the encryptions to be independent.
-Thus $c/p$ plaintext pairs should suffice, for a small constant, \eg/ $c = 2$.
-As these pairs have to be chosen such that they follow the right input difference, differential cryptanalysis is a \CPAl/.
-
-We again take a top-down approach that is comprehended in the margin note.
+The underlying idea is to trace the propagation of \emph{differences} of plaintext pairs through the encryption rounds.
 \marginpar{%
     \footnotesize
-    \vspace*{-22\baselineskip}
+    %\vspace*{-35\baselineskip}
     \textbf{Roadmap to Differential Cryptanalysis}
     \begin{align*}
         &\hphantom{=}\ \Prob_x\bracket{E_k^r(x) + E_k^r(x + \alpha) = \beta}
         \intertext{1.\ Differentials model this probability}
         &= \Prob_x\bracket{\propDiff{\alpha}{E_k^r}{x}{\beta}} = \mathrm{DP}_{E_k}(\alpha, \beta)
-        \intertext{2.\ Differentials consists of many trails}
+        \intertext{2.\ Differentials consist of many trails}
         &= \smashoperator{\sum_{\tower{\delta_i \in \F_2^n}{\delta_0 = \alpha, \delta_r = \beta}}}
            \Prob_x\bracket{\propDiff{\delta_0}{F}{x}{\propDiff{\ \cdots}{F}{E_k^{r-1}(x)}{\delta_{r}}}}
         \intertext{3.\ Key influence is averaged to EDP}
@@ -918,39 +895,63 @@ We again take a top-down approach that is comprehended in the margin note.
         \intertext{4.\ Markov ciphers and indp.\ keys imply}
         &= \frac{1}{2^{rm}}
            \sum_{\tower{k \in \F_2^{r \times m}}{\tower{\delta_i \in \F_2^n}{\delta_0 = \alpha, \delta_r = \beta}}}
-           \prod_{i=0}^{r-1} \Prob_x\bracket{\propDiff{\delta_i}{F}{x}{\delta_{i+1}}}
+           \prod_{i=1}^{r} \Prob_x\bracket{\propDiff{\delta_{i-1}}{F}{x}{\delta_{i}}}
         \intertext{5.\ Hypothesis of Stochastic Equivalence}
         &\approx \mathrm{DP}_{E_k}(\alpha, \beta)
-        \intertext{6.\ Maximum EDP for \SPN/ is bounded by}
-        &\hphantom{=}\ \mathrm{MEDP}(E) \leqslant p_S^{\text{\#active S-boxes}}
+        \intertext{6.\ Differential trail probability for key-al\-ter\-na\-ting \SPN/ is bounded by}
+        &\hphantom{=}\ \prod_{i=1}^r \Prob_x\bracket{\propDiff{\delta_{i-1}}{L \circ S^{||k}}{x}{\delta_i}} \leqslant p_S^{\text{\#act.\ S-boxes}}
     \end{align*}
 }
+In particular, we are interested in the probability
+\begin{equation*}
+    \Prob_x\bracket{E_k^r(x) + E_k^r(x + \alpha) = \beta} = p\;,
+\end{equation*}
+for some chosen $\alpha$ and $\beta \in \F_2^n$.
+We call $\alpha$ the input difference and $\beta$ the output difference.
+If we found such a pair of differences that holds with a high enough probability, we can use it as a distinguisher for the cipher.
+Here, high enough means a probability $p > 2^{-n}$, which is related to the complexity of the resulting distinguisher.
+To observe the occurrence of the above event, \ie/ the input difference $\alpha$ leading to an output difference~$\beta$, we have to test $\mathcal{O}(p^{-1})$ plaintext pairs, after which we expect that the differential is fulfilled at least once.
+
+In particular, the probability of the above event to happen at least once after $1/p$ trials is the probability of at least one success for $1/p$ Bernoulli trials with probability~$p$, if we assume the encryptions to be independent.
+We can compute this probability as (for $n$ trials)
+\begin{equation*}
+    1 - \Prob_X\bracket{X = 0} = 1 - \bracket{\binom{n}{k} p^k \parens{1-p}^{n-k}}_{k=0} = 1 - (1 - p)^n
+\end{equation*}
+where $X$ follows a binomial distribution and for $n = 1/p$ trials we have
+\begin{equation*}
+    1 - (1 - p)^{1/p} \geqslant 1 - \frac{1}{e} > 0.63\;.
+\end{equation*}
+Thus $c/p$ plaintext pairs should suffice, for a small constant, \eg/ $c = 2$.
+As these pairs have to be chosen such that they follow the right input difference, differential cryptanalysis is a \CPAl/.
+
+The margin notes summarises our top-down approach by giving an overview of the results discussed in this section.
 
 \newthoughtpar{Differentials and Differential Trails}
 It is inherently hard to compute the exact probability $p$ for a block cipher, as typical ciphers have block lengths of 64- or 128-bit or even larger and key lengths of 80- or 128-bit or again even larger.
 We thus have to take some assumptions to ease the cryptanalysis and are then able to exploit the special structure of product ciphers and \SPNp/ in particular.
 Let us first look at the simplifications, we can use when taking the iterative structure into account.
 
-The overall probability we are looking for, is that of the so called differential to hold.
+The overall probability we are looking for is that of the so called differential to hold.
 \begin{definition}[Differential]
-    Given a cipher $E : \F_2^n \to \F_2^n$, an \emph{input difference} $\alpha \in \F_2^n$, and an \emph{output difference} $\beta \in \F_2^n$.
+    Given a cipher $E : \F_2^n \times \F_2^m \to \F_2^n$, an \emph{input difference} $\alpha \in \F_2^n$, and an \emph{output difference} $\beta \in \F_2^n$.
     The probability of the \emph{differential} $\propDiff{\alpha}{E}{}{\beta}$ to hold is
     \begin{equation*}
         \Prob_x\bracket{\propDiff{\alpha}{E_k}{x}{\beta}} = \Prob_x\bracket{E_k(x) + E_k(x + \alpha) = \beta} = \mathrm{DP}_{E_k}(\alpha, \beta)\;,
     \end{equation*}
     and is also called the \emph{differential probability}.
-    For notional simplicity, we may leave out the limits, if clear from the context, and simply write $\propDiff{\alpha}{}{}{\beta}$.
+    For notational simplicity, we may leave out the limits, if clear from the context, and simply write $\propDiff{\alpha}{}{}{\beta}$.
 \end{definition}
 
 Due to block and key sizes, we cannot compute this probability for any practical secure block cipher.
 However, instead of only fixing the input and output differences, we can specify each intermediate difference in the encryption function.
 This leads to the definition of a differential trail or characteristic.
 \begin{definition}[Differential Trail]
-    Given an $r$-round cipher $E : \F_2^n \to \F_2^n$ with round functions $R_i : \F_2^n \to \F_2^n$, and $r+1$ differences $\delta_i \in \F_2^n$.
-    The probability of the \emph{differential trail} $\propDiff{\delta_0}{R_{1,k_1}}{}{\propDiff{\cdots}{R_{r,k_r}}{}{\delta_{r+1}}}$ to hold is
-    \begin{equation*}
-        \Prob_x\bracket{\propDiff{\delta_0}{R_{1,k_1}}{x}{\propDiff{\ \cdots}{R_{r,k_r}}{E_k^{r-1}(x)}{\delta_{r+1}}}} = \frac{\abs{\set{x \in \F_2^n \given \forall 1 \leqslant i \leqslant r : E_k^i(x) + E_k^i(x+\delta_0) = \delta_i}}}{2^n}\;,
-    \end{equation*}
+    Given an $r$-round cipher $E : \F_2^n \times \F_2^{rm} \to \F_2^n$ with round functions $R_i : \F_2^n \times \F_2^m \to \F_2^n$, and $r+1$ differences $\delta_i \in \F_2^n$.
+    The probability of the \emph{differential trail} $\propDiff{\delta_0}{R_{1,k_1}}{}{\propDiff{\cdots}{R_{r,k_r}}{}{\delta_{r}}}$ to hold is
+    \begin{gather*}
+        \Prob_x\bracket{\propDiff{\delta_0}{R_{1,k_1}}{x}{\propDiff{\ \cdots}{R_{r,k_r}}{E_k^{r-1}(x)}{\delta_{r}}}} \\
+        = \frac{\abs{\set{x \in \F_2^n \given \forall 1 \leqslant i \leqslant r : E_k^i(x) + E_k^i(x+\delta_0) = \delta_i}}}{2^n}\;,
+    \end{gather*}
     that is the probability that each intermediate difference is fulfilled.
 \end{definition}
 
@@ -961,11 +962,11 @@ Using this differential trail notation, we can further specify the differential 
       \Prob_x\bracket{\propDiff{\delta_0}{R_{1,k_1}}{x}{\propDiff{\ \cdots}{R_{r,k_r}}{E_k^{r-1}(x)}{\delta_{r}}}}\;.
 \end{equation*}
 
-While the differential can be expressed by all the differential trails it contains, it is not directly obvious, why this helps in computing the probabilities.
+While the differential can be expressed by all the differential trails it contains, it is not directly obvious why this helps in computing the probabilities.
 Actually these probabilities are also key dependent.
 This is captured in the notion of \EDPl/ that equals the differential probability averaged over all keys.
 \begin{definition}[Expected Differential Probability]
-    Given a cipher $E : \F_2^n \to \F_2^n$ and input/output differences $\alpha, \beta \in \F_2^n$.
+    Given a cipher $E : \F_2^n \times \F_2^m \to \F_2^n$ and input/output differences $\alpha, \beta \in \F_2^n$.
     Then the \emph{\EDP/} over the master keys $k \in \F_2^m$ is
     \begin{equation}
         \label{eqn:edp}
@@ -973,7 +974,7 @@ This is captured in the notion of \EDPl/ that equals the differential probabilit
         = \frac{1}{2^m} \sum_{k \in \F_2^m} \mathrm{DP}_{E_k}(\alpha, \beta)
         = \frac{1}{2^m} \sum_{k \in \F_2^m} \Prob_x\bracket{\propDiff{\alpha}{E_k}{x}{\beta}}\;,
     \end{equation}
-    The \EDP/ is bounded by the \emph{\MEDP/}:
+    The \emph{\MEDP/} bounds the \EDP/:
     \begin{equation*}
         \mathrm{MEDP}(E) = \max_{\alpha, \beta \in F_2^n \setminus \set{0}} \mathrm{EDP}_E(\alpha, \beta)\;.
     \end{equation*}
@@ -992,18 +993,25 @@ This implies that the \EDP/ of a single trail equals the product of the \EDP/'s 
 
 A Markov cipher has to fulfill the following property.
 \begin{definition}[Markov cipher]
-    Given a product cipher $E^r : \F_2^n \to \F_2^n$ with round functions $R_i$.
+    Given a product cipher $E^r : \F_2^n \times \F_2^m \to \F_2^n$ with round functions $R_i$.
     Let further for all $\alpha, \beta \in \F_2^n$
     \begin{equation*}
         \forall x \in \F_2^n : \sum_{k \in \F_2^m} \Prob\bracket{\propDiff{\alpha}{R_{i,k}}{}{\beta}} = \abs{\set{k \in \F_2^m \given R_{i,k}(x) + R_{i,k}(x+\alpha) = \beta}}\;,
     \end{equation*}
-    that is, every differential probability over the round functions is independent of the chosen input value $x$.
+    that is every differential probability over the round functions is independent of the chosen input value $x$.
     Then $E^r$ is a \emph{Markov cipher}.
 \end{definition}
+In particular, key-alternating ciphers can be shown to be Markov ciphers.
 
 For studying the differential behaviour of a cipher, we have to somehow approximate \cref{eqn:edp} \resp/ \cref{eqn:differential}.
 This is typically done by assuming the hypothesis of stochastic equivalence.
 \textcite{EC:LaiMasMur91} introduced this hypothesis which states that the actual probability for any fixed round key equals the average, see also~\cite[p.~121]{rijndael_book}.
+\marginpar{%
+    \footnotesize
+    %\vspace*{-7\baselineskip}
+    While the hypothesis of stochastic equivalence seems to hold for many ciphers in practice, there are examples which contradict it.
+    A prominent example is the block cipher \idea/ that has a quite big class of weak keys ($2^{32}$) for which almost sure differential probabilities $\propDiff{\alpha}{}{}{\beta}$ exist and thus $DP_{\text{\idea/}_k}(\alpha, \beta) \ggg \mathrm{EDP}_{\text{\idea/}}$, see also~\citeonly[p.~121]{rijndael_book}.
+}
 \begin{hypothesis}[Stochastic Equivalence]\label{hypo:equiv}
     Given a block cipher $E$ and input/output differences $\alpha, \beta \in \F_2^n$.
     We assume that the \EDP/ of $E$ averaged over all keys $k$, can be approximated by the differential probability of a fixed key instance $E_k$, \ie/
@@ -1013,13 +1021,6 @@ This is typically done by assuming the hypothesis of stochastic equivalence.
     \end{equation*}
     for most of the keys.
 \end{hypothesis}
-\marginpar{%
-    \footnotesize
-    \vspace*{-7\baselineskip}
-    While the hypothesis of stochastic equivalence seems to hold for many ciphers in practice, there are examples which contradict it.
-    A prominent example is the block cipher \idea/ that has a quite big class of weak keys ($2^{32}$) for which almost sure differential probabilities $\propDiff{\alpha}{}{}{\beta}$ exist and thus $DP_{\text{\idea/}_k}(\alpha, \beta) \ggg \mathrm{EDP}_{\text{\idea/}}$, see also~\citeonly[p.~121]{rijndael_book}.
-}
-
 Additionally, in order to simplify the analysis, we ignore influences of the key schedule and assume the cipher to use independent round keys.
 \begin{hypothesis}[Independent Round Keys]\label{hypo:indp}
     Given a block cipher $E$.
@@ -1027,39 +1028,40 @@ Additionally, in order to simplify the analysis, we ignore influences of the key
 \end{hypothesis}
 While the influence of key schedules is a crucially understudied topic and for specific instances strange effects can occur, see~\cite{C:AABL12,ToSC:KraLeaWie17}, \cref{hypo:indp} is seen as valid for most block ciphers.
 
-Eventually, using the above assumptions and \cref{eqn:edp,eqn:differential}, we approximate the differential probability as
+Eventually, using the above assumptions and \cref{eqn:edp,eqn:differential}, we approximate the differential probability for a key-alternating cipher as
 \begin{equation*}
     \mathrm{EDP}_E(\alpha, \beta)
     \approx \sum_{\tower{\delta_i \in \F_2^n}{\delta_0 = \alpha, \delta_r = \beta}}
-      \prod_{i=0}^{r-1} \Prob_x\bracket{\propDiff{\delta_i}{F}{x}{\delta_{i+1}}}\;.
+      \prod_{i=0}^{r-1} \Prob_x\bracket{\propDiff{\delta_i}{F}{x}{\delta_{i+1}}}\;,
 \end{equation*}
-Looking at this equation, it is immediately clear, why in general the (tight) bound of the \MEDP/ over a block cipher is a hard problem (recall \cref{prob:differentials}): the sum over all $\delta_i$ is huge, even for very few rounds.
+where $F$ is the (key-independent) round function.
+Looking at this equation it is immediately clear, why in general obtaining a (tight) bound of the \MEDP/ over a block cipher is a hard problem (recall \cref{prob:differentials}): the sum over all $\delta_i$ is huge, even for very few rounds.
 The standard way is thus to compute a reasonable bound for the probability of any \emph{single differential trail} $\propDiff{\delta_0}{}{}{\propDiff{\cdots}{}{}{\delta_{r}}}$ and then hope for the best: that the clustering effect for any differential is not too big and the \EDP/ is actually well enough estimated by this differential trail bound, \ie/
 \begin{equation}\label{eqn:edp-approx}
     \mathrm{EDP}_E(\alpha, \beta)
     \approx \prod_{i=0}^{r-1} \Prob_x\bracket{\propDiff{\delta_i}{F}{x}{\delta_{i+1}}}\;.
 \end{equation}
-Notably exceptions are~\citeonly{FSE:HLLSCC00,rijndael_book,FSE:PSLL03,EC:CanRou15}, that spend effort to prove bounds on the \MEDP/ for two rounds of some key-alternating ciphers.
+Notable exceptions are~\citeonly{FSE:HLLSCC00,rijndael_book,FSE:PSLL03,EC:CanRou15}, that spend effort to prove bounds on the \MEDP/ for two rounds of some key-alternating ciphers.
 
 For our block cipher instance \bison/, we can show, for the first time, that any differential basically collapses to a single differential trail, see \cref{ch:bison} for further details.
 
 \newthoughtpar{Bounding the Differential Trail Probability}
 With the last \cref{eqn:edp-approx} we have broken the problem of estimating the \MEDP/ down to bounding the maximal differential probability \emph{of any single trail}.
 As we see next, this can normally be done efficiently, when exploiting the wide trail strategy, developed by \textcite{PhD:Daemen95}.
-This approach relates the probability of any differential trail to the number of S-boxes it involes and the best differential over one such S-box.
+This approach relates the probability of any differential trail to the number of S-boxes it involves and the best differential over one such S-box.
 Further details follow.
 
 To bound the differential trail, we have to take a look into the round function~$F$ of the (product) cipher under scrutiny.
 In order to simplify this further, let us assume that the cipher is actually a (key-alternating) \SPN/ with block length $k \cdot n$.
-Thus $F = L \circ S^k$, where $S : \F_2^n \to \F_2^n$ is the S-box and $L : \F_2^{kn} \to \F_2^{kn}$ is the linear layer.
+Thus $F = L \circ S^{||k}$, where $S : \F_2^n \to \F_2^n$ is the S-box and $L : \F_2^{kn} \to \F_2^{kn}$ is the linear layer.
 
-Following this round structure, we need to compute the probabilities for $\propDiff{\alpha}{S^k}{}{\beta}$ and $\propDiff{\beta}{L}{}{\gamma}$, which is easy for both cases.
+Following this round structure, we need to compute the probabilities for $\propDiff{\alpha}{S^{||k}}{}{\beta}$ and $\propDiff{\beta}{L}{}{\gamma}$, which is easy for both cases.
 \begin{lemma}[Differential Propagation over S-box Layer]\label{lem:dp-sbox}
     Given an S-box $S : \F_2^{n} \to \F_2^{n}$ and an input/output difference $\alpha, \beta \in \F_2^{kn}$.
     Write $\alpha = (\alpha_1, \ldots, \alpha_k)$ and $\beta$ analogously, for $\alpha_i, \beta_i \in \F_2^n$.
-    The differential probability over $S^k$ is
+    The differential probability over $S^{||k}$ is
     \begin{equation*}
-        \mathrm{DP}_{S^k}(\alpha, \beta) = \Prob_x\bracket{\propDiff{\alpha}{S^k}{x}{\beta}} = \prod_{i=1}^k \Prob_x\bracket{\propDiff{\alpha_i}{S}{x}{\beta_i}}\;.
+        \mathrm{DP}_{S^{||k}}(\alpha, \beta) = \Prob_x\bracket{\propDiff{\alpha}{S^{||k}}{x}{\beta}} = \prod_{i=1}^k \Prob_x\bracket{\propDiff{\alpha_i}{S}{x}{\beta_i}}\;.
     \end{equation*}
 \end{lemma}
 \begin{proof}
@@ -1081,12 +1083,12 @@ Note that typical S-box sizes are up to $8$-bit, and thus $\Prob\bracket{\propDi
     \begin{equation*}
         \Prob_x\bracket{\propDiff{\alpha}{L}{x}{\beta}} = \Prob_x\bracket{L(x) + L(x+\alpha) = \beta} = \Prob_x\bracket{L(\alpha) = \beta}\;,
     \end{equation*}
-    which is indepent of $x$ and thus fulfilled with probability one, if $\beta = L(\alpha)$.
+    which is independent of $x$ and thus fulfilled with probability one, if $\beta = L(\alpha)$.
 \end{proof}
 
 To reach our final bound, we need one further notation: the activity of an S-box.
 \begin{definition}[Active and passive S-boxes]\label{def:activity}
-    Given an S-box $S : \F_2^n \to \F_2^n$ and an input difference $\alpha \in \F_2^{kn}$ for the S-box layer $S^k$.
+    Given an S-box $S : \F_2^n \to \F_2^n$ and an input difference $\alpha \in \F_2^{kn}$ for the S-box layer $S^{||k}$.
     Write $\alpha = (\alpha_1, \ldots, \alpha_k)$, for $\alpha_i \in \F_2^n$.
     The \emph{activity pattern} of $\alpha$ is
     \begin{equation*}
@@ -1102,13 +1104,16 @@ Now, denote by $p_S = \max_{\alpha, \beta \in \F_2^n \setminus \set{0}} \Prob\br
 In the next \cref{sec:prelim:bf} we discuss how $p_S$ relates to properties of (vectorial) Boolean functions.
 For now, we use $p_S$ to bound the maximum differential trail property as follows.
 \begin{lemma}[Bound on the differential trail probability]\label{lem:bound-dp-trail}
-    Given an $r$-round \SPN/ cipher $E : \F_2^{kn} \to \F_2^{kn}$ with S-box $S : \F_2^n \to \F_2^n$ and linear layer $L : \F_2^{kn} \to \F_2^{kn}$.
-    The differential trail property for any differential trail $\propDiff{\delta_0}{L \circ S^k}{x}{\propDiff{\cdots}{L \circ S^k}{x}{\delta_r}}$ is bounded by
+    Given an $r$-round key-alternating \SPN/ cipher $E : \F_2^{kn} \times \F_2^{(r+1)kn} \to \F_2^{kn}$ with S-box $S : \F_2^n \to \F_2^n$ and linear layer $L : \F_2^{kn} \to \F_2^{kn}$.
+    The differential trail property for any differential trail $\propDiff{\delta_0}{L \circ S^{||k}}{x}{\propDiff{\cdots}{L \circ S^{||k}}{x}{\delta_r}}$ is bounded by
     \begin{equation*}
-        \Prob_x\bracket{\propDiff{\delta_0}{L \circ S^k}{x}{\propDiff{\cdots}{L \circ S^k}{x}{\delta_r}}}
+        \prod_{i=1}^r \Prob_x\bracket{\propDiff{\delta_{i-1}}{L \circ S^{||k}}{x}{\delta_i}}
         \leqslant p_S^{\text{\#active S-boxes}}\;,
     \end{equation*}
-    where $p_S$ is the maximal differential property over the S-box and $\text{\#active S-boxes} = \sum_{i=0}^{r-1} \mathrm{hw}(\mathrm{activity}(\delta_i))$.
+    where $p_S$ is the maximal differential property over the S-box and
+    \begin{equation*}
+        \text{\#active S-boxes} = \sum_{i=0}^{r-1} \mathrm{hw}(\mathrm{activity}(\delta_i))\;.
+    \end{equation*}
 \end{lemma}
 \begin{proof}
     Note that for an \SPN/ any differential trail (with maximal probability) has to follow \cref{lem:dp-sbox,lem:dp-llayer}.
@@ -1127,14 +1132,17 @@ As a similar argument based on the wide trail strategy is used for linear crypta
 We conclude this part with the standard heuristic for resistance against differential cryptanalysis that is used for \crefName{prob:prove_res_attack}.
 The required bound on $p_S$ is derived from the data complexity of the attack: if we exceed this data complexity, an attack would require more data than the full codebook.
 \begin{heuristic}[Heuristic Security against Differential Cryptanalysis]\label{heu:dc}
-    Given an $r$-round \SPN/ cipher $E : \F_2^{kn} \to \F_2^{kn}$ with S-box $S : \F_2^n \to \F_2^n$ and linear layer $L : \F_2^{kn} \to \F_2^{kn}$.
+    Given an $r$-round \SPN/ cipher $E : \F_2^{kn} \times \F_2^{(r+1)kn} \to \F_2^{kn}$ with S-box $S : \F_2^n \to \F_2^n$ and linear layer $L : \F_2^{kn} \to \F_2^{kn}$.
     We assume the $\mathrm{\MEDP/}(E)$ is bounded by
     \begin{equation*}
         \mathrm{\MEDP/}(E) \leqslant p_S^{\text{\#active S-boxes}}\;,
     \end{equation*}
     where $p_S$ is the maximal differential probability over $S$ and $\text{\#active S-boxes}$ is a lower bound for the number of active S-boxes through $r$ rounds of $E$.
 
-    We claim $E$ to be secure against differential cryptanalysis, if $p_S^{\text{\#active S-boxes}} < 2^{-kn}$.
+    We claim $E$ to be secure against differential cryptanalysis, if
+    \begin{equation*}
+        p_S^{\text{\#active S-boxes}} < 2^{-kn}\;.
+    \end{equation*}
 \end{heuristic}
 
 \subsection{Linear Cryptanalysis}\label{sec:prelim:lc}
@@ -1144,38 +1152,50 @@ However, as we assume \nameref{hypo:indp}, we ignore the influence of the key sc
 The margin note sketches the structure of this section.
 \marginpar{%
     \footnotesize
-    %\vspace*{-350pt}
     \textbf{Roadmap to Linear Cryptanalysis}
     \begin{gather*}
         \Prob_x\bracket{\iprod{\alpha}{x} = \iprod{\beta}{E_k^r(x)}} = \frac{1}{2} + \bias^L_{E_k^r}(\alpha, \beta)
         \intertext{1.\ Bias, Correlation and Walsh coefficient equal up to scaling}
-        2^{n+1}\bias^L_{E_k}(\alpha, \beta) = 2^n \cor_{E_k}(\alpha, \beta) = \FC{E_k}(\alpha, \beta)
-        \intertext{2.\ Linear hull over composition $F = H \circ G$}
+        \begin{aligned}
+            &\hphantom{=}\; 2^{n+1}\bias^L_{E_k}(\alpha, \beta)\\
+            &= 2^n \cor_{E_k}(\alpha, \beta) = \FC{E_k}(\alpha, \beta)
+        \end{aligned}
+        \intertext{2.\ Linear hull over composed $F = H \circ G$}
         \FC{F}(\alpha, \beta) = 2^{-n} \sum_{\theta \in \F_2^n} \FC{G}(\alpha, \theta) \FC{H}(\theta, \beta)
         \intertext{3.\ Key influence $E_k(x) = F(x, k)$:}
         \FC{E_k}(\alpha, \beta) = 2^{-m}\sum_{\theta \in \F_2^m}\parens{-1}^{\iprod{\theta}{k}}\FC{F}((\alpha, \theta), \beta)
         \intertext{4.\ Linear hull of a key-alternating \SPN/}
         \intertext{5.\ Maximum Expected Linear Potential}
-        \mathrm{MELP}(E) = \max_{\alpha, \beta \in \F_2^n\setminus\set{0}} \frac{1}{2^m} \sum_{k \in \F_2^m} {\cor_{E_k}(\alpha, \beta)}^2
+        \begin{aligned}
+            &\hphantom{=}\; \mathrm{MELP}(E) \\
+            &= \max_{\alpha, \beta \in \F_2^n\setminus\set{0}} \frac{1}{2^m} \sum_{k \in \F_2^m} {\cor_{E_k}(\alpha, \beta)}^2
+        \end{aligned}
         \intertext{6.\ Heuristic security argument}
         \mathrm{MELP}(E) \leqslant \abs{c_S}^{\text{\#active S-boxes}}
     \end{gather*}
 }
 
-\citeauthor{EC:Matsui93}'s main idea is, to approximate the cipher by linear functions.
+\citeauthor{EC:Matsui93}'s main idea is to approximate the cipher by linear functions.
 In particular, we look for two $\alpha, \beta \in \F_2^n$, such that
 \begin{equation}\label{eqn:linear-approx}
-    \Prob_x\bracket{\iprod{\alpha}{x} = \iprod{\beta}{E_k(x)}} = \Prob_x\bracket{\propLin{\alpha}{E_k}{x}{\beta}}
+    \Prob_x\bracket{\iprod{\alpha}{x} = \iprod{\beta}{E_k(x)}}
 \end{equation}
 is far from uniformly distributed, \ie/ far from $0.5$.
-We call $\propLin{\alpha}{E_k}{}{\beta}$ a \emph{linear approximation} or \emph{linear hull}, $\alpha$ the \emph{input mask}, and $\beta$ the \emph{output mask}.
+\begin{definition}[Linear Hull, Input/Output Masks]
+    Given a function $F : \F_2^n \to \F_2^m$, an \emph{input mask} $\alpha \in \F_2^n$, and an \emph{output mask} $\beta \in \F_2^m$.
+    The \emph{linear hull} or \emph{linear approximation} of $F$ is
+    \begin{equation*}
+        \iprod{\alpha}{x} = \iprod{\beta}{F(x)}\;.
+    \end{equation*}
+    We denote it by $\propLin{\alpha}{F}{x}{\beta}$.
+\end{definition}
 
 Overall, three different metrics for linear approximations are used.
 \begin{definition}[Bias, Correlation, and Walsh transform]\label{def:bias-cor-walsh}
     Given a function $F$ and a linear approximation $\propLin{\alpha}{F}{}{\beta}$ of it.
     The \emph{linear bias} of the linear approximation is $\bias^L_{F}(\alpha, \beta)$ with
     \begin{equation*}
-        \Prob_x\bracket{\propLin{\alpha}{F}{x}{\beta}} = \frac{1}{2} + \bias^L_{F}(\alpha, \beta)\;,
+        \Prob_x\bracket{\iprod{\alpha}{x} = \iprod{\beta}{E_k(x)}} = \Prob_x\bracket{\propLin{\alpha}{F}{x}{\beta}} = \frac{1}{2} + \bias^L_{F}(\alpha, \beta)\;,
     \end{equation*}
     the \emph{correlation} $\cor_{F}(\alpha, \beta)$ is
     \begin{equation*}
@@ -1192,7 +1212,7 @@ All three metrics are equal up to scaling.
     Given a function $F : \F_2^n \to \F_2^n$.
     For any $\alpha, \beta \in \F_2^n$ it holds that
     \begin{equation*}
-        \FC{F}(\alpha, \beta) = 2^n \cor_{F}(\alpha, \beta) = 2^{n+1} \bias^L_{F}(\alpha, \beta) - 1\;.
+        \FC{F}(\alpha, \beta) = 2^n \cor_{F}(\alpha, \beta) = 2^{n+1} \bias^L_{F}(\alpha, \beta)\;.
     \end{equation*}
 \end{lemma}
 \begin{proof}
@@ -1217,21 +1237,28 @@ All three metrics are equal up to scaling.
     concluding the proof.
 \end{proof}
 
-The data complexity of a linear distinguisher is $\mathcal{O}(\cor_{E_k}(\alpha,\beta)^{-2})$, see~\cite[Lemma~2 and Table~2]{EC:Matsui93}, or equivalently $\mathcal{O}(\mathrm{\LPs/}_{E_k}(\alpha, \beta)^{-1})$, where \LPs/ is the linear potential, see the end of this part, \ie/ \cref{def:lp-elp-melp}.
+The data complexity of a linear distinguisher is given by Matsui as $\mathcal{O}(\cor_{E_k}(\alpha,\beta)^{-2})$, see~\cite[Lemma~2 and Table~2]{EC:Matsui93}, or equivalently $\mathcal{O}(\mathrm{\LPs/}_{E_k}(\alpha, \beta)^{-1})$, where \LPs/ is the linear potential, see the end of this part, \ie/ \cref{def:lp-elp-melp}.
 Note that, in contrast to differential cryptanalysis, linear cryptanalysis is a \KPAl/.
 
 \newthoughtpar{Linear Hulls and Linear Trail}
-
 Similar to the differential case, computing the probability of a linear approximation is computational infeasible for any reasonable block cipher.
 We thus have to look into the cipher's structure, and again similar to the differential case, we can exploit it's inner workings.
 
-A common approach is, to define a linear trail corresponding to the differential trail as a linear approximation over each round, specifying all the intermediate masks.
+A common approach is to define a linear trail as a linear approximation over each round, specifying all the intermediate masks.
+\begin{definition}[Linear Trail]
+    Given an $r$-round cipher $E^r : \F_2^n \times \F_2^{rm} \to \F_2^n$ with round functions $R_i : \F_2^n \times \F_2^m \to \F_2^n$, and $r+1$ masks $\delta_i \in \F_2^n$.
+    Then
+    \begin{equation*}
+        \propLin{\delta_0}{R_{1,k_1}}{}{\propLin{\cdots}{R_{r,k_r}}{}{\delta_{r}}}
+    \end{equation*}
+    is a \emph{linear trail} through $E^r$.
+\end{definition}
 To compute the corresponding bias, we then need the Piling-Up lemma, see~\cite[Lemma~3]{EC:Matsui93}
 \begin{lemma}[Piling-Up]\label{lem:piling-up}
     Given $n$ independent random binary variables $x_i$, where $\Prob_{x_i}\bracket{x_i = 0} = p_i$.
     Then
     \begin{equation*}
-        \Prob_{x_i}\bracket{x_1 + \cdots + x_n = 0} = \frac{1}{2} + 2^{n-1} \prod_{i=1}^n p_i - \frac{1}{2}\;.
+        \Prob_{x_i}\bracket{x_1 + \cdots + x_n = 0} = \frac{1}{2} + 2^{n-1} \prod_{i=1}^n \parens{p_i - \frac{1}{2}}\;.
     \end{equation*}
 \end{lemma}
 The main drawback of defining trails this way, is the assumption of independent masks for the piling-up lemma.
@@ -1256,7 +1283,7 @@ The first one was also discussed by \textcite[Eq.~(15)]{FSE:DaeGovVan94}.
         &= \sum_{\theta, x, y \in \F_2^n} \parens{-1}^{\iprod{\alpha}{x} + \iprod{\theta}{G(x)} + \iprod{\theta}{y} + \iprod{\beta}{H(y)}} \\
         \intertext{now reorder the sums}
         &= \sum_{x, y} \parens{-1}^{\iprod{\alpha}{x} + \iprod{\beta}{H(y)}} \sum_{\theta} \parens{-1}^{\iprod{\theta}{(y+G(x))}}
-        \intertext{from \cref{eqn:sum-fact} it follows that $y=G(x)$ and the last sum collapses to a factor of $2^n$}
+        \intertext{from \cref{eqn:sum-fact} it follows that if and only if $y=G(x)$ the last sum collapses to a factor of $2^n$, otherwise to $0$}
         &= 2^n \sum_{x} \parens{-1}^{\iprod{\alpha}{x} + \iprod{\beta}{H(G(x))}} \\
         &= 2^n \FC{F}(\alpha, \beta)
     \end{align*}
@@ -1264,7 +1291,7 @@ The first one was also discussed by \textcite[Eq.~(15)]{FSE:DaeGovVan94}.
 \end{proof}
 
 \citeauthor{EC:Matsui94} studied the spreading of masks through the components of Feistel networks, see~\cite[Section~3 and Fig.~3]{EC:Matsui94}.
-For key-alternating ciphers, the particular case of the mask propagation through the key-xor is interesting.
+For key-alternating ciphers, the particular case of the mask propagation through the key-XOR is interesting.
 \begin{lemma}[Composition with XOR]\label{lem:comp-xor}
     Given $F : \F_2^n \to \F_2^n$, and $G_I, G_O : \F_2^n \times \F_2^n \to \F_2^n$, such that $G_I(x, y) = F(x + y)$ and $G_O(x, y) = F(x) + y$.
     Then for all $\alpha, \beta, \gamma \in \F_2^n$:
@@ -1330,7 +1357,7 @@ Using the Walsh transform, the influence of the key can be addressed quite simpl
 
 We can now compute the linear hull of a key-alternating \SPN/.
 \begin{proposition}[Linear Hull for key-alternating \SPN/]
-    Given a key-alternating \SPN/ $E_{k_0, \ldots, k_r}^r : \F_2^n \to \F_2^n$ with round functions $R_i : \F_2^n \to \F_2^n$.
+    Given a key-al\-ter\-nating \SPN/ $E_{k_0, \ldots, k_r}^r : \F_2^n \to \F_2^n$ with round functions $R_i : \F_2^n \to \F_2^n$.
     In particular
     \begin{equation*}
         E_{k_0, \ldots, k_r}^r(x) \coloneqq R_r(\cdots(R_1(x + k_0) + \cdots) + k_r\;.
@@ -1376,7 +1403,7 @@ We can now compute the linear hull of a key-alternating \SPN/.
 In order to relate the resistance of a cipher against linear cryptanalysis, we need to bound the probability of any linear approximation.
 This results in the so-called \emph{\LPl/} and its maximum averaged over all keys, the \emph{\MELPl/}.
 \begin{definition}[Linear Potential, Expected Linear Potential and Maximum Expected Linear Potential]\label{def:lp-elp-melp}
-    Given a block cipher $E : \F_2^n \to \F_2^n$ with keys $k \in \F_2^m$.
+    Given a block cipher $E : \F_2^n \times \F_2^m \to \F_2^n$ with keys $k \in \F_2^m$.
     For any linear approximation $\propLin{\alpha}{E_k}{}{\beta}$, we denote by \emph{\LPf/}
     \begin{equation*}
         \mathrm{\LP/}_{E_k}(\alpha, \beta) \coloneqq {\cor_{E_k}(\alpha, \beta)}^2
@@ -1394,18 +1421,18 @@ The reason why we look at the squared correlation is that we want to eliminate t
 
 As in the case of differential cryptanalysis, it is in general a hard problem to bound the \MELP/ of a complete linear hull, see \cref{prob:linear_hulls}.
 While there are some notable exceptions again that give upper bounds on the \MELP/ for two rounds of the \AES/, see~\citeonly{FSE:HLLSCC00,FSE:PSLL03,EC:CanRou15}, the standard way is to give a bound on the correlation of any \emph{single linear trail} and hope that the clustering effect in the linear hull is not too big.
-We elaborate next, how this bound is typically computed.
+We elaborate next how this bound is typically computed.
 
 \newthoughtpar{Security Argument for Linear Cryptanalysis}
 We can exploit the \SPN/'s special round structure to refine the linear hull a last time.
-Using the wide trail strategy again, this relates the linear hull potential to the number of S-boxes it involes and the best linear hull over one such S-box.
+Using the wide trail strategy again, this relates the linear hull potential to the number of S-boxes it involves and the best linear hull over one such S-box.
 
 \begin{lemma}[Linear Approximation of S-box Layer]
     Given an S-box $S : \F_2^n \to \F_2^n$ and an input/output mask $\alpha, \beta \in \F_2^{kn}$.
     Write $\alpha = (\alpha_1, \ldots, \alpha_k)$ and $\beta$ analogously, for $\alpha_i, \beta_i \in \F_2^n$.
-    The linear approximation $\propLin{\alpha}{S^k}{}{\beta}$ has the Walsh coefficient
+    The linear approximation $\propLin{\alpha}{S^{||k}}{}{\beta}$ has the Walsh coefficient
     \begin{equation*}
-        \FC{S^k}(\alpha, \beta) = \prod_{i=1}^k \FC{S}(\alpha_i, \beta_i)\;.
+        \FC{S^{||k}}(\alpha, \beta) = \prod_{i=1}^{k} \FC{S}(\alpha_i, \beta_i)\;.
     \end{equation*}
 \end{lemma}
 \begin{proof}
@@ -1431,18 +1458,21 @@ Eventually, we compute the bound as follows -- again similar as for the differen
 
 \begin{lemma}[Bound on the linear trail correlation]
     Given an $r$-round \SPN/ cipher $E : \F_2^{kn} \to \F_2^{kn}$ with S-box $S : \F_2^n \to \F_2^n$ and linear layer $L : \F_2^{kn} \to \F_2^{kn}$.
-    The correlation of any linear trail $\propLin{\theta_0}{L \circ S^k}{}{\propLin{\cdots}{L \circ S^k}{}{\theta_r}}$ is bounded by
+    The correlation of any linear trail $\propLin{\theta_0}{L \circ S^{||k}}{}{\propLin{\cdots}{L \circ S^{||k}}{}{\theta_r}}$ is bounded by
     \begin{equation*}
         \abs{\cor_E(\theta_0, \ldots, \theta_r)} \leqslant \abs{c_S}^{\text{\#active S-boxes}}\;,
     \end{equation*}
-    where $\abs{c_S}$ is the maximum absolute correlation over the S-box and $\text{\#active S-boxes} = \sum_{i=0}^{r-1} \mathrm{hw}(\mathrm{activity}(\theta_i))$.
+    where $\abs{c_S}$ is the maximum absolute correlation over the S-box and
+    \begin{equation*}
+        \text{\#active S-boxes} = \sum_{i=0}^{r-1} \mathrm{hw}(\mathrm{activity}(\theta_i))\;.
+    \end{equation*}
 \end{lemma}
 \begin{proof}
     See the proof of \cref{lem:bound-dp-trail}.
 \end{proof}
 
 In conclusion, we get the heuristic for resistance against linear cryptanalysis which is used as the standard approach to \crefName{prob:prove_res_attack}.
-The required bound on $\abs{c_S}$ is again derived from the data complexity of the attack, as the resulting distinguisher needs more than the full codebook to be evaluated.
+The required bound on $\abs{c_S}$ is again derived from the data complexity of the attack, as the resulting distinguisher would need more than the full codebook to be evaluated.
 \begin{heuristic}[Heuristic Security against Linear Cryptanalysis]\label{heu:lc}
     Given an $r$-round \SPN/ cipher $E : \F_2^{kn} \to \F_2^{kn}$ with S-box $S : \F_2^n \to \F_2^n$ and linear layer $L : \F_2^{kn} \to \F_2^{kn}$.
     We assume the $\mathrm{\MELP/}(E)$ is bounded by
@@ -1451,12 +1481,15 @@ The required bound on $\abs{c_S}$ is again derived from the data complexity of t
     \end{equation*}
     where $\abs{c_S}$ is the maximum absolute correlation over $S$ and $\text{\#active S-boxes}$ is a lower bound for the number of active S-boxes through $r$ rounds of $E$.
 
-    We claim $E$ to be secure against linear cryptanalysis, if $\abs{c_S}^{\text{\#active S-boxes}} < 2^{-kn/2}$.
+    We claim $E$ to be secure against linear cryptanalysis, if
+    \begin{equation*}
+        \abs{c_S}^{\text{\#active S-boxes}} < 2^{-kn/2}\;.
+    \end{equation*}
 \end{heuristic}
 
 \subsection{The Wide Trail Strategy for Differential and Linear Cryptanalysis}\label{sec:prelim:practical-sec}
-With the proposal of the wide trail strategy by \textcite{PhD:Daemen95} the foundation for today's standard argument for the resistance against differential and linear cryptanalysis was build.
-It crucially relies on the observation that we can bound the differential trail probability (or linear trail potential) by the best probability over the S-box and the number of active S-boxes.
+With the proposal of the wide trail strategy by \textcite{PhD:Daemen95} the foundation for today's standard argument for the resistance against differential and linear cryptanalysis was built.
+It crucially relies on the assumption that we can bound the differential trail probability (or linear trail potential) by the best probability over the S-box and the number of active S-boxes.
 The major advantage is that this strategy allows to choose the S-box and the linear layer basically independent of each other and thus allows to optimise both building blocks on their own.
 
 We discuss the corresponding properties of S-boxes in the next \cref{sec:prelim:bf} on Boolean functions and concentrate here on the linear layer.
@@ -1464,28 +1497,27 @@ In the wide trail strategy, the task of the linear layer is to activate many S-b
 To actually compute such a lower bound on the number of active S-boxes, different approaches exist today.
 We briefly discuss two of these: the initial approach by \textcite{PhD:Daemen95} and an approach using \emph{\MILPp/}, first used by \textcite{Inscrypt:MWGP11}.
 Other notable ways are \begin{inparaenum}
-    \item using the so called long trail strategy by \textcite{AC:DPUVGB16} which is an analogue for ARX-based ciphers, see also~\cite[Chapter~6]{PhD:Perrin17}, or
-    \item an algorithm given by \textcite[Section~4]{EC:Matsui94}, which is indeed more efficient than \MILPp/ but not as versatile regarding different types of cryptanalysis, \eg/ related-key attacks.
+    \item using the so-called long trail strategy by \textcite{AC:DPUVGB16} which is an analogue for ARX-based ciphers, see also~\cite[Chapter~6]{PhD:Perrin17}, or
+    \item an algorithm given by \textcite[Section~4]{EC:Matsui94}, which can be more efficient than \MILPp/ but is not as versatile regarding different types of cryptanalysis, \eg/ related-key attacks.
 \end{inparaenum}
 
 \newthoughtpar{Wide Trail Strategy}
-\citeauthor{PhD:Daemen95}'s main idea to achieve a high number of active S-boxes is to split the linear layer in two parts, a mixing and a transposition step.
-The linear layer is further aligned to the S-box size, \ie/ works on $\parens{\F_2^n}^k$ where the S-box permutes $\F_2^n$.
-\citeauthor{PhD:Daemen95} then defines the branch number of a linear layer, to model the S-boxes' activity propagation through the linear layer.
+\citeauthor{PhD:Daemen95}'s main idea to achieve a high number of active S-boxes is to align the linear layer to the S-box size, \ie/ to work on $\parens{\F_2^n}^k$ where the S-box permutes $\F_2^n$.
+He then defines the branch number of a linear layer, to model the S-boxes' activity propagation through the linear layer.
 \begin{definition}[Differential and Linear Branch Number]
-    Given a binary matrix $B \in \F_2^{nk \times nk}$, the \emph{branch number for $k$-bit words} is defined using the k-bit word Hamming weight:
+    Given a binary matrix $B \in \F_2^{nk \times nk}$, the \emph{branch number for $k$-bit words} is defined using the $k$-bit word Hamming weight:
     \begin{equation*}
-        \mathrm{bn}_k(B) \coloneqq \min_{u \in \F_2^{nk} \setminus \set{0}}\set{\mathrm{hw}_k(u)+\mathrm{hw}_k(Mu)}\;.
+        \mathrm{bn}_n(B) \coloneqq \min_{u \in \F_2^{nk} \setminus \set{0}}\set{\mathrm{hw}_n(u)+\mathrm{hw}_n(Mu)}\;.
     \end{equation*}
 
     Further given a linear $L : \F_2^{nk} \to \F_2^{nk}$ and $M_L$, its corresponding matrix representation.
     The \emph{differential branch number} of~$L$ is
     \begin{equation*}
-        \mathrm{bn}^D(L) \coloneqq \min_{x \in \F_2^{nk} \setminus \set{0}} \set{\mathrm{hw}(x) + \mathrm{hw}(L(x))} = \mathrm{bn}_k(M_L)\;.
+        \mathrm{bn}^D(L) \coloneqq \min_{x \in \F_2^{nk} \setminus \set{0}} \set{\mathrm{hw}_n(x) + \mathrm{hw}_n(L(x))} = \mathrm{bn}_n(M_L)\;.
     \end{equation*}
     The \emph{linear branch number} of~$L$ is
     \begin{equation*}
-        \mathrm{bn}^L(L) \coloneqq \min_{x \in \F_2^{nk} \setminus \set{0}} \set{\mathrm{hw}(x) + \mathrm{hw}(L^\top(x))} = \mathrm{bn}_k(M_L^\top)\;.
+        \mathrm{bn}^L(L) \coloneqq \min_{x \in \F_2^{nk} \setminus \set{0}} \set{\mathrm{hw}_n(x) + \mathrm{hw}_n(L^\top(x))} = \mathrm{bn}_n(M_L^\top)\;.
     \end{equation*}
 \end{definition}
 
@@ -1495,18 +1527,21 @@ Finding efficiently implementable \MDS/ matrices is thus an active area of resea
 
 The branch number then gives a first lower bound on the number of active S-boxes, see~\citeonly[Theorem~9.3.1]{rijndael_book}.
 \begin{proposition}[Two-Round Propagation Theorem]
-    Given a key-alternating \SPN/ $E : \F_2^{kn} \to \F_2^{kn}$ with S-box $S : \F_2^n$ and linear layer $L : \F_2^{kn} \to \F_2^{kn}$.
+    Given a key-al\-ter\-nating \SPN/ $E : \F_2^{kn} \to \F_2^{kn}$ with S-box $S : \F_2^n \to \F_2^n$ and linear layer $L : \F_2^{kn} \to \F_2^{kn}$.
     Then the number of active S-boxes for any differential (linear) trail over two rounds is lower bounded by the differential (linear) branch number of $L$, \ie/
-    \begin{equation*}
-        \text{\#differential active S-boxes} \geqslant \mathrm{bn}^D(L) \quad \text{\resp/} \quad \text{\#linear active S-boxes} \geqslant \mathrm{bn}^L(L)\;.
-    \end{equation*}
+    \begin{gather*}
+        \text{\#differential active S-boxes} \geqslant \mathrm{bn}^D(L)
+        \intertext{respective}
+        \text{\#linear active S-boxes} \geqslant \mathrm{bn}^L(L)\;.
+    \end{gather*}
 \end{proposition}
 \begin{proof}
     The statement follows from the definition of the differential (linear) branch number.
 \end{proof}
 A first bound on the number of active S-boxes is thus $r/2 \cdot \mathrm{bn}^D(L)$.
 
-Using the interaction of the mixing and transposition step and the Four-Round Propagation Theorem, \cite[Theorem~9.4.1]{rijndael_book}, the lower bound for the active S-boxes can be refined further (to $r/4 \cdot \mathrm{bn}^D(L)^2$).
+Another idea of \citeauthor{PhD:Daemen95} is to split the linear layer in two parts, a mixing and a transposition step.
+Using the interaction of the mixing and transposition step and the Four-Round Propagation Theorem, \cite[Theorem~9.4.1]{rijndael_book}, the lower bound for the active S-boxes can then be further refined (to $r/4 \cdot \mathrm{bn}^D(L)^2$).
 However, we discuss an alternative approach next.
 
 \newthoughtpar{Counting active S-boxes with \MILPp/}
@@ -1534,17 +1569,19 @@ Several advanced methods based on differential and linear cryptanalysis where de
 In the remainder of this section, we cover a combined attack, differential-linear cryptanalysis, and a generalisation of differential cryptanalysis: truncated differentials and subspace trails.
 
 \subsection{Differential-Linear Cryptanalysis}
-For standard differential or linear cryptanalysis, the attacker searches for a distinguisher targeting as many as possible rounds of the block cipher.
-In 1994, \textcite{C:LanHel94} published the idea, to split the encryption function in two parts instead: $E = E^{\top} \circ E^{\bot}$, with $r$ rounds in the first and $s$ rounds in the second part.
+For standard differential or linear cryptanalysis the attacker searches for a distinguisher targeting as many rounds as possible of the block cipher.
+In 1994, \textcite{C:LanHel94} published the idea to split the encryption function in two parts instead: $E = E^{\top} \circ E^{\bot}$, with $r$ rounds in the first and $s$ rounds in the second part.
 For these shorter parts we then exploit first a differential distinguisher ($\propDiff{\Delta}{E^\bot}{}{\nabla}$) and a linear distinguisher ($\propLin{\lambda}{E^\top}{}{\gamma}$) on the second part.
-The crucial observation is, how these two parts can be merged together.
+The crucial observation is how these two parts can be merged together.
 
 \newthoughtpar{Differential-Linear Distinguisher}
 In the case \citeauthor{C:LanHel94} described, the differential is deterministic and will thus result in a specific difference $\nabla$ after the $r$ rounds of $E^\bot$ with certainty.
 If the linear mask $\lambda$ fits to $\nabla$ in a way that $\lambda$ is only active in positions where $\nabla$ is passive, we can deduce the following.
 Both input pairs $x$ and $x^\prime = x + \Delta$ will be equal in the parts masked by $\lambda$ after $r$ rounds with probability one (denote these intermediate values $y = E^\bot(x)$ and $y^\prime = E^\bot(x^\prime)$).
 If both follow the linear characteristic for the $s$ rounds of $E^\top$, they will behave the same in the parts masked by $\gamma$.
-Exploiting such a deterministic differential was later generalised by \textcite{PhD:Langford95} in her PhD thesis and by \textcite{AC:BihDunKel02} to allow for differentials with lower probability.
+
+The natural generalisation of this approach is to allow for probabilistic differentials, as these are anyway the standard in differential cryptanalysis.
+This generalisation was later done by \textcite{PhD:Langford95} in her PhD thesis and by \textcite{AC:BihDunKel02}, \ie/ to allow for differentials with lower probability.
 In the following, we directly give the general approach.
 
 Formally, with
@@ -1563,11 +1600,8 @@ and thus with the \nameref{lem:piling-up} lemma
 \end{equation*}
 While we would not know the intermediate values $y$ and $y^\prime$ for an actual cipher, we can deduce the bias of the differential-linear propagation by exploiting the differential $\propDiff{\Delta}{E^\bot}{}{\nabla}$ as
 \begin{equation}\label{eq:dl_bias_simple}
-    \begin{aligned}
            \bias_{E^\top \circ E^\bot}^{DL}(\Delta, \gamma)
-        &= \Prob_x\bracket{\propDL{\Delta}{E^\top \circ E^\bot}{x}{\gamma}} - \frac{1}{2} \\
-        &= \Prob\bracket{\iprod{\lambda}{\nabla} = \iprod{\gamma}{(z+z^\prime)}} - \frac{1}{2} = 4pq^2
-    \end{aligned}
+        = \Prob\bracket{\iprod{\lambda}{\nabla} = \iprod{\gamma}{(z+z^\prime)}} - \frac{1}{2} = 4pq^2
 \end{equation}
 where the bias of the differential is
 \begin{equation*}
@@ -1585,7 +1619,7 @@ For this, \citeauthor{FSE:BloLeaNyb14} assumed the two parts $E^\bot$, and $E^\t
 \citeauthor{EC:BDKW19} state the differential-linear bias more precisely by introducing a middle layer $E^\bottop$.\footnote{%
     This approach is similar to what was done for boomerang attacks.
 }
-We thus have $E = E^\top \circ E^\bottop \circ E^\bot$ and the differential-linear approximation splits into a differential over $E^\bot$, a linear hull over $E^\top$ and a differential-linear hull over $E^\bottop$ which is evaluated using the \DLCT/.
+We thus have $E = E^\top \circ E^\bottop \circ E^\bot$ and the differential-linear approximation splits into a differential over $E^\bot$, a linear hull over $E^\top$, and a differential-linear hull over $E^\bottop$ which is evaluated using the \DLCT/.
 Using this, we get for the differential-linear bias of $E$
 \begin{equation*}
     \bias_E^{DL}(\Delta, \gamma) = \sum_{\nabla, \lambda} 8 \cdot \bias_{E^\bot}^D(\Delta, \nabla) \cdot \bias_{E^\bottop}^{DL}(\nabla, \lambda) \cdot {\bias_{E^\top}^L(\lambda, \gamma)}^2,
@@ -1626,7 +1660,7 @@ Formally we generalise the differences to affine subspaces of $\F_2^n$, followin
 Actually, this notion could be further generalised to subsets instead of affine subspaces.\footnote{%
     For example, then any impossible differential of the form \enquote{an input difference $\alpha$ cannot lead to an output difference $\beta$} can be written as a probability-one truncated differential, namely $\propDiff{\alpha}{}{}{\F_2^n \setminus\set{\beta}}$.
 }
-However, ommiting the structure (affine) subspaces provide, makes it much harder to handle differentials algorithmically and we thus stick to the notation using affine subspaces.
+However, omitting the structure (affine) subspaces provide makes it much harder to handle differentials algorithmically and we thus stick to the notation using affine subspaces.
 
 Along the line of trails in the differential and linear cryptanalysis cases, we can define a truncated differential trail.
 \begin{definition}[Truncated Differential Trail]
@@ -1666,25 +1700,25 @@ We defer all further discussion on truncated differentials and subspace trails t
 
 \section{Boolean functions}\label{sec:prelim:bf}
 Boolean functions $f : \F_2^n \to \F_2$ and vectorial Boolean functions $F : \F_2^n \to \F_2^m$ are of prime interest in the design and analysis of block ciphers, as they help to understand security properties of building blocks such as S-boxes.
-They are therefor well studied, see \eg/~\cite{BMM:Carlet10a,BMM:Carlet10b} for a good survey of known results.
+They are therefor well studied, see \eg/~Carlet's survey of known results~\cite{BMM:Carlet10a,BMM:Carlet10b}.
 
 Boolean functions can be represented in several ways, the two most important for us are listed below.
 Given a Boolean function $f$ in $n$ variables, $f$ can be represented by
 \begin{description}
     \item[\ANF/] a multivariate polynomial
                  \begin{equation*}
-                     p \in F_2[x_1, \ldots, x_n]/(x_i^2 + x_i)_{i=1}^n\;,
+                     p \in \F_2[x_1, \ldots, x_n]/(x_i^2 + x_i)_{i=1}^n\;,
                  \end{equation*}
                  such that $f(x) = p(x)$:
                  for $u \in \F_2^n$ we denote
                  \begin{equation*}
-                     x^u = \prod_{i=0}^{n-1} x_i^{u_i}\;,
+                     x^u = \prod_{i=1}^{n} x_i^{u_i}\;,
                  \end{equation*}
                  for suitable choices of $\lambda_u \in \F_2$ the \ANF/ of $f$ can then be expressed as
                  \begin{equation*}
                      f(x) = \sum_{u \in \F_2^n} \lambda_u x^u\;;
                  \end{equation*}
-    \item[Truth Table] or value vector $v \in \F_2^{2^n}$, such that $f(x)$ equals $v$ at position $x$, interpreted as an integer,
+    \item[Truth Table] or value vector $v \in \F_2^{2^n}$, such that $f(x)$ equals $v_x$ (where $x$ is interpreted as an integer),
 \end{description}
 For notational brevity, we may give the value vector in hexadecimal notation.
 \begin{example}
@@ -1700,7 +1734,7 @@ For notational brevity, we may give the value vector in hexadecimal notation.
     or equivalently $\mathtt{92}$.
     Its \ANF/ is $f(x_1, x_2, x_3) = x_1 x_2 x_3 + x_1 x_2 + x_2 x_3 + x_1 + x_3$.
 \end{example}
-A vectorial Boolean function $F : \F_2^n \to \F_2^m$ consists of $m$ coordinates or $2^m$ components, Boolean functions in $n$ variables, denoted by $F_{\beta}(x) = \iprod{\beta}{F(x)}$, that is
+A vectorial Boolean function $F : \F_2^n \to \F_2^m$ consists of $m$ coordinates or $2^m$ components, \ie/ Boolean functions in $n$ variables, denoted by $F_{\beta}(x) = \iprod{\beta}{F(x)}$, that is
 \begin{equation*}
     F(x_1, \ldots, x_n) = \begin{pmatrix}
         F_{e_1}(x_1, \ldots, x_n) \\
@@ -1714,6 +1748,7 @@ The degree of $f$, denoted by $\deg(f)$, is defined as the maximal weight of a m
 \begin{equation*}
     \deg(f) = \max \set{\wt(u) \given u \in \F_2^n \ \text{such that}\ \lambda_u \ne 0}\;.
 \end{equation*}
+For the constant zero function, the degree is $\deg(0) = 0$.
 
 In the remainder of this section, we cover \begin{inparaenum}
 \item derivatives and the uniformity of (vectorial) Boolean functions which play an important role in the analysis of differential properties,
@@ -1736,12 +1771,16 @@ This leads to the definition of derivatives for (vectorial) Boolean functions.
         \derive{\alpha}{f}(x) \coloneqq f(x) + f(x + \alpha).
     \end{gather*}
 \end{definition}
-If we generalise to the derivative of a vectorial Boolean function $F : \F_2^n \to \F_2^m$, we can additionally specify an output difference $\beta$.
-The \emph{\DDT/} captures the distribution of all possible derivatives; its entries are
-\begin{equation*}
-    \text{\DDTs/}_F[\alpha, \beta] \coloneqq \abs{\derive{\alpha}{F}^{-1}(\beta)} = \abs{\set{x \in \F_2^n \given \derive{\alpha}{F}(x) = \beta}},
-\end{equation*}
-where we leave out the subscript, if it is clear from the context.
+If we generalise to the derivative of a vectorial Boolean function, we can additionally specify an output difference $\beta$.
+The \DDTs/ captures the distribution of all possible derivatives.
+\begin{definition}[Difference Distribution Table]
+    Given a vectorial Boolean function $F : \F_2^n \to \F_2^m$.
+    The \emph{\DDT/} consists of the entries
+    \begin{equation*}
+        \text{\DDTs/}_F[\alpha, \beta] \coloneqq \abs{\derive{\alpha}{F}^{-1}(\beta)} = \abs{\set{x \in \F_2^n \given \derive{\alpha}{F}(x) = \beta}}\;,
+    \end{equation*}
+    where we leave out the subscript, if it is clear from the context.
+\end{definition}
 
 Using the \DDT/, \cref{eqn:prob-diff} becomes
 \begin{equation*}
@@ -1750,7 +1789,7 @@ Using the \DDT/, \cref{eqn:prob-diff} becomes
 Some basic observations on the \DDT/ and derivatives are the following.
 Every entry in the \DDT/ is even, as $\F_2^n$ has characteristic two and thus $\derive{\alpha}{F}(x) = \derive{\alpha}{F}(x+\alpha)$ for all $\alpha$ and $x$.
 The sum over any row $\alpha$ of the \DDT/ is $\sum_{\beta \in \F_2^n} \text{\DDTs/}_F[\alpha, \beta] = 2^n$, as we sum up all possible output differences.
-Similarly, the sum over any column of the \DDT/ equals~$2^m$ which is equal to~$2^n$ if~$F$ is a permutation.
+Similarly, the sum over any column of the \DDT/ equals~$2^n$ if~$F$ is a permutation.
 
 The main security property an S-box $S$ should exhibit against differential cryptanalysis, is a low maximal probability for any differential over it, denoted $p_S$.
 We relate $p_S$ to the \DDT/'s maximum entry.
@@ -1763,24 +1802,25 @@ We relate $p_S$ to the \DDT/'s maximum entry.
 \end{definition}
 We exclude the input difference $\alpha = 0$, as this is the trivial case giving no information.
 The uniformity for vectorial Boolean Functions is bound by $2 \leqslant \uniformity{F} \leqslant 2^n$, due to the above discussed facts.
-Functions with uniformity reaching the lower bound are called \emph{\APN/} (perfect nonlinear functions achieve uniformity one, but do not exist over fields with characteristic two).
-Linear functions obviously have uniformity $2^n$.
+Functions with uniformity reaching the lower bound are called \emph{\APN/} (perfect nonlinear functions $F : A \to B$ achieve uniformity $\abs{B}/\abs{A}$, but do not exist for vectorial Boolean functions).
+
+Linear functions obviously have uniformity~$2^n$.
 
 Using the uniformity results in $p_S = \uniformity{S}/2^n$ for \cref{heu:dc}.
 
 A special case of derivatives are the linear structures of a (vectorial) Boolean function.
 
 \subsection{Linear Structures}
-They where studied in \eg/~\citeonly{EC:Evertse87,FSE:Lai94,TIT:CanVid05}, and quite recently appeared in the context of invariant attacks, see~\cite{C:BCLR17}.
+Linear structures were studied in \eg/~\citeonly{EC:Evertse87,FSE:Lai94,TIT:CanVid05}, and quite recently, see~\cite{C:BCLR17}, appeared in the context of resistance against invariant attacks; in particular the linear structures of the invariants are studied.
 \begin{definition}[Linear Structures of Boolean functions]
     Let $f : \F_2^n \to \F_2$.
     The set of \emph{linear structures of $f$} is
     \begin{equation*}
-        \mathrm{LS}(f) = \set{\alpha \in \F_2^n \given \derive{\alpha}{f}(x) = c \quad \forall x \in \F_2^n, c \in \F_2}.
+        \mathrm{LS}(f) = \set{\alpha \in \F_2^n \given \exists c \in \F_2, \forall x \in \F_2^n : \derive{\alpha}{f}(x) = c}.
     \end{equation*}
     We call $\alpha \in \mathrm{LS}(f)$ for which the derivative is constant zero (or one) a \emph{0-linear structure} (or \emph{1-linear structure}).
 \end{definition}
-$\mathrm{LS}(f)$ is also called the linear space of $f$.
+$\mathrm{LS}(f)$ is also called the linear space of $f$ and it is partitioned by the above distinction into $\mathrm{LS}(f) = \mathrm{LS}^0(f) \cup \mathrm{LS}^1(f)$, where $\mathrm{LS}^1(f)$ is either empty or a coset of $\mathrm{LS}^0(f)$ (we have for any $\alpha \in \mathrm{LS}^0(f)$ and $\beta \in \mathrm{LS}^1(f)$ that $\alpha + \beta \in \mathrm{LS}^1(f)$).
 Note that $\mathrm{LS}(f)$ and $\mathrm{LS}^0(f)$ are subspaces.
 \begin{lemma}[Linear Structure subspaces]
     Given $f : \F_2^n \to \F_2$.
@@ -1795,21 +1835,20 @@ Note that $\mathrm{LS}(f)$ and $\mathrm{LS}^0(f)$ are subspaces.
 
     The same argument holds for $\gamma, \theta \in \mathrm{LS}^0(f)$.
 \end{proof}
-$\mathrm{LS}(f)$ is partitioned by the above distinction into $\mathrm{LS}(f) = \mathrm{LS}^0(f) \cup \mathrm{LS}^1(f)$, where $\mathrm{LS}^1(f)$ is either empty or a coset of $\mathrm{LS}^0(f)$ (we have for any $\alpha \in \mathrm{LS}^0(f)$ and $\beta \in \mathrm{LS}^1(f)$ that $\alpha + \beta \in \mathrm{LS}^1(f)$).
 
 This definition can be naturally extended to vectorial Boolean functions.
 \begin{definition}[Linear Structures of vectorial Boolean functions]
     Let $F : \F_2^n \to \F_2^m$.
     The set of \emph{linear structures of $F$} is
     \begin{equation}\label{st:eqn:ls}
-        \mathrm{LS}(F) \coloneqq \set{(\alpha, \beta) \in \F_2^m \times \F_2^n \given \iprod{\alpha}{\derive{\beta}{F}(x)} = c \quad \forall x \in \F_2^n, c \in \F_2}
+        \mathrm{LS}(F) \coloneqq \set{(\alpha, \beta) \in \F_2^m \times \F_2^n \given \exists c \in \F_2, \forall x \in \F_2^n : \iprod{\alpha}{\derive{\beta}{F}(x)} = c}
     \end{equation}
     We define the set $\mathrm{L}_\beta$ as
     \begin{equation*}
-        \mathrm{L}_\beta(F) \coloneqq \set{\alpha \in \F_2^n \given \beta \in \mathrm{LS}(F_\alpha)}\;,
+        \mathrm{L}_\beta(F) \coloneqq \set{\alpha \in \F_2^m \given \beta \in \mathrm{LS}(F_\alpha)}\;,
     \end{equation*}
     thus the set of all components $F_\alpha$ that have $\beta$ as a linear structure.
-    Just like $\mathrm{LS}(f)$, we can partition $\mathrm{L}_\beta(F) = \mathrm{L}_\beta^0(F) \cup \mathrm{L}_\beta^1(F)$ by fixing the constant $c$ in \cref{st:eqn:ls} to either 0 or 1, and where the later is either empty or a coset of the first.
+    Just like $\mathrm{LS}(f)$, we can partition $\mathrm{L}_\beta(F) = \mathrm{L}_\beta^0(F) \cup \mathrm{L}_\beta^1(F)$ by fixing the constant~$c$ in \cref{st:eqn:ls} to either 0 or 1, and where the later is either empty or a coset of the first.
     Finally, like with $\mathrm{LS}(f)$, linear structures with constant $c = 0$ are called \emph{0-linear structures}, and \emph{1-linear structures} if $c=1$.
 \end{definition}
 
@@ -1830,7 +1869,8 @@ Let us now turn to the linear properties of (vectorial) Boolean functions.
 
 \subsection{Walsh transform}
 In \cref{sec:prelim:lc} we have already discussed the relation between a linear approximation over $F$ and the Walsh transform of $F$.
-\Cref{def:bias-cor-walsh} gave the definition of the Walsh transform for vectorial Boolean functions only.
+\Cref{def:bias-cor-walsh} gave the definition of the Walsh transform for vectorial Boolean functions.
+The special case of the Walsh transform of a Boolean function is the following.
 \begin{definition}[Walsh transform]
     Given a Boolean function $f \in \boolfunc/_n$.
     Its \emph{Walsh transform} at point $\alpha$ is defined as
@@ -1841,11 +1881,15 @@ In \cref{sec:prelim:lc} we have already discussed the relation between a linear 
 Thus the Walsh transform of vectorial Boolean functions consists of the Walsh transforms of its components.
 We encounter this generalisation several times, \eg/ in the following and in \cref{ch:act}.
 
-Analogously to the \DDT/, we define the \emph{\LAT/} which contains the Walsh coefficients
-\begin{equation*}
-    \text{\LAT/}_F[\alpha, \beta] \coloneqq \FC{F}(\alpha,\beta).
-\end{equation*}
-Again we leave out the subscript, if it is clear from the context.
+Analogously to the \DDT/, we define the \LATs/.
+\begin{definition}
+    Given a vectorial Boolean function $F : \F_2^n \to \F_2^m$.
+    The \emph{\LAT/} contains the Walsh coefficients
+    \begin{equation*}
+        \text{\LAT/}_F[\alpha, \beta] \coloneqq \FC{F}(\alpha,\beta)\;.
+    \end{equation*}
+    Again we leave out the subscript, if it is clear from the context.
+\end{definition}
 
 A fundamental equality is the following.
 \begin{lemma}[Parseval's equality]\label{lem:parseval}
@@ -1881,6 +1925,8 @@ The main property of a (vectorial) Boolean function to resist linear cryptanalys
         \linearity{F} \coloneqq \max_{\beta \in \F_2^m \setminus \set{0}} \linearity{F_\beta}\;.
     \end{equation*}
 \end{definition}
+Typically the nonlinearity is defined as $\mathcal{N}\!\!\mathcal{L}(f) \coloneqq 2^{n-1} - \frac{1}{2}\linearity{f}$.
+In the remainder of this thesis, we only work with the linearity.
 
 The nonlinearity can also be interpreted as the minimal Hamming-distance of $F$ to the set of all affine functions, because for these the following result holds.
 \begin{lemma}[Walsh coefficient of affine functions]
@@ -1908,10 +1954,7 @@ With the linearity, we can compute $\abs{c_S} = \linearity{S}/2^n$ for \cref{heu
 Using \nameref{lem:parseval} we can deduce a lower bound on the linearity.
 \begin{proposition}[Covering Radius Bound]
     Given a Boolean function $f : \F_2^n \to \F_2$.
-    Then
-    \begin{equation*}
-        \mathcal{N}\!\!\mathcal{L}(f) \leqslant 2^n - 2^{n/2} \quad \Leftrightarrow \quad \linearity{f} \geqslant 2^{n/2}\;.
-    \end{equation*}
+    Then $\mathcal{N}\!\!\mathcal{L}(f) \leqslant 2^n - 2^{n/2}$ or equivalently $\linearity{f} \geqslant 2^{n/2}$.
 \end{proposition}
 \begin{proof}
     Assume for all $\alpha \in \F_2^n$ it holds that $\FC{f}(\alpha) < 2^{n/2}$.
@@ -1934,12 +1977,12 @@ We use the following lemma for the proof.
 \end{lemma}
 \begin{proof}
     We can simply compute $f$'s Walsh transform as
-    \begin{equation*}
-          \FC{f}(\alpha,\beta)
-        = \sum_{x \in \F_2^n, y \in \F_2^m} \parens{-1}^{\iprod{\alpha}{x} + \iprod{\beta}{y} + f(x,y)}
-        = \sum_{x, y} \parens{-1}^{\iprod{\alpha}{x} + g(x) + \iprod{\beta}{y} + h(y) }
-        = \FC{g}(\alpha) \cdot \FC{h}(\beta)\;.
-    \end{equation*}
+    \begin{align*}
+           \FC{f}(\alpha,\beta)
+        &= \sum_{x \in \F_2^n, y \in \F_2^m} \parens{-1}^{\iprod{\alpha}{x} + \iprod{\beta}{y} + f(x,y)} \\
+        &= \sum_{x, y} \parens{-1}^{\iprod{\alpha}{x} + g(x) + \iprod{\beta}{y} + h(y) }
+         = \FC{g}(\alpha) \cdot \FC{h}(\beta)\;.
+    \end{align*}
     Noting that
     \begin{equation*}
         \max_{\alpha, \beta} \abs{\FC{f}(\alpha, \beta)} = \max_\alpha \abs{\vphantom{\FC{h}}\FC{g}(\alpha)} \cdot \max_\beta \abs{\FC{h}(\beta)}
@@ -1966,7 +2009,7 @@ We use the following lemma for the proof.
     as claimed.
 \end{proof}
 
-\textcite{EC:Nyberg91} showed that a vectorial Boolean function $F : \F_2^n \to \F_2^m$ can only be bent, if $n \geqslant 2m$.
+\textcite{EC:Nyberg91} showed that a vectorial Boolean function $F : \F_2^n \to \F_2^m$ can only be bent if $n \geqslant 2m$.
 Such functions are also called \emph{perfect nonlinear}.
 As we are most often interested in permutations of $\F_2^n$, we cannot use bent functions in this case.
 Instead, the best linearity we can then achieve (\ie/ for $F : \F_2^n \to \F_2^n$) is
@@ -1974,11 +2017,11 @@ Instead, the best linearity we can then achieve (\ie/ for $F : \F_2^n \to \F_2^n
     \linearity{F} \geqslant 2^{\frac{n+1}{2}}\;,
 \end{equation*}
 where functions reaching this bound are called \emph{\AB/}.
-This \emph{Sidelnikov-Chabaud-Vaudenay} bound was first shown by \textcite{SMD:Sidelnikov71} and later by \textcite{EC:ChaVau94}.
 Obviously \AB/ functions only exist for $n$ odd.
+This bound is also called \emph{Sidelnikov-Chabaud-Vaudenay} bound, as it was first shown by \textcite{SMD:Sidelnikov71} and later by \textcite{EC:ChaVau94}.
 
 \subsection{Bent Functions}
-Bent functions have been introduced by Rothaus~\cite{Rothaus76} and studied ever since, see also~\cite[Section~8.6]{BMM:Carlet10a}.
+Bent functions have been introduced by \textcite{Rothaus76} and studied ever since, see also~\cite[Section~8.6]{BMM:Carlet10a}.
 
 Using \nameref{lem:parseval} and following from the Covering Radius bound, it is easy to see that a function is bent if and only if all its Walsh coefficients are $\pm2^{\frac{n}{2}}$.
 Moreover, an alternative classification that will be of importance in \cref{ch:bison}, is that a function is bent if and only if all (non-trivial) derivatives $\derive{\alpha}{f}$ are balanced Boolean functions~\cite{EC:MeiSta89}.
@@ -1986,7 +2029,7 @@ Moreover, an alternative classification that will be of importance in \cref{ch:b
 While there are many different primary and secondary constructions\footnote{%
     Primary constructions give bent functions from scratch, while secondary constructions build new bent functions from previously defined ones.
 } of bent functions known, for simplicity (and for the sake of ease of implementation), we focus on the simplest known bent function in \cref{ch:bison}.
-We recall this function next, see also~\cite[Section~6.2]{BMM:Carlet10a}.
+We recall this function next, see also~\citeonly[Section~6.2]{BMM:Carlet10a}.
 \begin{lemma}[\citeonly{dillon1972survey}]\label{lem:inner-product-bent}
     Let $n = 2 m$ be an even integer.
     The function
@@ -2004,9 +2047,10 @@ We recall this function next, see also~\cite[Section~6.2]{BMM:Carlet10a}.
     For $m=1$ we can simply compute the linearity of $f(x,y) = xy$ as $\linearity{f} = \FC{f}(0) = \FC{f}(1) = \FC{f}(2) = -\FC{f}(3) = 2$.
     Now, assume that $\linearity{f} = 2^m$ hold.
     For $m+1$, \ie/ $n = 2m + 2$, write
-    \begin{equation*}
-        f(x_1, \ldots, x_m, x_{m+1}, y_1, \ldots, y_m, y_{m+1}) = g(x_1, \ldots, x_m, y_1, \ldots, y_m) + h(x_{m+1}, y_{m+1})\;.
-    \end{equation*}
+    \begin{gather*}
+        f(x_1, \ldots, x_m, x_{m+1}, y_1, \ldots, y_m, y_{m+1}) \\
+        = g(x_1, \ldots, x_m, y_1, \ldots, y_m) + h(x_{m+1}, y_{m+1})\;.
+    \end{gather*}
     Applying \cref{lem:fc:direct_sum} and the induction argument gives
     \begin{equation*}
         \linearity{f} = \linearity{g} \cdot \linearity{h} = 2^m \cdot 2 = 2^{m+1} = 2^{n/2}
@@ -2014,11 +2058,11 @@ We recall this function next, see also~\cite[Section~6.2]{BMM:Carlet10a}.
     which implies $f$ is bent.
 \end{proof}
 
-Even so bent functions achieve the highest possible nonlinearity, their direct use in symmetric cryptography is so far very limited.
+Even though bent functions achieve the highest possible nonlinearity, their direct use in symmetric cryptography is so far very limited.
 This is mainly due to the fact that bent functions are not balanced, \ie/ the distribution of zeros and ones is (slightly) biased, and is due to the requirement that $\FC{f}(0) = 2^{n/2}$.
 
 \textcite[Chapter~4]{tokareva15} discusses some applications of bent functions in cryptography.
-Most notably, the S-boxes in the block cipher \cast/~\cite{DCC:Adams97} are designed such that all 32 coordinates are bent functions (in 8 variables).
-The stream cipher \grain/~\cite{ISIT:HJMM06} and the hash function \haval/~\cite{AC:ZhePieSeb92} use nonlinear functions which are constructed from bent functions.
-However, \eg/ \textcite{EC:CanVid02} discuss caveats when using \AB/ round functions in a block cipher.
+Most notably, the S-boxes used in the block cipher \cast/~\citeonly{DCC:Adams97} are designed such that all 32 coordinates are bent functions (in 8 variables).
+The stream cipher \grain/~\citeonly{ISIT:HJMM06} and the hash function \haval/~\citeonly{AC:ZhePieSeb92} use nonlinear functions which are constructed from bent functions.
+However, \eg/ using \AB/ round functions in a block cipher might also come with caveats, see the discussion by \textcite{EC:CanVid02}.
 Interestingly, \citeauthor{tokareva15} discusses bent functions only to thwart linear cryptanalysis -- whereas our application for bent functions in \cref{ch:bison} exploits the fact that all derivatives of a bent function are balanced to show resistance against differential cryptanalysis.

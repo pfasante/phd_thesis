@@ -1,52 +1,22 @@
 \chapter{Instantiating the WSN construction}\label{ch:bison}
-\marginpar{\vspace{-10pt}\includegraphics[width=50mm]{bison/bison-logo}\\\footnotesize\hphantom{.}\hfill---Lucas Hartmann}
+\marginpar{\vspace{-10pt}\includegraphics[width=52mm]{bison/bison-logo}\\\footnotesize\hphantom{.}\hfill---Lucas Hartmann}
 
+\vspace*{-\baselineskip}
 \newthought{Synopsis}\hspace{1.5em}
 Our main contribution is a block cipher instance of the \WSN/ construction which allows us to give a strong bound on the best differential over several rounds of the cipher.
 This chapter is based on the paper
 \begin{quote}
     \fullfullcite{EC:CLLNW19}.
 \end{quote}
+All authors contributed equally.
 
 After recalling the \WSN/ construction, we identify inherent restrictions and define a family of \WSN/ instances fulfilling these restrictions.
 Subsequently, we discuss the differential cryptanalysis of these \enquote{\bison/-like} instances.
 Following this analysis, we give two concrete species of \bison/-like block ciphers: \bison/ (with odd block length) and \wisent/ (with even block length).
 For both we report on further cryptanalysis and give some remarks on implementation figures.
 
-%\section{Preliminaries}
-%We briefly recall the Whitened Swap-or-Not construction, recapitulate properties of Boolean functions and shortly cover differential and linear cryptanalysis.
-%We denote by $\F_2$ the finite field with two elements and by $\F_2^n$ the $n$-dimensional vector space over $\F_2$, \ie/ the set of all $n$-bit vectors with a bitwise xor as the addition.
-
 \section{Introduction}
 
-%Block ciphers are among the most important cryptographic primitives as they are at the core responsible for a large fraction of all our data that is encrypted.
-%Depending on the mode of operation (or used construction), a block cipher can be turned into an encryption function, a hash-function, a message authentication code or an authenticated encryption function.
-%
-%Due to their importance, it is not surprising that block ciphers are also among the best understood primitives.
-%In particular the \AES/~\cite{FIPS:AES} has been scrutinised by cryptanalysts ever since its development in 1998~\cite{CARDIS:DaeRij98} without any significant security threat discovered for the full cipher (see \eg/~\citeonly{AES:Gilbert00,FSE:FKLSSWW00,C:BirKhoNik09,AC:BirKho09,AC:DunKelSha10,EC:DerFouJea13,ToSC:GraRecRon16,EC:GraRecRon17,AC:RonBarHel17}).
-%
-%The overall structure of \AES/, being built on several (round)-permutations interleaved with a (binary) addition of round keys is often referred to as key-alternating cipher and is depicted in \cref{fig:key_alt}.
-%
-%The first cipher following this approach was, to the best of our knowledge, the cipher MMB~\cite{DaeGovVan93}, while the name key-alternating cipher first appears in~\cite{IMA:DaeRij01} and in the book describing the design of the \AES/~\cite{rijndael_book}.
-%Nowadays many secure ciphers follow this construction.
-%
-%Interestingly, besides its overwhelming use in practice and the intense cryptanalytic efforts spent to understand its practical security, the generic (or idealised) security of key-alternating ciphers has not been investigated until 2012.
-%Here, generic or idealised security refers to the setting where the round functions $R_i$ are modeled as random permutations.
-%An (computational unbounded) attacker is given access to those round functions via oracle queries and additional oracle access to either the block cipher or a random permutation.
-%The goal of the attacker is to tell apart those two cases.
-%As any attack in this setting is obviously independent of any particular structure of the round function, those attacks are generic for all key-alternating ciphers.
-%In this setting, the construction behind key-alternating ciphers is referred to as the iterated Even-Mansour construction.
-%Indeed, the Even-Mansour cipher~\cite{JC:EveMan97} can be seen as a one-round version of the key-alternating cipher where the round function is a random permutation.
-%
-%The first result on the iterated Even-Mansour construction (basically focusing on the two-round version) was given in~\cite{EC:BKLSST12}.
-%Since then, quite a lot of follow-up papers, \eg/~\citeonly{C:ABDMS13,TCC:GuoLin15,FSE:LamSeu14,C:HoaTes16}, managed to improve and generalise this initial result significantly.
-%In particular,~\cite{EC:CheSte14} managed to give a tight security bound for any number of rounds.
-%Informally, for breaking the $r$-round Even-Mansour construction, any attacker needs to make roughly $2^{\frac{r}{r+1}n}$ oracle queries.
-%
-%While this bound can be proven tight for the iterated Even-Mansour construction, it is unsatisfactory for two reasons.
-%First, one might hope to get better security bounds with different constructions and second one might hope to lower the requirement of relying on $r$ random permutations.
-
-%Motivated by this theoretical defect and the importance of encrypting small domains with full security (see \eg/~\cite{EPRINT:MirYil17}), researchers started to investigate alternative ways to construct block ciphers with the highest possible security level under minimal assumptions in ideal models.
 In the context of \crefName{prob:cipher_constructions} an interesting result is the construction by \textcite{AC:Tessaro15}.
 His construction is based on the Swap-or-Not construction by \textcite{C:HoaMorRog12}, which was designed for the setting where the component functions are secret.
 Instead of being based on random permutations, this construction requires only a set of random (Boolean) functions.
@@ -64,21 +34,21 @@ Tessaro phrases this situation as follows:
     \hfill{}\cite{AC:Tessaro15}
 \end{quote}
 
-There has actually been one instance of the previous construction~\cite{C:HoaMorRog12}, but this has been broken almost instantaneously and completely, as parts of the encryption function were actually linear, see~\cite{C:Vaudenay12rump}.
+There has actually been one instance~\cite{C:HoaMorRog12} of the previous construction, but this has been broken almost instantaneously and completely, as parts of the encryption function were actually linear, see~\cite{C:Vaudenay12rump}.
 This failure to securely instantiate the construction points to an important hurdle.
 Namely, proving the generic bounds and analysing the security of an instance are technically very different tasks.
-The security of any block cipher is, with the current state of knowledge, always the security against known attacks.
+The security of any block cipher is with the current state of knowledge always the security against known attacks.
 In particular, when designing any concrete block cipher, one has to argue why linear and differential attacks do not threaten the construction.
 
 \newthoughtpar{Our Contribution}
 Consequently, we investigate the important, but so far overlooked, aspect of instantiating the \WSN/ construction with a practical secure instance.
 Practical secure meaning, just like in the case of \AES/, that the block cipher resists all known attacks.
 We denote this instance as \bison/.\footnote{%
-    Bent whItened Swap Or Not
+    For \enquote{Bent whItened Swap Or Not}
 }
 Our insights presented here are twofold.
 
-First, we derive some inherent restrictions on the choice of the round function $f_i$.
+First, we derive some inherent restrictions on the choice of the round function~$f_i$.
 In a nutshell, we show that $f_i$ has to be rather strong, in the sense that its output bit has to basically depend on all input bits.
 Moreover, we show that using less than $n$ rounds will always result in an insecure construction.
 Those, from a cryptanalytic perspective rather obvious, results  are presented in \cref{bison:sec:restrictions}.
@@ -108,12 +78,6 @@ For this we analyse the growth of the algebraic degree over the rounds.
 In contrast to what we intuitively expect -- an exponential growth (until a certain threshold) as in the case for \SPNp/~\cite{FSE:BouCanDeC11} -- the degree of the \WSN/ construction grows linearly in the degree of the round function $f_i$.
 This result can also be applied in the analysis of maximally unbalanced Feistel networks or nonlinear feedback shift registers.
 
-%In the \cref{bison:sec:implementation} we report implementation figures for \bison/.
-%Those figures underline our believe that it will be very hard to design a concrete instance that has a performance comparable to key-alternating ciphers.
-%However, based on our implementation figures, one important metric where an instance of the \WSN/ construction might come close to being competitive is the code size.
-%Moreover, asymptotically, for the encryption of an $n$-bit block, \bison/ requires $\mathcal{O}(n^2)$ bit operations.
-%Designing a scalable family of ciphers with asymptotically significantly less operations seems challenging.
-
 Additionally to the results in~\cite{EC:CLLNW19}, we given an even block length instance, \wisent/, of the \WSN/ construction, see \cref{sec:wisent:instance}.
 We conclude this section by adjusting our security and implementation analysis to this new instance.
 
@@ -125,11 +89,11 @@ However, the cipher has been broken quickly afterwards, with the invention of in
 Another, technically very different approach to get strong results on resistance against attacks we would like to mention is the decorrelation theory~\cite{STACS:Vaudenay98}.
 Interestingly, both previous approaches rely rather on one strong component, \ie/ round function, to ensure security, while the \WSN/ approach, and in particular \bison/, gains its resistance against differential attacks step by step.
 
-Regarding the analysis of differentials, extensive efforts have been expended to evaluate the MEDP/MELP of \SPN/ ciphers, and in particular of the \AES/.
+Regarding the analysis of differentials, extensive efforts have been expended to evaluate the \MEDP//\MELP/ of \SPN/ ciphers, and in particular of the \AES/.
 Some remarkable results were published by~\cite{FSE:PSLL03} and then subsequently improved by~\cite{IETIS:KelSui07} with a sophisticated pruning algorithm.
 Interestingly, further work by~\cite{SCN:DaeRij06} and later by~\cite{EC:CanRou15} revealed that such bounds are not invariant under affine transformations.
-All these works stress out how difficult it is to evaluate the MEDP/MELP of \SPNp/, even for a small number of rounds.
-On the contrary, and as we are going to elaborate in the remaining of this paper, computing the MEDP of \bison/ is rather straightforward and independent of the exact details of the components.
+All these works stress out how difficult it is to evaluate the \MEDP//\MELP/ of \SPNp/, even for a small number of rounds.
+On the contrary, and as we are going to elaborate in the remaining of this paper, computing the \MEDP/ of \bison/ is rather straightforward and independent of the exact details of the components.
 This can be compared to the wide trail strategy that, making use of the branch number and the superbox argument, allows bounding the probability of any differential characteristic for a large class of \SPNp/.
 Our arguments allow to bound the differential probability for a large class of \WSN/ instances.
 
@@ -230,7 +194,7 @@ Every round is involutory, thus for decryption one only has to reverse the order
     }\label{bison:fig:WSN}
 }
 
-Note that the usage of the maximum function is not decisive; it can be replaced by any function $\Phi_k$ that returns a unique representative of the set $\set{x, x+k}$, see~\cite{AC:Tessaro15}.
+Note that the usage of the maximum function is not decisive; it can be replaced by any function $\Phi_k$ that returns a unique representative of the set $\set{x, x+k}$, see~\citeonly{AC:Tessaro15}.
 In other words it can be replaced by any function such that $\Phi_k(x) = \Phi_k(y)$ if and only if  $y \in \{x,x+k\}$.
 
 The main result given by Tessaro on the security of the \WSN/ is the following (we only cite the informal statement, as our focus is not on the provable security aspect, but on practical instances).
@@ -248,13 +212,13 @@ To fill this gap between theory and practice here, we now analyse which generic 
 
 \section{Inherent Restrictions}\label{bison:sec:restrictions}
 In this section we point out two inherent restrictions on any practical secure instance.
-Those restrictions result in general conditions on both the minimal number of rounds to be used and general properties of the round functions $f_{b(i)}$.
+Those restrictions result in general conditions on both the minimal number of rounds to be used and general properties of the round functions~$f_{b(i)}$.
 In particular, those insights are taken into account for \bison/ and \wisent/.
 While these restrictions are rather obvious from a cryptanalytic point of view, they have a severe impact on the performance of any concrete instance.
 We discuss performance in more detail in \cref{sec:bison:implementation}.
 
 \subsection{Number of Rounds}
-As in every round of the cipher, we simply add (or not) the current round key $k_i$, the ciphertext can always be expressed as the addition of the plaintext and a (message dependent) linear combination of all round keys $k_i$.
+As in every round of the cipher, we simply add (or not) the current round key~$k_i$, the ciphertext can always be expressed as the addition of the plaintext and a (message dependent) linear combination of all round keys $k_i$.
 The simple but important observation to be made here is that, as long as the round keys do not span the full space, the block cipher is easily attackable.
 
 Phrased in terms of linear cryptanalysis we start with the following lemma.
@@ -265,7 +229,7 @@ Phrased in terms of linear cryptanalysis we start with the following lemma.
     \end{equation*}
     that is the equation
     \begin{equation*}
-        \angles{u, x} = \angles{u, E_{k,w}^r(x)}
+        \iprod{u}{x} = \iprod{u}{E_{k,w}^r(x)}
     \end{equation*}
     holds for all $x \in \F_2^n$.
 \end{lemma}
@@ -282,10 +246,10 @@ Phrased in terms of linear cryptanalysis we start with the following lemma.
     \end{equation*}
     and it holds that
     \begin{equation*}
-        \angles{u, E_{k,w}^r(x)}
-        = \angles*{u, x + \sum_{i=1}^{r} \lambda_i k_i}
-        = \angles{u, x} + \angles*{u, \sum_{i=1}^{r} \lambda_i k_i}
-        = \angles{u, x}
+        \iprod{u}{E_{k,w}^r(x)}
+        = \iprod{u}{(x + \sum_{i=1}^{r} \lambda_i k_i)}
+        = \iprod{u}{x} + \iprod{u}{\sum_{i=1}^{r} \lambda_i k_i}
+        = \iprod{u}{x}
     \end{equation*}
     concluding the proof.
 \end{proof}
@@ -352,7 +316,7 @@ Here, we investigate a very basic criterion on the round function, namely depend
 \begin{equation*}
     R_{k_i,w_i}(x) = x + f_{b(i)}(w_i + \max\set{x, x + k_i}) \cdot k_i\;.
 \end{equation*}
-Given the Boolean functions $f_{b(i)}:\F_2^n \to \F_2$, the question we would like to discuss is, if it is necessary that the output bit of $f_{b(i)}$ has to depend on all input bits.
+Given the Boolean functions $f_{b(i)}:\F_2^n \to \F_2$, the question we would like to discuss is if it is necessary that the output bit of $f_{b(i)}$ has to depend on all input bits.
 The function $f_{b(i)}$ depends on an input bit $j$ if there are two inputs $x,x'$ differing only in the $j$th bit such that $f_{b(i)}(x)\ne f_{b(i)}(x')$.
 Otherwise the function is independent of the $j$th bit and we get
 \begin{equation*}
@@ -502,6 +466,7 @@ Looking only at one round, we can compute the \DDT/ explicitly:
                     0                        & otherwise
             \end{cases*}\;.
     \end{equation}
+    \marginpar{\vspace{-4.5\baselineskip}\footnotesize$\AC{f}(\cdot)$ denotes the autocorrelation of $f$.}
     Most notably, if $f$ is bent, we have
     \begin{equation*}
         \mathrm{\DDTs/}[\alpha,\beta] = \begin{cases*}
@@ -574,12 +539,10 @@ By induction on the number of rounds, we then directly deduce that any \bison/-l
 \begin{corollary}\label{bison:coro:Markov}
     Let $E_{k,w}^i$ denote $i$~rounds of a \bison/-like instance of the \WSN/ construction with round function $R_{k_i,w_i}$.
     For any number of rounds~$r$ and any round keys $(k_1, \ldots, k_r)$, the probability of an $r$-round characteristic $\theta$ satisfies
-    \begin{equation*}
-        \begin{split}
-            \Prob_{w}\bracket{E^i_{k,w}(x) + E^i_{k,w}(x+\theta_0)=\theta_i, \forall 1 \leqslant i \leqslant r} = \\
-            \quad \prod_{i=1}^r \Prob_{x} \bracket{R_{k_i,w_i}(x) + R_{k_i,w_i}(x+\theta_{i-1}) = \theta_i}.
-        \end{split}
-    \end{equation*}
+    \begin{gather*}
+            \Prob_{w}\bracket{E^i_{k,w}(x) + E^i_{k,w}(x+\theta_0)=\theta_i, \forall 1 \leqslant i \leqslant r} \\
+            = \quad \prod_{i=1}^r \Prob_{x} \bracket{R_{k_i,w_i}(x) + R_{k_i,w_i}(x+\theta_{i-1}) = \theta_i}\;.
+    \end{gather*}
 \end{corollary}
 %\ac{Maybe this proof is not needed since it is clear from the lemma?}
 %\begin{proof}
@@ -766,7 +729,7 @@ The case of bent functions is visualised in \cref{bison:fig:possible_output_diff
 \end{proof}
 
 Because they allow us to minimise the \MEDP/, we now concentrate on the case of bent functions for the sake of simplicity, which implies that the block size is odd.
-However, for implementation reasons an even block size is typically prefered.
+However, for implementation reasons an even block size is typically preferred.
 We discuss our \bison/-like instance with even block sizes, \wisent/, at the end of this chapter, see \cref{sec:wisent:instance}.
 %However, if an even block size is more appropriate for implementation reasons, we could also define \bison/-like instances based on maximally nonlinear functions.
 
@@ -807,11 +770,6 @@ Thus \bison/, replaces the $\max$ function by $\Phi_k$, and uses a key schedule 
 Further, as assumed at the end of the prior section, \bison/ uses two bent functions $f_{b(i)}$.
 The resulting instance for $n$ bits iterates the \WSN/ round function as defined below over $3 \cdot n$~rounds.
 The chosen number of rounds mainly stems from the analysis of the algebraic degree that we discuss in \cref{sec:bison:analysis}.
-
-\begin{secclaim}[\bison/]
-  We claim $n$-bit security for \bison/ in the single-key model.
-  We emphasise that we do not claim any security in the related-key, chosen-key or known-key model.
-\end{secclaim}
 
 \subsection{Round function}
 For any nonzero round key $k$, we define $\Phi_{k} : \F_2^{n} \to \F_2^{n-1}$ as
@@ -862,7 +820,7 @@ Eventually we end up with the following instance of the \WSN/ round.
                 \item $f_{b(i)}$ is defined as
                         \begin{align*}
                             f_{b(i)} : \F_2^{n-1} &\to \F_2 \\
-                            f_{b(i)}(x) &\coloneqq \angles{x[1 : (n-1)/2],x[(n+1)/2 : n-1]} + b(i),
+                            f_{b(i)}(x) &\coloneqq \iprod{x[1 : (n-1)/2]}{x[(n+1)/2 : n-1]} + b(i),
                         \end{align*}
                 \item and $b(i)$ is $0$ if $i \leqslant \frac{r}{2}$ and $1$ otherwise.
             \end{itemize}
@@ -872,6 +830,11 @@ Eventually we end up with the following instance of the \WSN/ round.
 \end{tikzpicture}
 \end{minipage}
 \end{center}
+
+\begin{secclaim}[\bison/]
+  We claim $n$-bit security for \bison/ in the single-key model.
+  We emphasise that we do not claim any security in the related-key, chosen-key or known-key model.
+\end{secclaim}
 
 \subsection{Key schedule}
 In the $i$-th round, the key schedule has to compute two round keys: $k_i \in \F_2^n$ and $w_i \in \F_2^{n-1}$.
@@ -947,7 +910,8 @@ As discussed above, this key schedule has the following property, see also \cref
 
 \section{Security Analysis of \bison/}\label{sec:bison:analysis}
 As we have already seen, \bison/ is resistant to differential cryptanalysis.
-In this section, we argue why \bison/ is also resistant to other known attacks.
+We next argue why \bison/ is also resistant to other known attacks.
+In particular we bound the potential of any linear trail over $r$ rounds, analyse and bound the algebraic degree, discuss resistance against impossible differentials, zero correlation and invariant attacks, and analyse the related-key behaviour.
 
 \subsection{Linear Cryptanalysis}
 For linear cryptanalysis, given the fact that \bison/ is based on a bent function, \ie/ a maximally non-linear function, arguing that no linear characteristic with high correlation exist is rather easy.
@@ -958,32 +922,33 @@ Using the properties of $f$ being bent, we get the following.
 \begin{restatable}{proposition}{probalinearcharacteristic}\label{prop:bison:lat}
     Let $R_{k,w} : \F_2^n \to \F_2^n$ be the round function as defined in \cref{bison:eqn:wsn_instance}.
     Then its \LAT/ consists of the entries
-    \begin{equation}\label{bison:eqn:fc_round}
-        \widehat{R_{k,w}}(\alpha,\beta) = \begin{cases*}
-            2^n                    & if $\alpha = \beta$ and $\angles{\beta, k} = 0$ \\
-            \pm2^{\frac{n+1}{2}} & if $\angles{\alpha, k} = 1$ and $\angles{\beta, k} = 1$ \\
+    \begin{align}\label{bison:eqn:fc_round}
+        &\hphantom{=}\ \widehat{R_{k,w}}(\alpha,\beta) \nonumber \\
+        &= \begin{cases*}
+            2^n                    & if $\alpha = \beta$ and $\iprod{\beta}{k} = 0$ \\
+            \pm2^{\frac{n+1}{2}} & if $\iprod{\alpha}{k} = 1$ and $\iprod{\beta}{k} = 1$ \\
                                         % the same as <a + b, k> = 0 and <b, k> = 1
-            0                      & if $\angles{\alpha + \beta, k} = 1$ or $(\alpha \neq \beta$ and $\angles{\beta, k} = 0)$
+            0                      & if $\iprod{(\alpha + \beta)}{k} = 1$ or $(\alpha \neq \beta$ and $\iprod{\beta}{k} = 0)$
         \end{cases*}.
-    \end{equation}
+    \end{align}
 \end{restatable}
 \begin{proof}
     First, we show the upper part, that is the values of the diagonal.
     Then
     \begin{align*}
         &\hphantom{=}\ \ \widehat{R_{k,w}}(\alpha, \beta)
-         = \sum_{x \in \F_2^{n}} \parens{-1}^{\angles{\alpha + \beta, x} + \angles{\beta, k}\cdot f(w + \Phi_k(x))} \\
-        &= \sum_{\tower{y \in \F_2^{n-1}}{\Phi_k^{-1}(y) \in \set{x_0, x_1}}} \parens{-1}^{\angles{\alpha + \beta, x_0} + \angles{\beta, k}\cdot f(w + y)} + \parens{-1}^{\angles{\alpha + \beta, x_1} + \angles{\beta, k}\cdot f(w + y)}
+         = \sum_{x \in \F_2^{n}} \parens{-1}^{\iprod{(\alpha + \beta)}{x} + \iprod{\beta}{k}\cdot f(w + \Phi_k(x))} \\
+        &= \sum_{\tower{y \in \F_2^{n-1}}{\Phi_k^{-1}(y) \in \set{x_0, x_1}}} \parens{-1}^{\iprod{(\alpha + \beta)}{x_0} + \iprod{\beta}{k}\cdot f(w + y)} + \parens{-1}^{\iprod{(\alpha + \beta)}{x_1} + \iprod{\beta}{k}\cdot f(w + y)}
     \end{align*}
     As we look at the diagonal elements, $\alpha = \beta$, we have
     \begin{align*}
     \widehat{R_{k,w}}(\alpha, \alpha)
-    = 2 \cdot \sum_{y} \parens{-1}^{\angles{\beta, k} \cdot f(w + y)}
-    = 2 \cdot \sum_{y^\prime \in \F_2^{n-1}} \parens{-1}^{\angles{\beta, k} \cdot f(y^\prime)}\;.
+    = 2 \cdot \sum_{y} \parens{-1}^{\iprod{\beta}{k} \cdot f(w + y)}
+    = 2 \cdot \sum_{y^\prime \in \F_2^{n-1}} \parens{-1}^{\iprod{\beta}{k} \cdot f(y^\prime)}\;.
     \end{align*}
     Two possibilities remain:
-    If $\angles{\beta, k} = 0$, the exponent is always zero and thus $\widehat{R_{k,w}}(\alpha, \alpha) = 2^n$.
-    In the other case, $\angles{\beta, k} = 1$ and
+    If $\iprod{\beta}{k} = 0$, the exponent is always zero and thus $\widehat{R_{k,w}}(\alpha, \alpha) = 2^n$.
+    In the other case, $\iprod{\beta}{k} = 1$ and
     \begin{equation}\label{eqn:bison:lat_proof_adjust1}
         \widehat{R_{k,w}}(\alpha, \alpha) = 2 \cdot \sum_{y^\prime \in \F_2^{n-1}} \parens{-1}^{f(y^\prime)} = \pm 2 \cdot 2^{\frac{n-1}{2}}\;,
     \end{equation}
@@ -992,17 +957,17 @@ Using the properties of $f$ being bent, we get the following.
     Now for the second part we have $\alpha \neq \beta$.
     \begin{align}
         &\hphantom{=}\ \ \widehat{R_{k,w}}(\alpha, \beta) \nonumber\\
-        &= \sum_{\tower{y \in \F_2^{n-1}}{\Phi_k^{-1}(y) \in \set{x_0, x_1}}} \parens{-1}^{\angles{\alpha + \beta, x_0} + \angles{\beta, k}\cdot f(w + y)} + \parens{-1}^{\angles{\alpha + \beta, x_1} + \angles{\beta, k}\cdot f(w + y)} \nonumber\\
+        &= \sum_{\tower{y \in \F_2^{n-1}}{\Phi_k^{-1}(y) \in \set{x_0, x_1}}} \parens{-1}^{\iprod{(\alpha + \beta)}{x_0} + \iprod{\beta}{k}\cdot f(w + y)} + \parens{-1}^{\iprod{(\alpha + \beta)}{x_1} + \iprod{\beta}{k}\cdot f(w + y)} \nonumber\\
         \intertext{By definition of $\Phi_k$, we saw in \cref{bison:eqn:phi_preimage} that the preimages $x_0$ and $x_1$ of $y$ are equal to $y^\prime$ and $y^\prime + k$, where $y^\prime$ is the same as $y$ with an additional bit set to zero injected at position $i(k)$.
                    Thus, using the bilinearity of the scalar product,}
-        \widehat{R_{k,w}}(\alpha, \beta) &= \parens{1 + \parens{-1}^{\angles{\alpha + \beta, k}}} \sum_y \parens{-1}^{\angles{\alpha + \beta, y^\prime} + \angles{\beta, k} \cdot f(w + y)} \nonumber\\
-        \intertext{and this is equal to zero, if $\angles{\alpha + \beta, k} = 1$ or $\angles{\beta, k} = 0$.
-                   In the other case, $\angles{\alpha + \beta, k} = 0$ and $\angles{\beta, k} = 1$, we have}
-        \widehat{R_{k,w}}(\alpha, \beta) &= 2 \cdot \sum_y \parens{-1}^{\angles{\alpha + \beta, y^\prime} + f(w + y)} = 2 \cdot \sum_x \parens{-1}^{\angles{\alpha + \beta, x^\prime + w^\prime} + f(x)} \nonumber \\
-        &= 2 \cdot \parens{-1}^{\angles{\alpha + \beta, w^\prime}} \cdot \sum_x \parens{-1}^{\angles{\alpha + \beta, x^\prime} + f(x)} \nonumber \\
-        & = 2 \cdot \parens{-1}^{\angles{\alpha + \beta, w^\prime}} \cdot \widehat{f}(\Phi_k(\alpha + \beta)) \label{eqn:bison:lat_proof_adjust2} \\
+        \widehat{R_{k,w}}(\alpha, \beta) &= \parens{1 + \parens{-1}^{\iprod{(\alpha + \beta)}{k}}} \sum_y \parens{-1}^{\iprod{(\alpha + \beta)}{y^\prime} + \iprod{\beta}{k} \cdot f(w + y)} \nonumber\\
+        \intertext{and this is equal to zero, if $\iprod{(\alpha + \beta)}{k} = 1$ or $\iprod{\beta}{k} = 0$.
+                   In the other case, $\iprod{(\alpha + \beta)}{k} = 0$ and $\iprod{\beta}{k} = 1$, we have}
+        \widehat{R_{k,w}}(\alpha, \beta) &= 2 \cdot \sum_y \parens{-1}^{\iprod{(\alpha + \beta)}{y^\prime} + f(w + y)} = 2 \cdot \sum_x \parens{-1}^{\iprod{(\alpha + \beta)}{(x^\prime + w^\prime)} + f(x)} \nonumber \\
+        &= 2 \cdot \parens{-1}^{\iprod{(\alpha + \beta)}{w^\prime}} \cdot \sum_x \parens{-1}^{\iprod{(\alpha + \beta)}{x^\prime} + f(x)} \nonumber \\
+        & = 2 \cdot \parens{-1}^{\iprod{(\alpha + \beta)}{w^\prime}} \cdot \widehat{f}(\Phi_k(\alpha + \beta)) \label{eqn:bison:lat_proof_adjust2} \\
         \intertext{Finally, again because $f$ is bent, we get}
-        \widehat{R_{k,w}}(\alpha, \beta) &= 2 \cdot \parens{-1}^{\angles{\alpha + \beta, w^\prime}} \cdot (\pm 2^{\frac{n-1}{2}}) = \pm 2^{\frac{n+1}{2}}\;. \nonumber
+        \widehat{R_{k,w}}(\alpha, \beta) &= 2 \cdot \parens{-1}^{\iprod{(\alpha + \beta)}{w^\prime}} \cdot (\pm 2^{\frac{n-1}{2}}) = \pm 2^{\frac{n+1}{2}}\;. \nonumber
         &\hspace*{-15pt}
     \end{align}
 
@@ -1019,7 +984,7 @@ We now show that any trail's correlation for $r \geqslant n$ rounds is actually 
 \begin{proof}
     It is enough to show the above for any $n$-round trail.
     By contradiction, assume there exists a non-trivial trail $\theta = (\theta_0, \ldots, \theta_n)$ with correlation one.
-    Following \cref{prop:bison:lat}, for every round $i$ the intermediate mask $\theta_i$ has to fulfill $\angles{\theta_i, k_i} = 0$.
+    Following \cref{prop:bison:lat}, for every round $i$ the intermediate mask $\theta_i$ has to fulfill $\iprod{\theta_i}{k_i} = 0$.
     Further $\theta_i = \theta_{i+1}$ for $0 \leqslant i < n$.
     Because all $n$ round keys are linearly independent, this implies that $\theta_i = 0$, which contradicts our assumption.
     Thus, in at least one round the second or third case of \cref{bison:eqn:fc_round} has to apply.
@@ -1103,7 +1068,7 @@ Thus, it will take at least $n-2$ rounds before the degree reaches the maximal p
 if all component functions of $E_{k,w}^r$ are of degree at most $d$, there will be at least one component function of $E_{k,w}^{r+n-1}$ of degree at most $d$.
 That is, there exist a vector $\beta\in\F_2^n$ such that
 \begin{equation*}
-    \langle \beta, E_{k,w}^{r+n-1}(x) \rangle
+    \iprod{\beta}{E_{k,w}^{r+n-1}(x)}
 \end{equation*}
 has degree at most $d$.
 Namely, for
@@ -1111,9 +1076,11 @@ Namely, for
     \beta \in \Span{k_r, \dots, k_{r+s}}^{\perp}
 \end{equation*}
 it holds that
-\begin{equation*}
-    \deg\left(\langle \beta, E_{k,w}^{r+s}(x) \rangle \right)=\deg\left(\langle \beta, E_{k,w}^r(x) \rangle + \sum_{i=r}^{r+s} \lambda_i \langle \beta,  k_i \rangle\right) = \deg\left(\langle \beta, E_{k,w}^r(x) \rangle\right).
-\end{equation*}
+\begin{align*}
+    \deg\left(\iprod{\beta}{E_{k,w}^{r+s}(x)} \right)
+    &= \deg\left(\iprod{\beta}{E_{k,w}^r(x)} + \sum_{i=r}^{r+s} \lambda_i \parens{\iprod{\beta}{k_i}}\right) \\
+    &= \deg\left(\iprod{\beta}{E_{k,w}^r(x)}\right)\;.
+\end{align*}
 We conclude there exists a component function of $E_{k,w}^{r+s}$ of non-maximal degree, as long as $0 \leqslant r \leqslant n-2$ and $0\leqslant s \leqslant n-1$.
 Thus for \bison/ there will be at least one component function of degree less than $n-1$ for any number of rounds $0\leqslant r\leqslant 2n-3$.
 However, similarly to the case of zero-correlation properties as described in \cref{lem:wsn:zero_cor}, the vector $\beta$ is key dependent and thus this property does not directly lead to an attack.
@@ -1126,8 +1093,8 @@ Moreover, the round function in \bison/ experimentally behaves with this respect
 Thus, as the number of rounds is $3n$, we are confident that attacks exploiting the algebraic degree do not pose a threat for \bison/.
 
 \marginpar{%
-    %\vspace{-500pt}
     \centering
+    \vspace{-20\baselineskip}
     \begin{tikzpicture}
         \pgfplotsset{%
             legend style={font=\footnotesize, draw=none, fill=none},
@@ -1145,6 +1112,7 @@ Thus, as the number of rounds is $3n$, we are confident that attacks exploiting 
             ylabel = {\# Keys},
             ymin = 0,
             ymax = 2500,
+            ytick = {0, 500, ..., 2000},
             no marks,
             height=70mm,
             width=50mm,
@@ -1180,8 +1148,8 @@ Thus, as the number of rounds is $3n$, we are confident that attacks exploiting 
 }
 
 \marginpar{%
-    %\vspace{-225pt}
     \centering
+    %\vspace{-4\baselineskip}
     \begin{tikzpicture}
         \pgfplotsset{%
             label style={font=\footnotesize},
@@ -1198,6 +1166,7 @@ Thus, as the number of rounds is $3n$, we are confident that attacks exploiting 
             ylabel = {\# Keys},
             ymin = 0,
             %ymax = 2500,
+            ytick = {0, 500, ..., 2500},
             no marks,
             height=70mm,
             width=50mm,
@@ -1269,7 +1238,7 @@ Due to our strong bounds on differentials it seems very unlikely that any strong
 \newthoughtpar{Zero Correlation Linear Cryptanalysis}
 In \cref{lem:wsn:zero_cor} we already discussed generic zero correlation linear hulls for the \WSN/ construction.
 Depending on the actual key used, this technique may be used to construct a one-round-longer zero-correlation trail.
-For this, we need two \emph{distinct} elements $\alpha \in \angles{k_1, \dots, k_{n-1}}^\perp$, $\beta \in \angles{k_n, \dots, k_{2n-2}}^\perp$, and construct the trail analogously to \cref{lem:wsn:zero_cor} (which may not exist, due to the key dependency).
+For this, we need two \emph{distinct} elements $\alpha \in \Span{k_1, \dots, k_{n-1}}^\perp$, $\beta \in \Span{k_n, \dots, k_{2n-2}}^\perp$, and construct the trail analogously to \cref{lem:wsn:zero_cor} (which may not exist, due to the key dependency).
 
 \newthoughtpar{Invariant Attacks}
 For an invariant attack, we need a Boolean function $g$, such that $g(x) + g(E_{k,w}^r(x))$ is constant \emph{for all} $x$ and some \emph{weak keys} $(k,w)$.
@@ -1372,7 +1341,7 @@ Thus, the probability for each of the four possible cases $(u, v) \in \F_2 \time
 \newthoughtpar{Further Observations}
 During the design process, we observed the following interesting point:
 For sparse master keys $k$ and $w$ and message $m$, \eg/ $k = w = m = 1$, in the first few rounds, nothing happens.
-This is mainly due to the choice of sparse key schedule polynomials $p_w$ and $p_k$ and the fact that $f_0$ outputs $0$ if only one bit in its input is set (as $\angles{0, x} = 0$ for any $x$).
+This is mainly due to the choice of sparse key schedule polynomials $p_w$ and $p_k$ and the fact that $f_0$ outputs $0$ if only one bit in its input is set (as $\iprod{0}{x} = 0$ for any $x$).
 
 % Second, due to discarding the most significant bit of the master key to initialise the $w_i$ \LFSR/, the master key $k = 2^{n-1}$ results in all zero $w_i$'s. In this case, the round constants prevent the round function to become the identity function for many inputs.
 
@@ -1545,7 +1514,7 @@ While this might be obvious, we nevertheless want to note that it is important f
 %\end{table}
 }
 
-Regarding cycles per byte, this is three orders of magnitude slower than optimised implementations of \AES/\@.
+Regarding cycles per byte, this is six orders of magnitude slower than optimised implementations of \AES/\@.
 Even if the reference implementation is not optimised, we do not believe to come close to a competitive speed.
 Another point which can be seen in \cref{bison:tab:perf} is the deviating runtime of our implementation.
 The reference implementation is clearly not constant time. %, see \eg/ \crefrange{bison:line:phi_begin}{bison:line:phi_end} or \cref{bison:line:round_if} in \cref{bison:app:c_impl}.
@@ -1559,12 +1528,12 @@ Thus we turn our attention now to an instance with even block length: \wisent/.
 
 \section{Specification of \wisent/}\label{sec:wisent:instance}
 
-In order to exploit our analysis of \bison/-like instances, especially \cref{lem:bison:diff_prob}, in a helpfull way, we need to find $f_0$, $f_1$ with a low absolute indicator.
+In order to exploit our analysis of \bison/-like instances, especially \cref{lem:bison:diff_prob}, in a helpful way, we need to find $f_0$, $f_1$ with a low absolute indicator.
 Then we can use these to give good bounds on the \EDP/.
 Due to the $\Phi_k$ function, the $f_i$ have to operate on $n-1$ bits, with $n-1$ odd and thus we cannot use bent functions.
 
 Recall from the previous chapter that finding Boolean functions with good absolute indicator is an interesting problem.
-It is actually not even clear, what a meaningful lower bound on the absolute indicator is, when bent functions are not considered.
+It is actually not even clear what a meaningful lower bound on the absolute indicator is when bent functions are not considered.
 %In 1996 \textcite{JUCS:ZhaZhe96} conjectured that the absolute indicator of $f$ is lower bounded by $2^{(n+1)/2}$ if $f$ is balanced and has degree at least three.
 %This conjecture was later disproven.
 %In particular, for the case $n$ odd, see \textcite{TIT:KavMaiYuc07} for $n \in \set{9, 11}$, \textcite{TIT:MaiSar02} for $n = 15$, and \textcite{DM:GanKesMai06,DAM:Kavut16} for $n=21$, for the case $n$ even \textcite{TIT:TanMai18} give a construction for Boolean functions with absolute indicator strictly less than $2^{\frac{n}{2}}$.
@@ -1580,7 +1549,7 @@ That is, our $f_0$, $f_1$ are of the form $f_i(x,y) = g_i(x) + h(y)$ with $g_i :
 For the even length part $h$ of $f$, we utilise the same bent function as for \bison/:
 \begin{align*}
     h : \F_2^{n-6} &\to \F_2 \\
-    h(x) &\coloneqq \angles{x[1 : (n-6)/2], x[(n-6)/2 + 1 : n-6]}\;.
+    h(x) &\coloneqq \iprod{x[1 : (n-6)/2]}{x[(n-6)/2 + 1 : n-6]}\;.
 \end{align*}
 For the odd length part, we use $g_0 : \F_2^5 \to \F_2$ with
 \begin{align*}
@@ -1592,7 +1561,8 @@ For the odd length part, we use $g_0 : \F_2^5 \to \F_2$ with
 \end{align*}
 or as truth table in hexadecimal form $\mathtt{00071356}$, and we choose $g_1$ as the complement of $g_0$.
 
-We define \wisent/'s round function as follows.
+The $n$-bit instance of \wisent/ iterates $3n$ rounds of the above specified round function, using the same key schedule as \bison/.
+
 \begin{center}
 \begin{minipage}{\textwidth}
     \centering
@@ -1615,11 +1585,12 @@ We define \wisent/'s round function as follows.
                         f_{b(i)} : \F_2^{n-1} &\to \F_2 \\
                         f_{b(i)}(x_1, \ldots, x_{n-1}) &\coloneqq g_{b(i)}(x_1, \ldots, x_5) + h(x_6, \ldots, x_{n-1})
                     \end{align*}
-                \item $g_0$ is defined by its truth table in hexadecimal form: $\mathtt{00071356}$, and $g_1$ as $g_0 + 1$,
+                \item $g_0$ is defined by its truth table in hexadecimal form:\\
+                      $\mathtt{00071356}$, and $g_1$ as $g_0 + 1$,
                 \item $h$ is defined as
                         \begin{align*}
                             h : \F_2^{n-6} &\to \F_2 \\
-                            h(x_1, \ldots, x_{n-6}) &\coloneqq \angles{x[1 : n/2-3], x[n/2-2 : n-6]}\;.
+                            h(x_1, \ldots, x_{n-6}) &\coloneqq \iprod{x[1 : n/2-3]}{x[n/2-2 : n-6]}\;.
                         \end{align*}
                 \item and $b(i)$ is $0$ if $i \leqslant \frac{r}{2}$ and $1$ otherwise.
             \end{itemize}
@@ -1630,8 +1601,6 @@ We define \wisent/'s round function as follows.
 \end{minipage}
 \end{center}
 
-The $n$-bit instance of \wisent/ iterates $3n$ rounds of the above specified round function, using the same key schedule as \bison/.
-
 \begin{secclaim}[\wisent/]
   We claim $n$-bit security for \wisent/ in the single-key model.
   We emphasise that we do not claim any security in the related-key, chosen-key or known-key model.
@@ -1641,7 +1610,7 @@ Several of the cryptanalysis results of \bison/ directly translate to \wisent/, 
 
 \subsection{Security Analysis of \wisent/}\label{sec:wisent:analysis}
 
-We first look at the bound for differential cryptanalysis, derived from \cref{lem:bison:diff_prob}, before discussing other attacks.
+We first use \cref{lem:bison:diff_prob} for a bound regarding differential cryptanalysis and then discuss other attacks.
 The only difference for these other attacks occur for linear cryptanalysis, which we thus discuss at the end of this section.
 
 \newthoughtpar{Differential Cryptanalysis}
@@ -1774,20 +1743,20 @@ Thus, our results also apply to \wisent/, which is why we also choose $3n$ round
 Analogously, the generic analysis of the \WSN/ construction and \bison/-like instances show that there are no impossible differentials for more than $n$ rounds, and no zero correlation attacks for $2n$ or more rounds.
 
 \newthoughtpar{Invariant Attacks}
-Here, too, our argument does not depent on the exact choice of the Boolean functions $f_i$, and thus the argument by \textcite{C:BCLR17} holds again.
+Here, too, our argument does not depend on the exact choice of the Boolean functions $f_i$, and thus the argument by \citeauthor{C:BCLR17}~\citeonly{C:BCLR17} holds again.
 
 \newthoughtpar{Linear Cryptanalysis}
-While we can follow the same strategy as for \bison/ (bounding the Fourier coefficient of a single trail by first computing the one round coefficients and then using \cref{prop:bison:lc_long} for more rounds), we need to sligthly adjust the proof for the new Boolean functions.
+While we can follow the same strategy as for \bison/ (bounding the Fourier coefficient of a single trail by first computing the one round coefficients and then using \cref{prop:bison:lc_long} for more rounds), we need to slightly adjust the proof for the new Boolean functions.
 
 \begin{proposition}
     Let $R_{k,w} : \F_2^n \to \F_2^n$ be \wisent/'s round function as defined in \cref{eqn:wisent:wsn_instance}.
     Then its \LAT/ entries are bounded by
     \begin{equation*}%\label{eqn:wisent:lat}
         \FC{R_{k,w}}(\alpha, \beta) \leqslant \begin{cases*}
-            2^n                   & if $\alpha = \beta$ and $\angles{\beta, k} = 0$ \\
-            \pm 2^{\frac{n}{2}+2} & \parbox[c]{0.5\textwidth}{%
-                                        if $\alpha = \beta$ and $\angles{\beta, k} = 1$ or\\[-2.5pt]
-                                        if $\alpha \neq \beta$, $\angles{\alpha + \beta, k} = 0$, and $\angles{\beta, k} = 1$
+            2^n                   & if $\alpha = \beta$ and $\iprod{\beta}{k} = 0$ \\
+            \pm 2^{\frac{n}{2}+2} & \parbox[c]{0.6\textwidth}{%
+                                        if $\alpha = \beta$ and $\iprod{\beta}{k} = 1$ or\\[-2.5pt]
+                                        if $\alpha \neq \beta$, $\iprod{(\alpha + \beta)}{k} = 0$, and $\iprod{\beta}{k} = 1$
                                     }\\
             0                     & otherwise
         \end{cases*}\;.
@@ -1796,7 +1765,7 @@ While we can follow the same strategy as for \bison/ (bounding the Fourier coeff
 \begin{proof}
     The proof is analogous to \cref{prop:bison:lat}, with two small changes in \cref{eqn:bison:lat_proof_adjust1,eqn:bison:lat_proof_adjust2}.
 
-    First, for the case $\alpha = \beta$ and $\angles{\beta, k} = 1$, we have
+    First, for the case $\alpha = \beta$ and $\iprod{\beta}{k} = 1$, we have
     \begin{align*}
         \FC{R_{k,w}}(\alpha, \alpha)
         &= 2 \cdot \sum_{y^\prime \in \F_2^{n-1}}\parens{-1}^{f(y^\prime)} = 2 \cdot \FC{f}(0) \\
@@ -1804,13 +1773,13 @@ While we can follow the same strategy as for \bison/ (bounding the Fourier coeff
         &= 2 \cdot \pm 2^{\frac{n-6}{2}} \cdot \FC{g}(0) = \pm 2^{\frac{n}{2}-2} \cdot 12 < \pm 2^{\frac{n}{2}+2}\;.
     \end{align*}
 
-    Second, for the case $\alpha \neq \beta$, $\angles{\alpha + \beta, k} = 0$, and $\angles{\beta, k} = 1$, it is
+    Second, for the case $\alpha \neq \beta$, $\iprod{(\alpha + \beta)}{k} = 0$, and $\iprod{\beta}{k} = 1$, it is
     \begin{align*}
         \FC{R_{k,w}}(\alpha, \beta)
-        &= 2 \cdot \parens{-1}^{\angles{\alpha + \beta, w^\prime}} \cdot \FC{f}(\Phi_k(\alpha + \beta)) \\
+        &= 2 \cdot \parens{-1}^{\iprod{(\alpha + \beta)}{w^\prime}} \cdot \FC{f}(\Phi_k(\alpha + \beta)) \\
         \intertext{which can be bounded, with $\gamma = \Phi_k(\alpha + \beta)[1 : 5]$, by}
         \FC{R_{k,w}}(\alpha, \beta)
-        &= 2 \cdot \parens{-1}^{\angles{\alpha + \beta, w^\prime}} \cdot \FC{f}(\Phi_k(\alpha + \beta)) \\
+        &= 2 \cdot \parens{-1}^{\iprod{(\alpha + \beta)}{w^\prime}} \cdot \FC{f}(\Phi_k(\alpha + \beta)) \\
         &= \pm 2^{\frac{n}{2} - 2} \cdot \FC{g}(\gamma) \leqslant \pm 2^{\frac{n}{2} - 2} \cdot 12 < \pm 2^{\frac{n}{2}+2}\;.
     \end{align*}
 
@@ -1823,6 +1792,9 @@ To use this for an upper bound for the absolute correlation of any non-linear tr
 
 \marginpar{%
 %\begin{table}[t]
+    \centering
+    \footnotesize
+    \vspace*{-7\baselineskip}
     \captionof{table}[Benchmarking \wisent/]{%
         Performance of our 128-bit \wisent/ implementation on an \textsc{Intel Core i7-8700 cpu}, running at 3.7~\textsc{GHz}.
         Cycles per byte are measured for 1\,000\,000 runs, \textsc{Hyper-Threading} and \textsc{Turbo-Boost} were disabled.
@@ -1831,8 +1803,6 @@ To use this for an upper bound for the absolute correlation of any non-linear tr
 %        Performance of our 129-bit implementation on an \textsc{Intel Core i7-8700 cpu}, running at 3.7~\textsc{GHz}.
 %        Cycles per byte are measured for 1\,000\,000 runs, \textsc{Hyper-Threading} and \textsc{Turbo-Boost} were disabled.
 %    }[bison:tab:perf]
-    \centering
-    \footnotesize
     \tabcolsep=5pt
     \begin{tabular}{ccc}
         \toprule
@@ -1873,8 +1843,6 @@ With our instance for the \WSN/ construction and its strong resistance to differ
 Unfortunately, we are not able to give better than normal arguments for the resistance to linear cryptanalysis.
 It is thus an interesting question, if one can find a similar instance of the \WSN/ construction for which comparable strong arguments for the later type of cryptanalysis exist.
 
-% Our instance is restricted to odd block lengths, while for efficiency reasons often even block lengths are chosen.
-% Circumventing this constraint while retaining our strong security arguments appears to be an interesting challenge.\ac{I don't like this remark. The analysis also works when $n$ is even. E.g. we could use $f(x)=(x_1,\ldots, x_{n/2-1}) \cdot (x_{n/2},\ldots, x_{n-2}) + x_{n-1}$?}
 Alternative designs might also be worth looking at.
 For example many constructions for bent functions are known and could thus be examined as alternatives for the scalar product used in \bison/.
 One might also look for a less algebraic design -- but we do not yet see how this would improve or ease the analysis or implementation of an instance.
@@ -1884,12 +1852,3 @@ Our construction is far from optimal with regard to its absolute indicator -- ma
 Thus, finding either a lower bound or -- as the known constructions or examples with good absolute indicator, see \eg/ \citeonly{TIT:KavMaiYuc07,TIT:TanMai18}, are quite complex from an implementation point of view -- finding simpler constructions would be a valuable result.
 
 Another line of future work is the in-depth analysis of implementation optimizations and side channel-resistance of \bison/ and \wisent/.
-
-%From a more general perspective, what we do often is to come up with more and more efficient schemes, but the arguments we give for security do not really get better.
-%Compare that how provable security works:
-%There people try first to come up with some scheme, not taking into account efficiency too much, that is secure in some model and in a second step try to find schemes that improve.
-
-%Finally, The design of block ciphers has evolved from an art to a science in the recent 40 years.
-%Today we are not only able to design very efficient ciphers, but also ones we firmly believe to be secure -- with the \AES/ being the most prominent example withstanding 20 years of cryptanalysis.
-%While efficiency bounds have been pushed further and further within the trend of lightweight cryptography, the time may has come, where we should shift our focus to improving security arguments for new designs -- similar to the area of %provable security.
-%In that area, efficiency is only taken into account as the second step, to improve schemes proven to be secure in some model, but which are initially often totally impractical.
