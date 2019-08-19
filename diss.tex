@@ -1,7 +1,5 @@
 \documentclass{dissertation}
 
-\usepackage{geometry}
-
 \usepackage{amsmath,mathtools,empheq}
 \usepackage{amsthm}
 \usepackage{thmtools}
@@ -206,32 +204,30 @@
 
 \begin{document}
 \frontmatter{}
-\newgeometry{inner=24mm, outer=79mm, top=27.4mm, bottom=27.4mm}
 
 \input{frontbackmatter/titlepage}
-\fontsize{9pt}{13pt}\selectfont
 
 \input{frontbackmatter/abstract}
 \blankpage{}
 \input{frontbackmatter/zusammenfassung}
 \blankpage{}
 
-\tableofcontents*
+\tableofcontents*\addcontentsline{toc}{chapter}{Contents}
 \clearpage{}
 
-\listofalgorithms
+\listofalgorithms\addcontentsline{toc}{chapter}{List of Algorithms}
 %\clearpage{}
 \vspace{\baselineskip}
 
-\listoffigures*
+\listoffigures*\addcontentsline{toc}{chapter}{List of Figures}
 \vspace{\baselineskip}
 \clearpage{}
 
-\listoftables*
+\listoftables*\addcontentsline{toc}{chapter}{List of Tables}
 \clearpage{}
 
-%\input{frontbackmatter/acknowledgments}
-%\cleardoublepage{}
+%\input{frontbackmatter/acknowledgments}\addcontentsline{toc}{chapter}{Acknowledgments}
+\cleardoublepage{}
 
 \mainmatter{}
 \begin{fullwidth}
@@ -240,21 +236,8 @@
 
 \cleardoublepage{}
 
-%\chapter*{Todos}\addcontentsline{toc}{chapter}{Todos}
-%\itodo{%
-%Copyright Notes
-%
-%Publishing / printing history
-%
-%Country where printed
-%
-%ISBN and or CIP information
-%}
-%
 %\itodo{Can we use \bison/'s argument (regarding differential cryptanalysis) for a maximal unbalanced Feistel network?}
-%
 %\itodo{Can we improve \cref{st:lem:2} so that we do not have to compute the span of the union over all basis vectors?}
-%\itodo{Update \cref{st:tab:results2} with clyde and shadow}
 
 \input{mainmatter/introduction}
 \input{mainmatter/preliminaries}
@@ -282,16 +265,6 @@
 
 \begin{fullwidth}
 \printbibliography{}
-\clearpage{}
-%
-%\tikzexternalenable
-%\begin{appendix}
-%
-%\input{frontbackmatter/appendix-bison}
-%\input{frontbackmatter/appendix-slps}
-%\input{frontbackmatter/appendix-subspacetrails}
-%
-%\end{appendix}
 \end{fullwidth}
 
 \cleardoublepage{}

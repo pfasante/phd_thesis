@@ -10,6 +10,11 @@
     10pt,
     twoside,
 ]{memoir}
+\renewcommand{\footnotesize}{\fontsize{8pt}{9pt}\selectfont}
+\renewcommand{\normalsize}{\fontsize{10pt}{14pt}\selectfont}
+\fontsize{10pt}{14pt}\selectfont
+
+\RequirePackage{geometry}
 
 %%% Load Fonts %%%
 \RequirePackage{charter}
@@ -25,15 +30,15 @@
 \RequirePackage{beramono}
 
 %%% Layout the Page %%%
-\setstocksize{297mm}{210mm}
-\settrimmedsize{\stockheight}{\stockwidth}{*}
-%\settypeblocksize{49\baselineskip}{107mm}{*}
-\setulmarginsandblock{27.4mm}{*}{1}
-\setlrmarginsandblock{24mm}{79mm}{*}
-\setmarginnotes{9mm}{50mm}{1em}
+\setlrmarginsandblock{26mm}{211pt}{*}
+\setmarginnotes{9mm}{12pc}{1em}
+
+\setulmarginsandblock{6pc}{8pc}{*}
+
 \setheadfoot{1.25\baselineskip}{10mm}
 \setheaderspaces{*}{8mm}{*}
-\checkandfixthelayout[fixed]
+
+\checkandfixthelayout
 
 %%% Header und Footer Styles
 \nouppercaseheads
@@ -49,22 +54,47 @@
 \createplainmark{index}{both}{\indexname}
 \createplainmark{glossary}{both}{\glossaryname}
 }
-\makerunningwidth{diss}[165mm]{165mm}
+\makerunningwidth{diss}[480pt]{480pt}
 \makeheadposition{diss}{flushright}{flushleft}{flushright}{flushleft}
 \makeevenhead{diss}{\small\thepage\hspace{1em}\textsc{\MakeLowercase\leftmark}}{}{}
 \makeoddhead{diss}{}{}{\small\textsc{\MakeLowercase\rightmark}\hspace{1em}\thepage}
 
+\makepagestyle{fullwidth}
+\makepsmarks{fullwidth}{%
+\nouppercaseheads
+\createmark{chapter}{both}{nonumber}{}{}
+\createmark{section}{right}{nonumber}{}{}
+\createplainmark{toc}{both}{\contentsname}
+\createplainmark{lof}{both}{\listfigurename}
+\createplainmark{lot}{both}{\listtablename}
+\createplainmark{bib}{both}{\bibname}
+\createplainmark{index}{both}{\indexname}
+\createplainmark{glossary}{both}{\glossaryname}
+}
+\makerunningwidth{fullwidth}[450pt]{450pt}
+\makeheadposition{fullwidth}{flushright}{flushleft}{flushright}{flushleft}
+\makeevenhead{fullwidth}{\small\thepage\hspace{1em}\textsc{\MakeLowercase\leftmark}}{}{}
+\makeoddhead{fullwidth}{}{}{\small\textsc{\MakeLowercase\rightmark}\hspace{1em}\thepage}
+
 \makepagestyle{plain}
-\makerunningwidth{plain}[165mm]{165mm}
+\makerunningwidth{plain}[480pt]{480pt}
 \makeheadposition{plain}{flushright}{flushleft}{flushright}{flushleft}
 \makeevenfoot{plain}{\small\thepage}{}{}
 \makeoddfoot{plain}{}{}{\small\thepage}
+
+\makepagestyle{fullwidthplain}
+\makerunningwidth{fullwidthplain}[450pt]{450pt}
+\makeheadposition{fullwidthplain}{flushright}{flushleft}{flushright}{flushleft}
+\makeevenfoot{fullwidthplain}{\small\thepage}{}{}
+\makeoddfoot{fullwidthplain}{}{}{\small\thepage}
 
 \aliaspagestyle{part}{empty}
 \aliaspagestyle{chapter}{plain}
 
 \newenvironment{fullwidth}{%
-    \newgeometry{inner=24mm, outer=29mm, top=27.4mm, bottom=27.4mm}
+    \newgeometry{inner=26mm, outer=26mm, top=6pc, bottom=102pt}
+    \aliaspagestyle{chapter}{fullwidthplain}
+    \pagestyle{fullwidth}
 }{%
     \restoregeometry
 }
@@ -86,7 +116,6 @@
 
 %%% ToC Style %%%
 \newlength{\aftertocskip}
-\setlength{\aftertocskip}{-15pt}
 \renewcommand*{\aftertoctitle}{\par\nobreak\vspace*{-10pt}\hrulefill\vskip\aftertocskip}
 
 %%% Section and Subsection Style %%%
@@ -206,12 +235,13 @@
 
 \newcommand{\newthoughtskip}{\vspace\newthoughtskipamount}
 \providecommand\newthought[1]{%
-   \newthoughtbreak
-   \noindent%
-   {\llap{\color{black!30}\scriptsize\raisebox{1pt}{$\blacktriangleright$}\quad}}%
-   \textsc{#1}%
+    \nopagebreak
+    \newthoughtbreak
+    \noindent%
+    {\llap{\color{black!30}\scriptsize\raisebox{1pt}{$\blacktriangleright$}\quad}}%
+    \textsc{#1}%
 }
-\providecommand\newthoughtpar[1]{\newthought{#1}\par\nobreak\noindent\ignorespaces}
+\providecommand\newthoughtpar[1]{\nopagebreak\newthought{#1}\par\nopagebreak\noindent\ignorespaces}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
